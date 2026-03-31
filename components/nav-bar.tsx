@@ -73,6 +73,9 @@ export function NavBar({ user, profile }: NavBarProps) {
         </div>
 
         <div className="flex items-center gap-3">
+          <Button asChild size="sm" variant="outline" className="hidden md:inline-flex">
+            <Link href="/recipes/import">URL Import</Link>
+          </Button>
           <Button asChild size="sm" className="hidden md:inline-flex">
             <Link href="/recipes/new">+ Neues Rezept</Link>
           </Button>
@@ -119,6 +122,9 @@ export function NavBar({ user, profile }: NavBarProps) {
                     {link.label}
                   </Link>
                 ))}
+                <Link href="/recipes/import" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted">
+                  URL Import
+                </Link>
                 <Link href="/recipes/new" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted">
                   + Neues Rezept
                 </Link>

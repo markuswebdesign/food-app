@@ -57,7 +57,7 @@ export function RecipeFilters({ categories }: { categories: Category[] }) {
             className="cursor-pointer"
             onClick={() => toggleCategory(cat.slug, "category")}
           >
-            {cat.name}
+            {cat.icon} {cat.name}
           </Badge>
         ))}
         <div className="w-px bg-border mx-1" />
@@ -68,7 +68,7 @@ export function RecipeFilters({ categories }: { categories: Category[] }) {
             className="cursor-pointer"
             onClick={() => toggleCategory(cat.slug, "diet")}
           >
-            {cat.name}
+            {cat.icon} {cat.name}
           </Badge>
         ))}
       </div>

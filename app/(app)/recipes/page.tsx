@@ -13,6 +13,26 @@ export default async function RecipesPage({
 }) {
   const supabase = createClient();
 
+  // Kategorie-IDs für aktive Filter vorab laden
+  const filterSlugs = [searchParams.category, searchParams.diet].filter(Boolean) as string[];
+  const categoryFilterIds: Record<string, string[]> = {};
+
+  for (const slug of filterSlugs) {
+    const { data: cat } = await supabase
+      .from("categories")
+      .select("id")
+      .eq("slug", slug)
+      .single();
+
+    if (cat) {
+      const { data: links } = await supabase
+        .from("recipe_categories")
+        .select("recipe_id")
+        .eq("category_id", cat.id);
+      categoryFilterIds[slug] = links?.map((l: any) => l.recipe_id) ?? [];
+    }
+  }
+
   let query = supabase
     .from("recipes")
     .select(`
@@ -29,17 +49,25 @@ export default async function RecipesPage({
     query = query.ilike("title", `%${searchParams.q}%`);
   }
 
-  const { data: recipes } = await query;
+  if (searchParams.category && categoryFilterIds[searchParams.category]) {
+    const ids = categoryFilterIds[searchParams.category];
+    query = query.in("id", ids.length > 0 ? ids : ["00000000-0000-0000-0000-000000000000"]);
+  }
 
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("*")
-    .order("type");
+  if (searchParams.diet && categoryFilterIds[searchParams.diet]) {
+    const ids = categoryFilterIds[searchParams.diet];
+    query = query.in("id", ids.length > 0 ? ids : ["00000000-0000-0000-0000-000000000000"]);
+  }
+
+  const { data: recipes } = await query;
+  const { data: categories } = await supabase.from("categories").select("*").order("type");
 
   const normalized = (recipes ?? []).map((r: any) => ({
     ...r,
     categories: r.recipe_categories?.map((rc: any) => rc.categories) ?? [],
-    recipe_nutrition: r.recipe_nutrition ?? null,
+    recipe_nutrition: Array.isArray(r.recipe_nutrition)
+      ? r.recipe_nutrition[0] ?? null
+      : r.recipe_nutrition ?? null,
   })) as Recipe[];
 
   return (
@@ -62,7 +90,7 @@ export default async function RecipesPage({
 
       {normalized.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
-          <p className="text-lg">Noch keine Rezepte vorhanden.</p>
+          <p className="text-lg">Keine Rezepte gefunden.</p>
           <Button asChild className="mt-4">
             <Link href="/recipes/new">Erstes Rezept erstellen</Link>
           </Button>

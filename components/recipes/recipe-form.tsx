@@ -49,8 +49,9 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
   const [description, setDescription] = useState(recipe?.description ?? "");
   const [instructions, setInstructions] = useState(recipe?.instructions ?? "");
   const [servings, setServings] = useState(String(recipe?.servings ?? 2));
-  const [prepTime, setPrepTime] = useState(String(recipe?.prep_time_minutes ?? ""));
-  const [cookTime, setCookTime] = useState(String(recipe?.cook_time_minutes ?? ""));
+  const [workTime, setWorkTime] = useState(
+    String((recipe?.prep_time_minutes ?? 0) + (recipe?.cook_time_minutes ?? 0)) || ""
+  );
   const [imageUrl, setImageUrl] = useState(recipe?.image_url ?? "");
   const [sourceUrl, setSourceUrl] = useState(recipe?.source_url ?? "");
   const [isPublic, setIsPublic] = useState(recipe?.is_public ?? true);
@@ -149,8 +150,8 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
       description: description || null,
       instructions,
       servings: parseInt(servings),
-      prep_time_minutes: prepTime ? parseInt(prepTime) : null,
-      cook_time_minutes: cookTime ? parseInt(cookTime) : null,
+      prep_time_minutes: null,
+      cook_time_minutes: workTime ? parseInt(workTime) : null,
       image_url: imageUrl || null,
       source_url: sourceUrl || null,
       is_public: isPublic,
@@ -277,14 +278,10 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
       <Separator />
 
       {/* Zeit & Portionen */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="prepTime">Vorbereitung (Min)</Label>
-          <Input id="prepTime" type="number" min="0" value={prepTime} onChange={(e) => setPrepTime(e.target.value)} placeholder="15" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="cookTime">Kochen (Min)</Label>
-          <Input id="cookTime" type="number" min="0" value={cookTime} onChange={(e) => setCookTime(e.target.value)} placeholder="30" />
+          <Label htmlFor="workTime">Arbeitszeit (Min)</Label>
+          <Input id="workTime" type="number" min="0" value={workTime} onChange={(e) => setWorkTime(e.target.value)} placeholder="45" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="servings">Portionen</Label>

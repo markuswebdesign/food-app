@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { NutritionCard } from "@/components/recipes/nutrition-card";
 import { DeleteRecipeButton } from "@/components/recipes/delete-recipe-button";
-import { Clock, Users, ChefHat } from "lucide-react";
+import { Clock, Users } from "lucide-react";
 
 export default async function RecipeDetailPage({
   params,
@@ -33,6 +33,9 @@ export default async function RecipeDetailPage({
   const categories = recipe.recipe_categories?.map((rc: any) => rc.categories) ?? [];
   const isOwner = user?.id === recipe.user_id;
   const totalTime = (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);
+  const nutrition = Array.isArray(recipe.recipe_nutrition)
+    ? recipe.recipe_nutrition[0] ?? null
+    : recipe.recipe_nutrition ?? null;
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
@@ -73,19 +76,9 @@ export default async function RecipeDetailPage({
         </div>
 
         <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
-          {recipe.prep_time_minutes && (
-            <span className="flex items-center gap-1.5">
-              <Clock className="h-4 w-4" /> Vorbereitung: {recipe.prep_time_minutes} Min
-            </span>
-          )}
-          {recipe.cook_time_minutes && (
-            <span className="flex items-center gap-1.5">
-              <ChefHat className="h-4 w-4" /> Kochen: {recipe.cook_time_minutes} Min
-            </span>
-          )}
           {totalTime > 0 && (
-            <span className="flex items-center gap-1.5 font-medium text-foreground">
-              <Clock className="h-4 w-4" /> Gesamt: {totalTime} Min
+            <span className="flex items-center gap-1.5">
+              <Clock className="h-4 w-4" /> Arbeitszeit: {totalTime} Min
             </span>
           )}
           <span className="flex items-center gap-1.5">
@@ -127,10 +120,10 @@ export default async function RecipeDetailPage({
       </div>
 
       {/* Nutrition */}
-      {recipe.recipe_nutrition && (
+      {nutrition && (
         <>
           <Separator />
-          <NutritionCard nutrition={recipe.recipe_nutrition} servings={recipe.servings} />
+          <NutritionCard nutrition={nutrition} servings={recipe.servings} />
         </>
       )}
 
