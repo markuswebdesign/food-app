@@ -1,6 +1,6 @@
 # PROJ-3: Kalorie-Defizit Dashboard
 
-## Status: Planned
+## Status: Architected
 **Created:** 2026-04-01
 **Last Updated:** 2026-04-01
 
@@ -40,7 +40,47 @@
 <!-- Sections below are added by subsequent skills -->
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Route & Komponenten-Struktur
+
+```
+app/page.tsx → redirect /dashboard
+
+/dashboard
+└── app/(app)/dashboard/page.tsx  [Server Component]
+    ├── CalorieTodayCard   — gegessen / Ziel / Rest, Fortschrittsbalken, Statusbadge
+    ├── WeekChart          — 7 Balken Mo–So: Ist vs. Ziel, Defizit-Tage grün
+    ├── WeekSummary        — Gesamt-Defizit/-Überschuss der Woche
+    └── ProfileCTA         — nur wenn kein Profil vorhanden
+```
+
+### Datenquellen (keine DB-Änderungen nötig)
+
+| Tabelle | Zweck |
+|---|---|
+| `profiles` | Kalorienziel, goal_type, TDEE-Felder |
+| `food_log_entries` (heute) | Summe gegessener Kalorien |
+| `food_log_entries` (Mo–So) | Tageswerte für Wochenbalken |
+
+3 parallele Abfragen beim Seitenaufruf.
+
+### Neue Dateien
+
+```
+app/(app)/dashboard/page.tsx          — Server Component, Datenaggregation
+components/dashboard/calorie-today-card.tsx
+components/dashboard/week-chart.tsx
+components/dashboard/week-summary.tsx
+components/dashboard/profile-cta.tsx
+lib/utils/dashboard.ts               — Wochenberechnungs-Hilfsfunktionen
+```
+
+### Tech-Entscheidungen
+
+- **SSR via Server Component**: fertig gerendert, kein Flackern, <500ms
+- **Keine neuen Pakete**: shadcn/ui Card, Badge, Progress bereits vorhanden
+- **Keine API-Route**: direkte Supabase-Server-Abfragen
+- **Wiederverwendung**: `calcTdee`, `calcCalorieGoal`, `calorieBalanceLabel` aus PROJ-1/PROJ-2
 
 ## QA Test Results
 _To be added by /qa_
