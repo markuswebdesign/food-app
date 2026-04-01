@@ -3,6 +3,7 @@ import { Flame, Lock } from "lucide-react";
 
 interface BadgesSectionProps {
   earnedBadges: number[]; // e.g. [7, 14]
+  longestStreak: number;
 }
 
 const ALL_BADGES = [
@@ -11,11 +12,18 @@ const ALL_BADGES = [
   { days: 30, label: "30-Tage-Streak" },
 ];
 
-export function BadgesSection({ earnedBadges }: BadgesSectionProps) {
+export function BadgesSection({ earnedBadges, longestStreak }: BadgesSectionProps) {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-semibold">Abzeichen</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base font-semibold">Abzeichen</CardTitle>
+          {longestStreak > 0 && (
+            <p className="text-xs text-muted-foreground">
+              Rekord: {longestStreak} {longestStreak === 1 ? "Tag" : "Tage"}
+            </p>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="flex gap-4">

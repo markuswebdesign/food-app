@@ -78,7 +78,7 @@ export default async function MePage({
   for (const entry of streakEntries ?? []) {
     streakLogByDate[entry.date] = (streakLogByDate[entry.date] ?? 0) + entry.calories;
   }
-  const streakData = hasCalorieGoal ? calcStreak(streakLogByDate, calorieGoal!, today) : null;
+  const streakData = hasCalorieGoal ? calcStreak(streakLogByDate, calorieGoal!, today, goalType) : null;
 
   // Persist new records + badges if streak improved
   if (streakData) {
@@ -208,7 +208,7 @@ export default async function MePage({
         {profile?.username && (
           <p className="text-sm text-muted-foreground">@{profile.username}</p>
         )}
-        <BadgesSection earnedBadges={earnedBadgeNums} />
+        <BadgesSection earnedBadges={earnedBadgeNums} longestStreak={streakData?.longestStreak ?? 0} />
         <ProfileHealthForm
           userId={user.id}
           initial={{

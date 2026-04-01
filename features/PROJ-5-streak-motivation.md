@@ -145,7 +145,7 @@
 
 ### Produktion-Freigabe
 
-**❌ NICHT BEREIT** — BUG-1 (High: falsche longestStreak-Berechnung) muss vor Deployment behoben werden.
+**✅ BEREIT** — Alle Bugs behoben (2026-04-01). Unit Tests: 86/86 bestanden.
 
 ## Deployment
 _To be added by /deploy_
