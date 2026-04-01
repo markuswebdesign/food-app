@@ -1,6 +1,6 @@
 # PROJ-3: Kalorie-Defizit Dashboard
 
-## Status: Architected
+## Status: In Progress
 **Created:** 2026-04-01
 **Last Updated:** 2026-04-01
 

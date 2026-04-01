@@ -35,7 +35,9 @@
       "Bash(git -C /Users/markuswestenhuber/Documents/food-app ls-files components/ app/api/)",
       "Bash(git -C /Users/markuswestenhuber/Documents/food-app add 'app/\\(app\\)/log/' components/log/ components/ui/tabs.tsx components/nav-bar.tsx lib/utils/log.ts lib/utils/log.test.ts supabase/migrations/20260401000001_food_log_entries.sql tests/PROJ-2-mahlzeiten-logbuch.spec.ts features/INDEX.md features/PROJ-2-mahlzeiten-logbuch.md .claude/settings.json)",
       "Bash(git -C /Users/markuswestenhuber/Documents/food-app add .claude/settings.json)",
-      "Bash(git -C /Users/markuswestenhuber/Documents/food-app commit --amend --no-edit)"
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app commit --amend --no-edit)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app push origin master --force-with-lease)",
+      "Bash(git add:*)"
     ],
     "additionalDirectories": [
       "/Users/markuswestenhuber/Documents/food-app"
