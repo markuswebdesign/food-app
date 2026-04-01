@@ -106,11 +106,14 @@ function slotId(day: number, mealTime: MealTime) {
   return `${day}-${mealTime}`;
 }
 
-/** Returns YYYY-MM-DD for day_of_week (1=Mon) relative to weekStart */
+/** Returns YYYY-MM-DD (local time) for day_of_week (1=Mon) relative to weekStart */
 function dateForDay(weekStart: Date, dayOfWeek: number): string {
   const d = new Date(weekStart);
   d.setDate(d.getDate() + (dayOfWeek - 1));
-  return formatDate(d);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
