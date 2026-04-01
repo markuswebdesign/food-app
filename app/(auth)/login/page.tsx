@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -18,26 +18,42 @@ import {
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [emailUnconfirmed, setEmailUnconfirmed] = useState(false);
+  const [resendStatus, setResendStatus] = useState<"idle" | "loading" | "sent">("idle");
   const [loading, setLoading] = useState(false);
+
+  const confirmationFailed = searchParams.get("error") === "confirmation_failed";
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setEmailUnconfirmed(false);
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      setError(error.message);
+      if (error.message.toLowerCase().includes("email not confirmed")) {
+        setEmailUnconfirmed(true);
+      } else {
+        setError("E-Mail oder Passwort falsch.");
+      }
       setLoading(false);
     } else {
       router.push("/recipes");
       router.refresh();
     }
+  }
+
+  async function handleResend() {
+    setResendStatus("loading");
+    await supabase.auth.resend({ type: "signup", email });
+    setResendStatus("sent");
   }
 
   return (
@@ -48,10 +64,34 @@ export default function LoginPage() {
       </CardHeader>
       <form onSubmit={handleLogin}>
         <CardContent className="space-y-4">
+          {confirmationFailed && (
+            <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+              Der Bestätigungslink ist ungültig oder abgelaufen. Bitte fordere einen neuen an.
+            </p>
+          )}
           {error && (
             <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
               {error}
             </p>
+          )}
+          {emailUnconfirmed && (
+            <div className="text-sm bg-amber-50 border border-amber-200 p-3 rounded-md space-y-2">
+              <p className="text-amber-800">
+                Deine E-Mail-Adresse wurde noch nicht bestätigt. Bitte prüfe deinen Posteingang.
+              </p>
+              {resendStatus === "sent" ? (
+                <p className="text-green-700 font-medium">E-Mail wurde erneut gesendet.</p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resendStatus === "loading" || !email}
+                  className="text-amber-700 underline font-medium disabled:opacity-50"
+                >
+                  {resendStatus === "loading" ? "Wird gesendet..." : "Bestätigungs-E-Mail erneut senden"}
+                </button>
+              )}
+            </div>
           )}
           <div className="space-y-2">
             <Label htmlFor="email">E-Mail</Label>

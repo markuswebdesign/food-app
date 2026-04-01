@@ -40,8 +40,7 @@ export default function RegisterPage() {
       setError(error.message);
       setLoading(false);
     } else {
-      router.push("/recipes");
-      router.refresh();
+      router.push(`/verify-email?email=${encodeURIComponent(email)}`);
     }
   }
 
