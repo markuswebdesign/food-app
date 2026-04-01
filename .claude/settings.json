@@ -37,7 +37,9 @@
       "Bash(git -C /Users/markuswestenhuber/Documents/food-app add .claude/settings.json)",
       "Bash(git -C /Users/markuswestenhuber/Documents/food-app commit --amend --no-edit)",
       "Bash(git -C /Users/markuswestenhuber/Documents/food-app push origin master --force-with-lease)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(node -e \"const p = require\\('./node_modules/playwright/package.json'\\); console.log\\(p.version\\)\")",
+      "Bash(sw_vers)"
     ],
     "additionalDirectories": [
       "/Users/markuswestenhuber/Documents/food-app"
