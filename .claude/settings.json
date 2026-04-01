@@ -26,7 +26,16 @@
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); scripts=d.get\\('scripts',{}\\); print\\('\\\\n'.join\\(f'{k}: {v}' for k,v in scripts.items\\(\\)\\)\\)\")",
       "Bash(npm test:*)",
       "Bash(git -C /Users/markuswestenhuber/Documents/food-app add -A)",
-      "Bash(git -C /Users/markuswestenhuber/Documents/food-app status --short)"
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app status --short)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app reset HEAD env.local.sb-1aba6798-EWU2Ps env.rtf)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app commit -m ':*)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app push origin master)",
+      "Bash(npx vercel:*)",
+      "Bash(npx vercel whoami:*)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app ls-files components/ app/api/)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app add 'app/\\(app\\)/log/' components/log/ components/ui/tabs.tsx components/nav-bar.tsx lib/utils/log.ts lib/utils/log.test.ts supabase/migrations/20260401000001_food_log_entries.sql tests/PROJ-2-mahlzeiten-logbuch.spec.ts features/INDEX.md features/PROJ-2-mahlzeiten-logbuch.md .claude/settings.json)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app add .claude/settings.json)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app commit --amend --no-edit)"
     ],
     "additionalDirectories": [
       "/Users/markuswestenhuber/Documents/food-app"

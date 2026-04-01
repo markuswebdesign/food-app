@@ -24,6 +24,7 @@ interface NavBarProps {
 const navLinks = [
   { href: "/recipes", label: "Rezepte" },
   { href: "/meal-plan", label: "Wochenplan" },
+  { href: "/log", label: "Logbuch" },
   { href: "/shopping-list", label: "Einkaufsliste" },
 ];
 
@@ -122,6 +123,9 @@ export function NavBar({ user, profile }: NavBarProps) {
                     {link.label}
                   </Link>
                 ))}
+                <Link href="/log" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted">
+                  Logbuch
+                </Link>
                 <Link href="/recipes/import" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted">
                   URL Rezept Import
                 </Link>
