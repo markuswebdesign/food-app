@@ -4,11 +4,14 @@ import { redirect } from "next/navigation";
 import { calcTdee, calcCalorieGoal } from "@/lib/utils/tdee";
 import type { ActivityLevel, GoalType } from "@/lib/utils/tdee";
 import { buildWeekData, calcWeekBalance, getWeekStart, getWeekEnd, toLocalDateString } from "@/lib/utils/dashboard";
+import { calcStreak } from "@/lib/utils/streak";
 import { MeTabs } from "@/components/me/me-tabs";
 import { CalorieTodayCard } from "@/components/dashboard/calorie-today-card";
+import { StreakWidget } from "@/components/dashboard/streak-widget";
 import { WeekChart } from "@/components/dashboard/week-chart";
 import { WeekSummary } from "@/components/dashboard/week-summary";
 import { ProfileCTA } from "@/components/dashboard/profile-cta";
+import { BadgesSection } from "@/components/profile/badges-section";
 import { DayLog } from "@/components/log/day-log";
 import type { LogEntry, RecipeOption } from "@/components/log/day-log";
 import { ProfileHealthForm } from "@/components/profile/profile-health-form";
@@ -53,6 +56,24 @@ export default async function MePage({
   const hasCalorieGoal = calorieGoal !== null;
   const goalType: GoalType = (profile?.goal_type as GoalType) ?? "maintain";
 
+  // ── Streak (always fetched — used in Übersicht + Profil tabs) ───────────────
+  const ninetyDaysAgo = new Date(today);
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+  const ninetyDaysAgoStr = toLocalDateString(ninetyDaysAgo);
+
+  const { data: streakEntries } = await supabase
+    .from("food_log_entries")
+    .select("date, calories")
+    .eq("user_id", user.id)
+    .gte("date", ninetyDaysAgoStr)
+    .lte("date", todayStr);
+
+  const streakLogByDate: Record<string, number> = {};
+  for (const entry of streakEntries ?? []) {
+    streakLogByDate[entry.date] = (streakLogByDate[entry.date] ?? 0) + entry.calories;
+  }
+  const streakData = hasCalorieGoal ? calcStreak(streakLogByDate, calorieGoal!, today) : null;
+
   // ── Tab: Übersicht ──────────────────────────────────────────────────────────
   let dashboardContent: React.ReactNode = null;
 
@@ -77,6 +98,7 @@ export default async function MePage({
       <ProfileCTA />
     ) : (
       <div className="space-y-6">
+        {streakData && <StreakWidget streak={streakData} />}
         <CalorieTodayCard consumed={consumedToday} goal={calorieGoal!} goalType={goalType} />
         <div className="space-y-3">
           <WeekChart days={weekDays} />
@@ -142,6 +164,7 @@ export default async function MePage({
         {profile?.username && (
           <p className="text-sm text-muted-foreground">@{profile.username}</p>
         )}
+        {streakData && <BadgesSection earnedBadges={streakData.earnedBadges} />}
         <ProfileHealthForm
           userId={user.id}
           initial={{

@@ -19,4 +19,4 @@
 | PROJ-2 | [Mahlzeiten-Logbuch](PROJ-2-mahlzeiten-logbuch.md) | Deployed | PROJ-1 |
 | PROJ-3 | [Kalorie-Defizit Dashboard](PROJ-3-kalorie-defizit-dashboard.md) | Deployed | PROJ-1, PROJ-2 |
 | PROJ-4 | [Makro-Tracking](PROJ-4-makro-tracking.md) | Planned | PROJ-1, PROJ-2, PROJ-3 |
-| PROJ-5 | [Streak & Motivation](PROJ-5-streak-motivation.md) | Architected | PROJ-3 |
+| PROJ-5 | [Streak & Motivation](PROJ-5-streak-motivation.md) | In Progress | PROJ-3 |

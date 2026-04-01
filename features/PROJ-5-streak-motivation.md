@@ -1,8 +1,16 @@
 # PROJ-5: Streak & Motivation
 
-## Status: Planned
+## Status: In Progress
 **Created:** 2026-04-01
 **Last Updated:** 2026-04-01
+
+## Implementation Notes
+### Frontend (done)
+- `lib/utils/streak.ts` — Streak-Berechnung aus `food_log_entries` (letzte 90 Tage), inkl. längster Streak + Badge-Ableitung
+- `components/dashboard/streak-widget.tsx` — Streak-Zahl, Flame-Icon, Motivationstext, Rekord
+- `components/profile/badges-section.tsx` — 3 Badges (7/14/30 Tage), earned vs. gesperrt
+- `app/(app)/me/page.tsx` — Streak-Fetch immer aktiv, StreakWidget im Übersicht-Tab, BadgesSection im Profil-Tab
+- Badges werden frontend-seitig aus der längsten Streak abgeleitet — persistente Speicherung folgt im Backend
 
 ## Dependencies
 - Requires: PROJ-3 (Kalorie-Defizit Dashboard) — Streak basiert auf Defizit-Tagen
