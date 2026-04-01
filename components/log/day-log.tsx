@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -106,6 +106,17 @@ export function DayLog({ userId, initialEntries, recipes, calorieGoal }: DayLogP
     setEntries((data as LogEntry[]) ?? []);
     setLoadingDate(false);
   }, [userId, supabase]);
+
+  // Refresh when window/tab becomes visible again (picks up Wochenplan changes)
+  useEffect(() => {
+    function onVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        loadEntriesForDate(currentDate);
+      }
+    }
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [currentDate, loadEntriesForDate]);
 
   function goToPrevDay() {
     const prev = new Date(currentDate);
