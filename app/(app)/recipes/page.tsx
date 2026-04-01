@@ -38,7 +38,7 @@ export default async function RecipesPage({
     .select(`
       id, title, description, image_url, prep_time_minutes, cook_time_minutes,
       servings, is_public, created_at, user_id,
-      profiles(username),
+      profiles!recipes_user_id_fkey(username),
       recipe_categories(category_id, categories(id, name, slug, type, icon)),
       recipe_nutrition(calories)
     `)
@@ -62,12 +62,25 @@ export default async function RecipesPage({
   const { data: recipes } = await query;
   const { data: categories } = await supabase.from("categories").select("*").order("type");
 
+  let favoriteIds = new Set<string>();
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: favs } = await supabase
+        .from("favorites")
+        .select("recipe_id")
+        .eq("user_id", user.id);
+      favoriteIds = new Set((favs ?? []).map((f: any) => f.recipe_id));
+    }
+  } catch {}
+
   const normalized = (recipes ?? []).map((r: any) => ({
     ...r,
     categories: r.recipe_categories?.map((rc: any) => rc.categories) ?? [],
     recipe_nutrition: Array.isArray(r.recipe_nutrition)
       ? r.recipe_nutrition[0] ?? null
       : r.recipe_nutrition ?? null,
+    is_favorited: favoriteIds.has(r.id),
   })) as Recipe[];
 
   return (

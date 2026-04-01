@@ -45,4 +45,5 @@ export type Recipe = {
   ingredients?: Ingredient[];
   recipe_nutrition?: RecipeNutrition | null;
   profiles?: { username: string } | null;
+  is_favorited?: boolean;
 };

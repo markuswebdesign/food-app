@@ -123,7 +123,7 @@ export function NavBar({ user, profile }: NavBarProps) {
                   </Link>
                 ))}
                 <Link href="/recipes/import" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted">
-                  URL Import
+                  URL Rezept Import
                 </Link>
                 <Link href="/recipes/new" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted">
                   + Neues Rezept

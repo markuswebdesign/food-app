@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { NutritionCard } from "@/components/recipes/nutrition-card";
 import { DeleteRecipeButton } from "@/components/recipes/delete-recipe-button";
+import { FavoriteButton } from "@/components/recipes/favorite-button";
 import { Clock, Users } from "lucide-react";
 
 export default async function RecipeDetailPage({
@@ -20,7 +21,7 @@ export default async function RecipeDetailPage({
     .from("recipes")
     .select(`
       *,
-      profiles(username),
+      profiles!recipes_user_id_fkey(username),
       recipe_categories(categories(id, name, slug, type, icon)),
       ingredients(*),
       recipe_nutrition(*)
@@ -33,6 +34,17 @@ export default async function RecipeDetailPage({
   const categories = recipe.recipe_categories?.map((rc: any) => rc.categories) ?? [];
   const isOwner = user?.id === recipe.user_id;
   const totalTime = (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);
+
+  const { data: favoriteRow } = user
+    ? await supabase
+        .from("favorites")
+        .select("recipe_id")
+        .eq("recipe_id", params.id)
+        .eq("user_id", user.id)
+        .maybeSingle()
+    : { data: null };
+  const isFavorited = !!favoriteRow;
+
   const nutrition = Array.isArray(recipe.recipe_nutrition)
     ? recipe.recipe_nutrition[0] ?? null
     : recipe.recipe_nutrition ?? null;
@@ -53,14 +65,19 @@ export default async function RecipeDetailPage({
 
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-3xl font-bold">{recipe.title}</h1>
-          {isOwner && (
-            <div className="flex gap-2 shrink-0">
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`/recipes/${recipe.id}/edit`}>Bearbeiten</Link>
-              </Button>
-              <DeleteRecipeButton recipeId={recipe.id} />
-            </div>
-          )}
+          <div className="flex gap-2 shrink-0">
+            {user && (
+              <FavoriteButton recipeId={recipe.id} initialFavorited={isFavorited} />
+            )}
+            {isOwner && (
+              <>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/recipes/${recipe.id}/edit`}>Bearbeiten</Link>
+                </Button>
+                <DeleteRecipeButton recipeId={recipe.id} />
+              </>
+            )}
+          </div>
         </div>
 
         {recipe.description && (

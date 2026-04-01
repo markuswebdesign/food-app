@@ -235,7 +235,6 @@ export function ImportForm({ categories }: ImportFormProps) {
     }
 
     router.push(`/recipes/${recipe.id}`);
-    router.refresh();
   }
 
   if (step === "input") {
