@@ -1,13 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { WeekPlan } from "@/components/meal-plan/week-plan";
+import { calcTdee, calcCalorieGoal } from "@/lib/utils/tdee";
+import type { ActivityLevel, GoalType } from "@/lib/utils/tdee";
 
 export default async function MealPlanPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: recipesRaw }, { data: categories }, { data: favoritesRaw }] = await Promise.all([
+  const [{ data: recipesRaw }, { data: categories }, { data: favoritesRaw }, { data: profile }] = await Promise.all([
     supabase
       .from("recipes")
       .select("id, title, image_url, recipe_categories(categories(slug))")
@@ -21,6 +23,11 @@ export default async function MealPlanPage() {
       .from("favorites")
       .select("recipe_id")
       .eq("user_id", user.id),
+    supabase
+      .from("profiles")
+      .select("protein_goal_g, fat_goal_g, carbs_goal_g, custom_calorie_goal, goal_type, weight_kg, height_cm, age, activity_level")
+      .eq("id", user.id)
+      .single(),
   ]);
 
   const favoriteIds = new Set((favoritesRaw ?? []).map((f: any) => f.recipe_id));
@@ -46,7 +53,25 @@ export default async function MealPlanPage() {
         <h1 className="text-3xl font-bold">Wochenplan</h1>
         <p className="text-muted-foreground mt-1">Plane deine Mahlzeiten für die Woche</p>
       </div>
-      <WeekPlan recipes={recipes} categories={allCategories} />
+      <WeekPlan
+        recipes={recipes}
+        categories={allCategories}
+        macroGoals={{
+          protein_goal_g: profile?.protein_goal_g ?? null,
+          fat_goal_g: profile?.fat_goal_g ?? null,
+          carbs_goal_g: profile?.carbs_goal_g ?? null,
+        }}
+        calorieGoal={
+          profile?.custom_calorie_goal
+            ? profile.custom_calorie_goal
+            : profile?.weight_kg && profile?.height_cm && profile?.age && profile?.activity_level
+              ? calcCalorieGoal(
+                  calcTdee(profile.weight_kg, profile.height_cm, profile.age, profile.activity_level as ActivityLevel),
+                  (profile.goal_type as GoalType) ?? "maintain"
+                )
+              : null
+        }
+      />
     </div>
   );
 }

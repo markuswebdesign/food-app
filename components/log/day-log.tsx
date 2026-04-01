@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ChevronLeft, ChevronRight, Plus, Trash2, Loader2, Flame, UtensilsCrossed } from "lucide-react";
 import { toDateString, isToday, formatDate, scaleRecipeNutrition, sumCalories, calorieBalanceLabel } from "@/lib/utils/log";
+import { MacroProgress, sumMacros, effectiveMacroGoals, type MacroGoals } from "@/components/log/macro-progress";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -64,9 +65,10 @@ interface DayLogProps {
   initialEntries: LogEntry[];
   recipes: RecipeOption[];
   calorieGoal: number | null;
+  macroGoals: MacroGoals;
 }
 
-export function DayLog({ userId, initialEntries, recipes, calorieGoal }: DayLogProps) {
+export function DayLog({ userId, initialEntries, recipes, calorieGoal, macroGoals }: DayLogProps) {
   const supabase = createClient();
 
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -221,6 +223,8 @@ export function DayLog({ userId, initialEntries, recipes, calorieGoal }: DayLogP
   // ─── Computed totals ──────────────────────────────────────────────────────
 
   const totalCals = sumCalories(entries);
+  const macroTotals = sumMacros(entries);
+  const effectiveGoals = effectiveMacroGoals(macroGoals, calorieGoal);
   const filteredRecipes = recipes.filter((r) =>
     r.title.toLowerCase().includes(recipeSearch.toLowerCase())
   );
@@ -264,6 +268,13 @@ export function DayLog({ userId, initialEntries, recipes, calorieGoal }: DayLogP
           </Badge>
         </CardContent>
       </Card>
+
+      {/* Macro Progress */}
+      {effectiveGoals && macroTotals.hasData && (
+        <div className="px-4 py-3 rounded-lg border bg-card">
+          <MacroProgress totals={macroTotals} goals={effectiveGoals} />
+        </div>
+      )}
 
       {/* Entry List */}
       {loadingDate ? (

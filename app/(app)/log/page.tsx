@@ -28,7 +28,7 @@ export default async function LogPage() {
       .order("title"),
     supabase
       .from("profiles")
-      .select("custom_calorie_goal, goal_type, weight_kg, height_cm, age, activity_level")
+      .select("custom_calorie_goal, goal_type, weight_kg, height_cm, age, activity_level, protein_goal_g, fat_goal_g, carbs_goal_g")
       .eq("id", user.id)
       .single(),
   ]);
@@ -68,6 +68,11 @@ export default async function LogPage() {
         initialEntries={(entriesRaw as LogEntry[]) ?? []}
         recipes={recipes}
         calorieGoal={calorieGoal}
+        macroGoals={{
+          protein_goal_g: profile?.protein_goal_g ?? null,
+          fat_goal_g: profile?.fat_goal_g ?? null,
+          carbs_goal_g: profile?.carbs_goal_g ?? null,
+        }}
       />
     </div>
   );

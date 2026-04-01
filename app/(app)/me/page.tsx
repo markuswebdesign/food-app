@@ -32,7 +32,7 @@ export default async function MePage({
   // Always fetch profile — needed for all tabs
   const { data: profile } = await supabase
     .from("profiles")
-    .select("custom_calorie_goal, goal_type, weight_kg, height_cm, age, activity_level, username")
+    .select("custom_calorie_goal, goal_type, weight_kg, height_cm, age, activity_level, username, protein_goal_g, fat_goal_g, carbs_goal_g")
     .eq("id", user.id)
     .single();
 
@@ -124,6 +124,11 @@ export default async function MePage({
         initialEntries={(entriesRaw as LogEntry[]) ?? []}
         recipes={recipes}
         calorieGoal={calorieGoal}
+        macroGoals={{
+          protein_goal_g: profile?.protein_goal_g ?? null,
+          fat_goal_g: profile?.fat_goal_g ?? null,
+          carbs_goal_g: profile?.carbs_goal_g ?? null,
+        }}
       />
     );
   }
@@ -146,6 +151,9 @@ export default async function MePage({
             activity_level: profile?.activity_level ?? null,
             goal_type: profile?.goal_type ?? null,
             custom_calorie_goal: profile?.custom_calorie_goal ?? null,
+            protein_goal_g: profile?.protein_goal_g ?? null,
+            fat_goal_g: profile?.fat_goal_g ?? null,
+            carbs_goal_g: profile?.carbs_goal_g ?? null,
           }}
         />
       </div>

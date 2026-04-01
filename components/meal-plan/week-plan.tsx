@@ -19,6 +19,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ChevronLeft, ChevronRight, Plus, X, Loader2 } from "lucide-react";
+import { WeekMacroSummary } from "@/components/meal-plan/week-macro-summary";
+import type { MacroGoals } from "@/components/log/macro-progress";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -40,6 +42,7 @@ interface PlanEntry {
   servings: number;
   food_log_entry_id: string | null;
   recipes: { id: string; title: string; image_url: string | null };
+  nutrition?: { calories: number | null; protein_g: number | null; fat_g: number | null; carbohydrates_g: number | null } | null;
 }
 
 interface CategoryOption {
@@ -53,6 +56,8 @@ interface CategoryOption {
 interface WeekPlanProps {
   recipes: PlanRecipe[];
   categories: CategoryOption[];
+  macroGoals: MacroGoals;
+  calorieGoal: number | null;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -199,7 +204,7 @@ function EntryOverlay({ entry }: { entry: PlanEntry }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function WeekPlan({ recipes, categories }: WeekPlanProps) {
+export function WeekPlan({ recipes, categories, macroGoals, calorieGoal }: WeekPlanProps) {
   const supabase = createClient();
 
   const sensors = useSensors(
@@ -239,7 +244,7 @@ export function WeekPlan({ recipes, categories }: WeekPlanProps) {
       setMealPlanId(plan.id);
       const { data: planEntries } = await supabase
         .from("meal_plan_entries")
-        .select("id, meal_plan_id, recipe_id, day_of_week, meal_time, servings, food_log_entry_id, recipes(id, title, image_url)")
+        .select("id, meal_plan_id, recipe_id, day_of_week, meal_time, servings, food_log_entry_id, recipes(id, title, image_url, recipe_nutrition(calories, protein_g, fat_g, carbohydrates_g))")
         .eq("meal_plan_id", plan.id);
       setEntries((planEntries ?? []) as unknown as PlanEntry[]);
     } else {
@@ -413,6 +418,23 @@ export function WeekPlan({ recipes, categories }: WeekPlanProps) {
   const getEntry = (day: number, mealTime: MealTime) =>
     entries.find((e) => e.day_of_week === day && e.meal_time === mealTime);
 
+  // Aggregate macros per day for WeekMacroSummary
+  const macrosByDay: Record<number, { protein_g: number; fat_g: number; carbs_g: number; calories: number }> = {};
+  for (const entry of entries) {
+    const n = (entry as any).recipes?.recipe_nutrition;
+    if (!n) continue;
+    const srv = entry.servings || 1;
+    const totalSrv = (entry as any).recipes?.servings || 1;
+    const factor = srv / totalSrv;
+    if (!macrosByDay[entry.day_of_week]) {
+      macrosByDay[entry.day_of_week] = { protein_g: 0, fat_g: 0, carbs_g: 0, calories: 0 };
+    }
+    macrosByDay[entry.day_of_week].protein_g += (n.protein_g ?? 0) * factor;
+    macrosByDay[entry.day_of_week].fat_g     += (n.fat_g ?? 0) * factor;
+    macrosByDay[entry.day_of_week].carbs_g   += (n.carbohydrates_g ?? 0) * factor;
+    macrosByDay[entry.day_of_week].calories  += (n.calories ?? 0) * factor;
+  }
+
   const filteredRecipes = recipes.filter((r) => {
     const matchesSearch = r.title.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = !activeCategory || r.category_slugs.includes(activeCategory);
@@ -522,6 +544,13 @@ export function WeekPlan({ recipes, categories }: WeekPlanProps) {
           </DragOverlay>
         </DndContext>
       )}
+
+      {/* Makro-Übersicht */}
+      <WeekMacroSummary
+        macrosByDay={macrosByDay}
+        macroGoals={macroGoals}
+        calorieGoal={calorieGoal}
+      />
 
       {/* Rezept-Picker */}
       <Sheet open={pickerOpen} onOpenChange={setPickerOpen}>

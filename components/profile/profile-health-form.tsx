@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Flame, Info, Loader2, CheckCircle2 } from "lucide-react";
+import { defaultMacroGoals } from "@/components/log/macro-progress";
 import {
   calcTdee,
   calcCalorieGoal,
@@ -30,6 +31,9 @@ export type HealthProfile = {
   activity_level: ActivityLevel | null;
   goal_type: GoalType | null;
   custom_calorie_goal: number | null;
+  protein_goal_g: number | null;
+  fat_goal_g: number | null;
+  carbs_goal_g: number | null;
 };
 
 const ACTIVITY_LABELS: Record<ActivityLevel, string> = {
@@ -59,6 +63,9 @@ export function ProfileHealthForm({ userId, initial }: Props) {
   const [customGoal, setCustomGoal] = useState(
     initial.custom_calorie_goal?.toString() ?? ""
   );
+  const [proteinGoal, setProteinGoal] = useState(initial.protein_goal_g?.toString() ?? "");
+  const [fatGoal, setFatGoal] = useState(initial.fat_goal_g?.toString() ?? "");
+  const [carbsGoal, setCarbsGoal] = useState(initial.carbs_goal_g?.toString() ?? "");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -104,6 +111,9 @@ export function ProfileHealthForm({ userId, initial }: Props) {
       activity_level: initial.activity_level,
       goal_type: initial.goal_type,
       custom_calorie_goal: initial.custom_calorie_goal,
+      protein_goal_g: initial.protein_goal_g,
+      fat_goal_g: initial.fat_goal_g,
+      carbs_goal_g: initial.carbs_goal_g,
     };
 
     // Optimistic update
@@ -116,6 +126,9 @@ export function ProfileHealthForm({ userId, initial }: Props) {
       activity_level: activity || null,
       goal_type: goal,
       custom_calorie_goal: customGoal ? parseInt(customGoal) : null,
+      protein_goal_g: proteinGoal ? parseInt(proteinGoal) : null,
+      fat_goal_g: fatGoal ? parseInt(fatGoal) : null,
+      carbs_goal_g: carbsGoal ? parseInt(carbsGoal) : null,
     };
 
     const { error } = await supabase
@@ -326,6 +339,60 @@ export function ProfileHealthForm({ userId, initial }: Props) {
                 Zurücksetzen
               </Button>
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Macro Goals */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Makro-Ziele (optional)</CardTitle>
+          <CardDescription>
+            Manuelle Ziele in Gramm pro Tag. Leer lassen für automatische Berechnung
+            (30% Protein, 30% Fett, 40% Kohlenhydrate vom Kalorienziel).
+            {effectiveGoal && !proteinGoal && !fatGoal && !carbsGoal && (() => {
+              const d = defaultMacroGoals(effectiveGoal);
+              return (
+                <span className="block mt-1 text-xs text-muted-foreground">
+                  Automatisch: Protein {d.protein_goal_g}g · Fett {d.fat_goal_g}g · Kohlenhydrate {d.carbs_goal_g}g
+                </span>
+              );
+            })()}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-3 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="protein-goal">Protein (g)</Label>
+            <Input
+              id="protein-goal"
+              type="number"
+              min="0"
+              placeholder="z.B. 150"
+              value={proteinGoal}
+              onChange={(e) => setProteinGoal(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="fat-goal">Fett (g)</Label>
+            <Input
+              id="fat-goal"
+              type="number"
+              min="0"
+              placeholder="z.B. 60"
+              value={fatGoal}
+              onChange={(e) => setFatGoal(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="carbs-goal">Kohlenhydrate (g)</Label>
+            <Input
+              id="carbs-goal"
+              type="number"
+              min="0"
+              placeholder="z.B. 200"
+              value={carbsGoal}
+              onChange={(e) => setCarbsGoal(e.target.value)}
+            />
           </div>
         </CardContent>
       </Card>
