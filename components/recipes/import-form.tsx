@@ -16,6 +16,11 @@ interface IngredientRow {
   name: string;
   amount: string;
   unit: string;
+  calories_per_100g?: number | null;
+  protein_per_100g?: number | null;
+  fat_per_100g?: number | null;
+  carbs_per_100g?: number | null;
+  fiber_per_100g?: number | null;
 }
 
 function parseIngredient(raw: string): IngredientRow {
@@ -133,7 +138,20 @@ export function ImportForm({ categories }: ImportFormProps) {
       setSelectedCategories(detectCategories(data.category));
       setIngredients(
         data.ingredients?.length
-          ? data.ingredients.map((i: string) => parseIngredient(i))
+          ? data.ingredients.map((i: any) =>
+              typeof i === "string"
+                ? parseIngredient(i)
+                : {
+                    name: i.name ?? "",
+                    amount: i.amount != null ? String(i.amount) : "",
+                    unit: i.unit ?? "",
+                    calories_per_100g: i.calories_per_100g ?? null,
+                    protein_per_100g: i.protein_per_100g ?? null,
+                    fat_per_100g: i.fat_per_100g ?? null,
+                    carbs_per_100g: i.carbs_per_100g ?? null,
+                    fiber_per_100g: i.fiber_per_100g ?? null,
+                  }
+            )
           : [{ name: "", amount: "", unit: "" }]
       );
       setStep("preview");
@@ -184,8 +202,36 @@ export function ImportForm({ categories }: ImportFormProps) {
           name: i.name.trim(),
           amount: i.amount ? parseFloat(i.amount) : null,
           unit: i.unit || null,
+          calories_per_100g: i.calories_per_100g ?? null,
+          protein_per_100g: i.protein_per_100g ?? null,
+          fat_per_100g: i.fat_per_100g ?? null,
+          carbs_per_100g: i.carbs_per_100g ?? null,
         }))
       );
+
+      // Nährwerte berechnen & speichern
+      const hasNutrition = validIngredients.some((i) => i.calories_per_100g != null);
+      if (hasNutrition) {
+        let calories = 0, protein = 0, fat = 0, carbs = 0, fiber = 0;
+        for (const i of validIngredients) {
+          const factor = (parseFloat(i.amount) || 0) / 100;
+          calories += (i.calories_per_100g ?? 0) * factor;
+          protein  += (i.protein_per_100g  ?? 0) * factor;
+          fat      += (i.fat_per_100g      ?? 0) * factor;
+          carbs    += (i.carbs_per_100g    ?? 0) * factor;
+          fiber    += (i.fiber_per_100g    ?? 0) * factor;
+        }
+        const { error: nutritionError } = await supabase.from("recipe_nutrition").upsert({
+          recipe_id: recipe.id,
+          calories: Math.round(calories),
+          protein_g: Math.round(protein * 10) / 10,
+          fat_g: Math.round(fat * 10) / 10,
+          carbohydrates_g: Math.round(carbs * 10) / 10,
+          fiber_g: Math.round(fiber * 10) / 10,
+          calculated_at: new Date().toISOString(),
+        });
+        if (nutritionError) console.error("Nährwerte konnten nicht gespeichert werden:", nutritionError);
+      }
     }
 
     router.push(`/recipes/${recipe.id}`);
@@ -391,6 +437,41 @@ export function ImportForm({ categories }: ImportFormProps) {
           <Plus className="h-4 w-4 mr-1" /> Zutat hinzufügen
         </Button>
       </div>
+
+      <Separator />
+
+      {/* Nährwert-Vorschau */}
+      {(() => {
+        const valid = ingredients.filter((i) => i.name.trim() && i.calories_per_100g != null);
+        if (valid.length === 0) return null;
+        const s = Math.max(1, parseInt(servings) || 1);
+        let cal = 0, pro = 0, fat = 0, carb = 0;
+        for (const i of valid) {
+          const f = (parseFloat(i.amount) || 0) / 100;
+          cal  += (i.calories_per_100g ?? 0) * f;
+          pro  += (i.protein_per_100g  ?? 0) * f;
+          fat  += (i.fat_per_100g      ?? 0) * f;
+          carb += (i.carbs_per_100g    ?? 0) * f;
+        }
+        return (
+          <div className="space-y-2">
+            <Label>Nährwerte yoyo pro Portion</Label>
+            <div className="flex flex-wrap gap-3">
+              {[
+                { label: "Energie", value: `${Math.round(cal / s)} kcal` },
+                { label: "Eiweiß",  value: `${(pro  / s).toFixed(1)} g` },
+                { label: "Fett",    value: `${(fat  / s).toFixed(1)} g` },
+                { label: "Kohlenhydrate", value: `${(carb / s).toFixed(1)} g` },
+              ].map((t) => (
+                <div key={t.label} className="bg-muted/60 rounded-xl px-4 py-2 text-sm">
+                  <p className="font-bold">{t.value}</p>
+                  <p className="text-muted-foreground text-xs">{t.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       <Separator />
 
