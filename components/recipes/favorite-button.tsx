@@ -23,18 +23,21 @@ export function FavoriteButton({
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    setFavorited((prev) => !prev);
+    const next = !favorited;
+    setFavorited(next);
 
-    if (favorited) {
-      await supabase
+    if (!next) {
+      const { error } = await supabase
         .from("favorites")
         .delete()
         .eq("recipe_id", recipeId)
         .eq("user_id", user.id);
+      if (error) { console.error("Favorit konnte nicht entfernt werden:", error); setFavorited(!next); }
     } else {
-      await supabase
+      const { error } = await supabase
         .from("favorites")
         .insert({ recipe_id: recipeId, user_id: user.id });
+      if (error) { console.error("Favorit konnte nicht gespeichert werden:", error); setFavorited(!next); }
     }
   }
 
