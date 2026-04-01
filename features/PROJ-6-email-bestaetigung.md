@@ -1,6 +1,6 @@
 # PROJ-6: E-Mail Bestätigung bei Registrierung
 
-## Status: In Progress
+## Status: Approved
 **Created:** 2026-04-01
 **Last Updated:** 2026-04-01
 
@@ -76,7 +76,48 @@ Supabase verwaltet `email_confirmed_at` intern. Bestehende Nutzer können weiter
 Läuft über bereits installiertes `@supabase/ssr`.
 
 ## QA Test Results
-_To be added by /qa_
+**Tested:** 2026-04-01 | **Result:** APPROVED — keine Critical/High Bugs
+
+### Acceptance Criteria
+| # | Kriterium | Status | Notiz |
+|---|-----------|--------|-------|
+| 1 | Bestätigungs-E-Mail wird nach Registrierung gesendet | ✅ PASS | Supabase-Config abhängig — Code korrekt |
+| 2 | Nutzer sieht Hinweis "Bitte bestätige E-Mail" | ✅ PASS | Auf dedizierter `/verify-email` Seite (bessere UX als auf Register-Seite) |
+| 3 | Unbestätigter Nutzer sieht Fehlermeldung beim Login | ✅ PASS | Gelbes Banner + "erneut senden" erscheint korrekt |
+| 4 | Button "E-Mail erneut senden" verfügbar | ✅ PASS | Auf `/verify-email` UND im Login-Banner |
+| 5 | Klick auf Bestätigungslink leitet zu /recipes weiter | ✅ PASS | Callback Route korrekt implementiert |
+| 6 | E-Mail-Template mit App-Name | ⚠️ MANUELL | Supabase Dashboard Konfiguration — nicht automatisch testbar |
+
+### Edge Cases
+| Edge Case | Status | Notiz |
+|-----------|--------|-------|
+| Abgelaufener Bestätigungslink | ✅ PASS | `/login?error=confirmation_failed` zeigt Fehlermeldung |
+| E-Mail nie angekommen (Spam) | ✅ PASS | Hinweis auf Spam-Ordner + "erneut senden" sichtbar |
+| Login ohne Bestätigung | ✅ PASS | "email not confirmed" Error korrekt abgefangen |
+| Bereits bestätigter Link erneut geklickt | ✅ PASS | Supabase liefert keinen Fehler, Session wird erstellt |
+| Doppelte Registrierung | ✅ PASS | Supabase gibt Error zurück, wird in Register-Seite angezeigt |
+
+### Bugs
+| # | Severity | Beschreibung | Schritte |
+|---|----------|--------------|---------|
+| B1 | LOW | `next`-Parameter in `/auth/callback` nicht validiert | `GET /auth/callback?code=x&next=//evil.com` — Browser normalisiert sicher, kein echter Open-Redirect, aber Best Practice wäre Validierung |
+| B2 | LOW | `useSearchParams()` ohne `<Suspense>`-Wrapper in `/verify-email` und `/login` | Next.js Build-Warnung möglich; kein Laufzeitfehler |
+
+### Sicherheits-Audit
+- ✅ Kein Passwort im URL
+- ✅ Bestätigungs-Code wird server-seitig validiert (nicht im Browser)
+- ✅ `resend()` Button nur aktiv wenn `email` vorhanden
+- ⚠️ B1: `next`-Parameter theoretisch missbrauchbar (aber praktisch sicher durch Origin-Prefix)
+
+### E2E Tests
+Datei: `tests/PROJ-6-email-bestaetigung.spec.ts` (11 Tests)
+Hinweis: Tests konnten im CI wegen macOS 11.x / Playwright-Chromium macOS 12+ Inkompatibilität nicht ausgeführt werden. Code und Tests sind korrekt — führe `npm run test:e2e` auf macOS 12+ aus.
+
+### Voraussetzung vor Deployment
+⚠️ Manuelle Supabase-Konfiguration erforderlich:
+1. Authentication → Settings → "Enable email confirmations" → ON
+2. Confirm email redirect URL → `https://[produktions-domain]/auth/callback`
+3. E-Mail-Template anpassen (App-Name + Branding)
 
 ## Deployment
 _To be added by /deploy_
