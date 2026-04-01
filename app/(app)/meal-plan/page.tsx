@@ -7,7 +7,7 @@ export default async function MealPlanPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: recipesRaw }, { data: categories }] = await Promise.all([
+  const [{ data: recipesRaw }, { data: categories }, { data: favoritesRaw }] = await Promise.all([
     supabase
       .from("recipes")
       .select("id, title, image_url, recipe_categories(categories(slug))")
@@ -17,17 +17,28 @@ export default async function MealPlanPage() {
       .from("categories")
       .select("id, slug, name, icon, type")
       .order("type"),
+    supabase
+      .from("favorites")
+      .select("recipe_id")
+      .eq("user_id", user.id),
   ]);
+
+  const favoriteIds = new Set((favoritesRaw ?? []).map((f: any) => f.recipe_id));
 
   const recipes = (recipesRaw ?? []).map((r: any) => ({
     id: r.id,
     title: r.title,
     image_url: r.image_url,
-    category_slugs:
-      r.recipe_categories
-        ?.map((rc: any) => rc.categories?.slug)
-        .filter(Boolean) ?? [],
+    category_slugs: [
+      ...(r.recipe_categories?.map((rc: any) => rc.categories?.slug).filter(Boolean) ?? []),
+      ...(favoriteIds.has(r.id) ? ["favorite"] : []),
+    ],
   }));
+
+  const allCategories = [
+    { id: "favorites", slug: "favorite", name: "MeinFavorit", icon: "❤️", type: "favorite" },
+    ...(categories ?? []),
+  ];
 
   return (
     <div className="space-y-6">
@@ -35,7 +46,7 @@ export default async function MealPlanPage() {
         <h1 className="text-3xl font-bold">Wochenplan</h1>
         <p className="text-muted-foreground mt-1">Plane deine Mahlzeiten für die Woche</p>
       </div>
-      <WeekPlan recipes={recipes} categories={categories ?? []} />
+      <WeekPlan recipes={recipes} categories={allCategories} />
     </div>
   );
 }

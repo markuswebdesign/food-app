@@ -41,6 +41,11 @@ export function RecipeFilters({ categories }: { categories: Category[] }) {
     router.push(`${pathname}?${createQueryString(key, next)}`);
   }
 
+  function toggleFavorites() {
+    const current = searchParams.get("favorites");
+    router.push(`${pathname}?${createQueryString("favorites", current === "1" ? "" : "1")}`);
+  }
+
   return (
     <div className="space-y-3">
       <Input
@@ -50,6 +55,14 @@ export function RecipeFilters({ categories }: { categories: Category[] }) {
         className="max-w-sm"
       />
       <div className="flex flex-wrap gap-2">
+        <Badge
+          variant={searchParams.get("favorites") === "1" ? "default" : "outline"}
+          className="cursor-pointer"
+          onClick={toggleFavorites}
+        >
+          ❤️ MeinFavorit
+        </Badge>
+        <div className="w-px bg-border mx-1" />
         {mealTimes.map((cat) => (
           <Badge
             key={cat.id}

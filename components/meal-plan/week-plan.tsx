@@ -360,6 +360,7 @@ export function WeekPlan({ recipes, categories }: WeekPlanProps) {
   });
 
   const kw = getCalendarWeek(weekStart);
+  const favorites = categories.filter((c) => c.type === "favorite");
   const mealTimes = categories.filter((c) => c.type === "meal_time");
   const diets = categories.filter((c) => c.type === "diet");
 
@@ -486,6 +487,16 @@ export function WeekPlan({ recipes, categories }: WeekPlanProps) {
                 >
                   Alle
                 </Badge>
+                {favorites.map((cat) => (
+                  <Badge
+                    key={cat.id}
+                    variant={activeCategory === cat.slug ? "default" : "outline"}
+                    className="cursor-pointer text-xs"
+                    onClick={() => setActiveCategory(activeCategory === cat.slug ? null : cat.slug)}
+                  >
+                    {cat.icon} {cat.name}
+                  </Badge>
+                ))}
                 {mealTimes.map((cat) => (
                   <Badge
                     key={cat.id}

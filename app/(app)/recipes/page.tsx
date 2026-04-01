@@ -9,7 +9,7 @@ import type { Recipe } from "@/lib/types";
 export default async function RecipesPage({
   searchParams,
 }: {
-  searchParams: { category?: string; diet?: string; q?: string };
+  searchParams: { category?: string; diet?: string; q?: string; favorites?: string };
 }) {
   const supabase = createClient();
 
@@ -74,7 +74,7 @@ export default async function RecipesPage({
     }
   } catch {}
 
-  const normalized = (recipes ?? []).map((r: any) => ({
+  let normalized = (recipes ?? []).map((r: any) => ({
     ...r,
     categories: r.recipe_categories?.map((rc: any) => rc.categories) ?? [],
     recipe_nutrition: Array.isArray(r.recipe_nutrition)
@@ -82,6 +82,10 @@ export default async function RecipesPage({
       : r.recipe_nutrition ?? null,
     is_favorited: favoriteIds.has(r.id),
   })) as Recipe[];
+
+  if (searchParams.favorites === "1") {
+    normalized = normalized.filter((r) => r.is_favorited);
+  }
 
   return (
     <div className="space-y-6">
