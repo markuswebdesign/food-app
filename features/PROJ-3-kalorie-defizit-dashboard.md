@@ -1,6 +1,6 @@
 # PROJ-3: Kalorie-Defizit Dashboard
 
-## Status: Approved
+## Status: Deployed
 **Created:** 2026-04-01
 **Last Updated:** 2026-04-01
 
@@ -140,4 +140,9 @@ lib/utils/dashboard.ts               — Wochenberechnungs-Hilfsfunktionen
 E2E-Tests in `tests/PROJ-3-kalorie-defizit-dashboard.spec.ts` sind korrekt implementiert, können aber auf macOS 11 nicht ausgeführt werden (Playwright 1.59 Chromium benötigt macOS 12+). Funktionieren auf macOS 12+ und in CI.
 
 ## Deployment
-_To be added by /deploy_
+
+- **Deployed:** 2026-04-01
+- **Tag:** v1.3.0-PROJ-3
+- **Branch:** master → GitHub → Vercel Auto-Deploy
+- **Build:** ✅ Erfolgreich (`/dashboard` 2.23 kB, SSR)
+- **Note:** `env.local.*` und `env.rtf` nachträglich aus Git-History entfernt und zu `.gitignore` hinzugefügt. Supabase Secret Key sollte rotiert werden.
