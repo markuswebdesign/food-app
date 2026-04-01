@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+function getPasswordStrength(pw: string): { level: 0 | 1 | 2 | 3; label: string; color: string } {
+  if (pw.length === 0) return { level: 0, label: "", color: "" };
+  const hasUpper = /[A-Z]/.test(pw);
+  const hasNumber = /[0-9]/.test(pw);
+  const hasSpecial = /[^A-Za-z0-9]/.test(pw);
+  const score = (pw.length >= 8 ? 1 : 0) + (hasUpper ? 1 : 0) + (hasNumber ? 1 : 0) + (hasSpecial ? 1 : 0);
+  if (score <= 1) return { level: 1, label: "Niedrig", color: "bg-red-500" };
+  if (score <= 2) return { level: 2, label: "Mittel", color: "bg-yellow-500" };
+  return { level: 3, label: "Sicher", color: "bg-green-500" };
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const supabase = createClient();
@@ -24,6 +36,9 @@ export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const strength = getPasswordStrength(password);
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
@@ -81,15 +96,46 @@ export default function RegisterPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Passwort</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Mindestens 6 Zeichen"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Mindestens 6 Zeichen"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {strength.level > 0 && (
+              <div className="space-y-1">
+                <div className="flex gap-1">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className={`h-1 flex-1 rounded-full transition-colors ${
+                        i <= strength.level ? strength.color : "bg-muted"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <p className={`text-xs font-medium ${
+                  strength.level === 1 ? "text-red-500" :
+                  strength.level === 2 ? "text-yellow-600" : "text-green-600"
+                }`}>
+                  {strength.label}
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-3">
