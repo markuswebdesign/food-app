@@ -10,7 +10,11 @@
 - `components/dashboard/streak-widget.tsx` — Streak-Zahl, Flame-Icon, Motivationstext, Rekord
 - `components/profile/badges-section.tsx` — 3 Badges (7/14/30 Tage), earned vs. gesperrt
 - `app/(app)/me/page.tsx` — Streak-Fetch immer aktiv, StreakWidget im Übersicht-Tab, BadgesSection im Profil-Tab
-- Badges werden frontend-seitig aus der längsten Streak abgeleitet — persistente Speicherung folgt im Backend
+
+### Backend (done)
+- Migration `20260401000004_add_streak_badges.sql` — `profiles.longest_streak_days`, neue Tabelle `profile_badges` mit RLS
+- `me/page.tsx` — fetcht `profile_badges` + persistiert neuen Rekord + neue Badges bei jedem Load
+- BadgesSection zeigt Badges aus DB (kombiniert mit frisch berechneten)
 
 ## Dependencies
 - Requires: PROJ-3 (Kalorie-Defizit Dashboard) — Streak basiert auf Defizit-Tagen

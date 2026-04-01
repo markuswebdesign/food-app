@@ -35,7 +35,7 @@ export default async function MePage({
   // Always fetch profile — needed for all tabs
   const { data: profile } = await supabase
     .from("profiles")
-    .select("custom_calorie_goal, goal_type, weight_kg, height_cm, age, activity_level, username, protein_goal_g, fat_goal_g, carbs_goal_g")
+    .select("custom_calorie_goal, goal_type, weight_kg, height_cm, age, activity_level, username, protein_goal_g, fat_goal_g, carbs_goal_g, longest_streak_days")
     .eq("id", user.id)
     .single();
 
@@ -61,18 +61,62 @@ export default async function MePage({
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
   const ninetyDaysAgoStr = toLocalDateString(ninetyDaysAgo);
 
-  const { data: streakEntries } = await supabase
-    .from("food_log_entries")
-    .select("date, calories")
-    .eq("user_id", user.id)
-    .gte("date", ninetyDaysAgoStr)
-    .lte("date", todayStr);
+  const [{ data: streakEntries }, { data: dbBadges }] = await Promise.all([
+    supabase
+      .from("food_log_entries")
+      .select("date, calories")
+      .eq("user_id", user.id)
+      .gte("date", ninetyDaysAgoStr)
+      .lte("date", todayStr),
+    supabase
+      .from("profile_badges")
+      .select("badge_type")
+      .eq("user_id", user.id),
+  ]);
 
   const streakLogByDate: Record<string, number> = {};
   for (const entry of streakEntries ?? []) {
     streakLogByDate[entry.date] = (streakLogByDate[entry.date] ?? 0) + entry.calories;
   }
   const streakData = hasCalorieGoal ? calcStreak(streakLogByDate, calorieGoal!, today) : null;
+
+  // Persist new records + badges if streak improved
+  if (streakData) {
+    const storedLongest = profile?.longest_streak_days ?? 0;
+    const earnedBadgeTypes = streakData.earnedBadges.map(d => `streak_${d}` as const);
+    const existingBadgeTypes = new Set((dbBadges ?? []).map(b => b.badge_type));
+    const newBadgeTypes = earnedBadgeTypes.filter(t => !existingBadgeTypes.has(t));
+
+    const tasks = [];
+
+    if (streakData.longestStreak > storedLongest) {
+      tasks.push(
+        supabase
+          .from("profiles")
+          .update({ longest_streak_days: streakData.longestStreak })
+          .eq("id", user.id)
+          .then()
+      );
+    }
+
+    if (newBadgeTypes.length > 0) {
+      tasks.push(
+        supabase
+          .from("profile_badges")
+          .insert(newBadgeTypes.map(badge_type => ({ user_id: user.id, badge_type })))
+          .then()
+      );
+    }
+
+    if (tasks.length > 0) await Promise.all(tasks);
+  }
+
+  // Earned badges for display: combine DB badges + any newly earned
+  const allEarnedBadgeNums = [
+    ...(dbBadges ?? []).map(b => parseInt(b.badge_type.replace("streak_", ""), 10)),
+    ...(streakData?.earnedBadges ?? []),
+  ];
+  const earnedBadgeNums = Array.from(new Set(allEarnedBadgeNums));
 
   // ── Tab: Übersicht ──────────────────────────────────────────────────────────
   let dashboardContent: React.ReactNode = null;
@@ -164,7 +208,7 @@ export default async function MePage({
         {profile?.username && (
           <p className="text-sm text-muted-foreground">@{profile.username}</p>
         )}
-        {streakData && <BadgesSection earnedBadges={streakData.earnedBadges} />}
+        <BadgesSection earnedBadges={earnedBadgeNums} />
         <ProfileHealthForm
           userId={user.id}
           initial={{
