@@ -22,9 +22,9 @@ interface NavBarProps {
 }
 
 const navLinks = [
+  { href: "/me", label: "Mein Bereich" },
   { href: "/recipes", label: "Rezepte" },
   { href: "/meal-plan", label: "Wochenplan" },
-  { href: "/log", label: "Logbuch" },
   { href: "/shopping-list", label: "Einkaufsliste" },
 ];
 
@@ -45,8 +45,8 @@ export function NavBar({ user, profile }: NavBarProps) {
     <header className="border-b bg-background sticky top-0 z-40">
       <div className="container mx-auto px-4 max-w-6xl h-16 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/recipes" className="font-semibold text-lg">
-            🍽 Rezepte
+          <Link href="/me" className="font-semibold text-lg">
+            🍽 FoodApp
           </Link>
           <nav className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
@@ -96,7 +96,7 @@ export function NavBar({ user, profile }: NavBarProps) {
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/profile">Profil</Link>
+                <Link href="/me?tab=profil">Profil</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
@@ -123,9 +123,6 @@ export function NavBar({ user, profile }: NavBarProps) {
                     {link.label}
                   </Link>
                 ))}
-                <Link href="/log" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted">
-                  Logbuch
-                </Link>
                 <Link href="/recipes/import" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted">
                   URL Rezept Import
                 </Link>

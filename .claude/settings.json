@@ -39,7 +39,11 @@
       "Bash(git -C /Users/markuswestenhuber/Documents/food-app push origin master --force-with-lease)",
       "Bash(git add:*)",
       "Bash(node -e \"const p = require\\('./node_modules/playwright/package.json'\\); console.log\\(p.version\\)\")",
-      "Bash(sw_vers)"
+      "Bash(sw_vers)",
+      "Bash(npx eslint:*)",
+      "Bash(git filter-branch:*)",
+      "Bash(git stash:*)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch \"env.local.sb-1aba6798-EWU2Ps\" \"env.rtf\"' --prune-empty HEAD)"
     ],
     "additionalDirectories": [
       "/Users/markuswestenhuber/Documents/food-app"
