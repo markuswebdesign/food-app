@@ -38,6 +38,7 @@ interface PlanEntry {
   day_of_week: number;
   meal_time: MealTime;
   servings: number;
+  food_log_entry_id: string | null;
   recipes: { id: string; title: string; image_url: string | null };
 }
 
@@ -103,6 +104,13 @@ function getCalendarWeek(date: Date): number {
 
 function slotId(day: number, mealTime: MealTime) {
   return `${day}-${mealTime}`;
+}
+
+/** Returns YYYY-MM-DD for day_of_week (1=Mon) relative to weekStart */
+function dateForDay(weekStart: Date, dayOfWeek: number): string {
+  const d = new Date(weekStart);
+  d.setDate(d.getDate() + (dayOfWeek - 1));
+  return formatDate(d);
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -228,9 +236,9 @@ export function WeekPlan({ recipes, categories }: WeekPlanProps) {
       setMealPlanId(plan.id);
       const { data: planEntries } = await supabase
         .from("meal_plan_entries")
-        .select("*, recipes(id, title, image_url)")
+        .select("id, meal_plan_id, recipe_id, day_of_week, meal_time, servings, food_log_entry_id, recipes(id, title, image_url)")
         .eq("meal_plan_id", plan.id);
-      setEntries((planEntries ?? []) as PlanEntry[]);
+      setEntries((planEntries ?? []) as unknown as PlanEntry[]);
     } else {
       setMealPlanId(null);
       setEntries([]);
@@ -267,13 +275,43 @@ export function WeekPlan({ recipes, categories }: WeekPlanProps) {
     }
     if (!planId) { setSaving(false); return; }
 
+    // Remove existing entry in the same slot (including its log entry)
     const existing = entries.find(
       (e) => e.day_of_week === selectedSlot.day && e.meal_time === selectedSlot.mealTime
     );
     if (existing) {
+      if (existing.food_log_entry_id) {
+        await supabase.from("food_log_entries").delete().eq("id", existing.food_log_entry_id);
+      }
       await supabase.from("meal_plan_entries").delete().eq("id", existing.id);
     }
 
+    // Fetch recipe nutrition to create log entry
+    const [{ data: recipe }, { data: nutrition }] = await Promise.all([
+      supabase.from("recipes").select("title, servings").eq("id", recipeId).single(),
+      supabase.from("recipe_nutrition").select("calories, protein_g, fat_g, carbohydrates_g").eq("recipe_id", recipeId).maybeSingle(),
+    ]);
+
+    // Create food_log_entry for the corresponding day
+    const entryDate = dateForDay(weekStart, selectedSlot.day);
+    const { data: logEntry } = await supabase
+      .from("food_log_entries")
+      .insert({
+        user_id: user.id,
+        date: entryDate,
+        name: recipe?.title ?? "Unbekanntes Rezept",
+        calories: nutrition?.calories ?? 0,
+        protein_g: nutrition?.protein_g ?? null,
+        fat_g: nutrition?.fat_g ?? null,
+        carbs_g: nutrition?.carbohydrates_g ?? null,
+        servings: 1,
+        meal_time: selectedSlot.mealTime,
+        recipe_id: recipeId,
+      })
+      .select("id")
+      .single();
+
+    // Create meal_plan_entry linked to the log entry
     const { data: entry } = await supabase
       .from("meal_plan_entries")
       .insert({
@@ -282,8 +320,9 @@ export function WeekPlan({ recipes, categories }: WeekPlanProps) {
         day_of_week: selectedSlot.day,
         meal_time: selectedSlot.mealTime,
         servings: 1,
+        food_log_entry_id: logEntry?.id ?? null,
       })
-      .select("*, recipes(id, title, image_url)")
+      .select("id, meal_plan_id, recipe_id, day_of_week, meal_time, servings, food_log_entry_id, recipes(id, title, image_url)")
       .single();
 
     if (entry) {
@@ -291,7 +330,7 @@ export function WeekPlan({ recipes, categories }: WeekPlanProps) {
         ...prev.filter(
           (e) => !(e.day_of_week === selectedSlot.day && e.meal_time === selectedSlot.mealTime)
         ),
-        entry as PlanEntry,
+        entry as unknown as PlanEntry,
       ]);
     }
     setSaving(false);
@@ -299,6 +338,10 @@ export function WeekPlan({ recipes, categories }: WeekPlanProps) {
   }
 
   async function removeEntry(entryId: string) {
+    const entry = entries.find((e) => e.id === entryId);
+    if (entry?.food_log_entry_id) {
+      await supabase.from("food_log_entries").delete().eq("id", entry.food_log_entry_id);
+    }
     await supabase.from("meal_plan_entries").delete().eq("id", entryId);
     setEntries((prev) => prev.filter((e) => e.id !== entryId));
   }
@@ -336,7 +379,7 @@ export function WeekPlan({ recipes, categories }: WeekPlanProps) {
       })
     );
 
-    // DB update
+    // DB update — meal_plan_entries
     await supabase
       .from("meal_plan_entries")
       .update({ day_of_week: targetDay, meal_time: targetMealTime })
@@ -347,6 +390,20 @@ export function WeekPlan({ recipes, categories }: WeekPlanProps) {
         .from("meal_plan_entries")
         .update({ day_of_week: dragged.day_of_week, meal_time: dragged.meal_time })
         .eq("id", targetEntry.id);
+    }
+
+    // DB update — food_log_entries (sync date + meal_time)
+    if (dragged.food_log_entry_id) {
+      await supabase
+        .from("food_log_entries")
+        .update({ date: dateForDay(weekStart, targetDay), meal_time: targetMealTime })
+        .eq("id", dragged.food_log_entry_id);
+    }
+    if (targetEntry?.food_log_entry_id) {
+      await supabase
+        .from("food_log_entries")
+        .update({ date: dateForDay(weekStart, dragged.day_of_week), meal_time: dragged.meal_time })
+        .eq("id", targetEntry.food_log_entry_id);
     }
   }
 

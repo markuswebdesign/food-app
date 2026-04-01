@@ -43,7 +43,8 @@
       "Bash(npx eslint:*)",
       "Bash(git filter-branch:*)",
       "Bash(git stash:*)",
-      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch \"env.local.sb-1aba6798-EWU2Ps\" \"env.rtf\"' --prune-empty HEAD)"
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch \"env.local.sb-1aba6798-EWU2Ps\" \"env.rtf\"' --prune-empty HEAD)",
+      "mcp__supabase__list_projects"
     ],
     "additionalDirectories": [
       "/Users/markuswestenhuber/Documents/food-app"
