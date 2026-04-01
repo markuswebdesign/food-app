@@ -40,7 +40,55 @@
 <!-- Sections below are added by subsequent skills -->
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Platzierung im UI
+
+```
+/me (Tabs)
+├── Übersicht-Tab
+│   ├── StreakWidget (NEU) ← oben, direkt unter den Tabs
+│   ├── CalorieTodayCard (bestehend)
+│   ├── WeekChart (bestehend)
+│   └── WeekSummary (bestehend)
+│
+└── Profil-Tab
+    ├── BadgesSection (NEU) ← unterhalb des Gesundheitsprofils
+    │   ├── Badge: 7 Tage
+    │   ├── Badge: 14 Tage
+    │   └── Badge: 30 Tage
+    └── ProfileHealthForm (bestehend)
+```
+
+### Neue Komponenten
+
+- `components/dashboard/streak-widget.tsx` — Streak-Zahl, Flammen-Icon, Motivationstext, Rekord
+- `components/profile/badges-section.tsx` — Verdiente Badges im Profil-Tab
+
+### StreakWidget-Inhalt
+
+- Aktuelle Streak-Länge mit Flammen-Icon (z.B. "🔥 5 Tage")
+- Motivationstext je nach Status:
+  - Heute geloggt & im Ziel → "Super, weiter so!"
+  - Heute geloggt & überschritten → "Morgen ist ein neuer Tag"
+  - Heute noch nichts geloggt → "Vergiss nicht zu loggen"
+- Persönlicher Rekord klein darunter: "Rekord: 14 Tage"
+- Nicht anzeigen wenn kein Kalorienziel gesetzt
+
+### Datenbankänderungen
+
+1. Neue Spalte `longest_streak_days INTEGER DEFAULT 0` in `profiles`
+2. Neue Tabelle `profile_badges`: user_id, badge_type (streak_7 / streak_14 / streak_30), earned_at
+
+### Streak-Berechnung
+
+- Serverseitig in `me/page.tsx`, bei jedem Load live aus `food_log_entries` berechnet (kein gecachter Counter)
+- Rückwärts von gestern zählen: Tage mit Kalorien ≤ Ziel werden gezählt, Stopp beim ersten Fehltag
+- Heute separat prüfen für Motivationstext
+- Wenn neuer Rekord: `longest_streak_days` in `profiles` aktualisieren + fehlende Badges vergeben
+
+### Abhängigkeiten
+
+- Keine neuen npm-Pakete — Flame-Icon aus lucide-react bereits installiert
 
 ## QA Test Results
 _To be added by /qa_
