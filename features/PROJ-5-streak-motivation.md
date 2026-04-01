@@ -103,7 +103,49 @@
 - Keine neuen npm-Pakete — Flame-Icon aus lucide-react bereits installiert
 
 ## QA Test Results
-_To be added by /qa_
+
+**Datum:** 2026-04-01
+**Tester:** QA Engineer (Claude)
+**Unit Tests:** 79/79 bestanden (`npm test`)
+**E2E Tests:** Infrastruktur-Problem (Playwright Browser-Crash — betrifft alle Tests im Projekt, kein PROJ-5-spezifisches Problem)
+
+### Acceptance Criteria
+
+| # | Kriterium | Status | Anmerkung |
+|---|-----------|--------|-----------|
+| 1 | Streak-Widget im Übersicht-Tab, Flammen-Icon, Streak-Zahl | ✅ PASS | |
+| 2 | Streak zählt Tage ≤ Ziel (±100 kcal Toleranz bei "Halten") | ❌ FAIL | Toleranz für `goal_type=maintain` nicht implementiert — BUG-2 |
+| 3 | Streak bricht ab wenn gestern kein Log | ✅ PASS | Status `no_log` korrekt gehandelt |
+| 4 | Badges 7/14/30 Tage im Profil-Tab sichtbar | ✅ PASS | |
+| 5 | Längster Streak dauerhaft gespeichert | ✅ PASS | DB-Persistenz funktioniert — aber Anzeige nur in Übersicht (BUG-3) |
+| 6 | Motivationstext wechselt je nach Status | ⚠️ PARTIAL | 3 von 4 Spec-States impl.; "Du bist auf Kurs" fehlt — BUG-4 |
+
+### Bugs
+
+| ID | Schwere | Beschreibung | Schritte |
+|----|---------|--------------|---------|
+| BUG-1 | **High** | `longestStreak`-Berechnung prüft keine Datumskontinuität: historische Lücken (Tage ohne Log) werden ignoriert, alle vorhandenen Einträge werden als lückenlose Serie gezählt | Unit-Test `longestStreak erkennt längere historische Serie` dokumentiert das Fehlverhalten in streak.test.ts |
+| BUG-2 | **Medium** | `calcStreak` ignoriert `±100 kcal Toleranz` wenn `goal_type === "maintain"` | Nutzer mit Ziel "Halten" überschreitet Ziel um 50 kcal → Streak bricht ab obwohl Spec Toleranz vorsieht |
+| BUG-3 | **Low** | Längster Rekord nicht im Profil-Tab angezeigt | Spec: "im Profil angezeigt" — Rekord erscheint nur im StreakWidget (Übersicht-Tab) |
+| BUG-4 | **Low** | Motivationstext "Du bist auf Kurs" fehlt | Spec listet 4 Zustände, implementiert sind 3; `on_track` zeigt immer "Super, weiter so!" |
+
+### Security Audit
+
+- ✅ RLS korrekt auf `profile_badges` (SELECT + INSERT nur für eigenen User)
+- ✅ Keine UPDATE/DELETE RLS nötig — Badges sind immutable by design
+- ✅ Streak-Berechnung serverseitig — kein Client-seitiger Manipulations-Vektor
+- ✅ Badge-Insert nutzt authenticated Supabase-Server-Client
+- ✅ UNIQUE-Constraint auf `(user_id, badge_type)` verhindert Duplikate
+
+### Regression
+
+- ✅ Übersicht-Tab: CalorieTodayCard, WeekChart, WeekSummary unverändert sichtbar
+- ✅ Logbuch-Tab: keine Regression (separater Tab)
+- ✅ Profil-Tab: ProfileHealthForm unverändert
+
+### Produktion-Freigabe
+
+**❌ NICHT BEREIT** — BUG-1 (High: falsche longestStreak-Berechnung) muss vor Deployment behoben werden.
 
 ## Deployment
 _To be added by /deploy_
