@@ -97,7 +97,7 @@ export default function ShoppingListPage() {
 
   // Persist checked state
   useEffect(() => {
-    localStorage.setItem(CHECKED_KEY, JSON.stringify([...checkedKeys]));
+    localStorage.setItem(CHECKED_KEY, JSON.stringify(Array.from(checkedKeys)));
   }, [checkedKeys]);
 
   // Load recipe ingredients from meal plan
@@ -163,7 +163,7 @@ export default function ShoppingListPage() {
       }
     }
 
-    setRecipeItems([...aggregated.values()]);
+    setRecipeItems(Array.from(aggregated.values()));
     setLoading(false);
   }, [weekStart]);
 

@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run start:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git tag:*)",
+      "Bash(git log:*)",
+      "Bash(git ls-files:*)",
+      "Bash(lsof:*)",
+      "Bash(kill:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app log --oneline -5)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app ls-files app/api/)",
+      "mcp__supabase__apply_migration",
+      "mcp__supabase__execute_sql",
+      "Bash(npx playwright:*)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); scripts=d.get\\('scripts',{}\\); print\\('\\\\n'.join\\(f'{k}: {v}' for k,v in scripts.items\\(\\)\\)\\)\")",
+      "Bash(npm test:*)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app add -A)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app status --short)"
+    ],
+    "additionalDirectories": [
+      "/Users/markuswestenhuber/Documents/food-app"
+    ]
+  }
+}
