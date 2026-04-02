@@ -43,7 +43,54 @@ Beim Rezept "Senf-Eier-Ragout" (Beispiel: https://www.chefkoch.de/rezepte/322818
 ---
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Ansatz: 3-Schichten-Lookup
+
+Jede Zutat wird nacheinander in drei Ebenen gesucht:
+
+1. **Lokale Tabelle** (`lib/nutrition/local-ingredients.ts`) — ~50 häufige deutsche Grundzutaten (Mehl, Butter, Eier, Milch, Sahne, Zucker, Öl, Zwiebel, ...) mit geprüften USDA-Werten pro 100g. Kein API-Call, sofort, 100% zuverlässig.
+2. **OpenFoodFacts API** — kostenlos, kein API-Key, gute deutsche Lebensmitteldatenbank. Fallback für alles außerhalb der lokalen Tabelle.
+3. **Manuelle Eingabe** — wenn weder Tabelle noch API einen Match liefern, kann der Nutzer Werte selbst eingeben.
+
+### Komponenten
+
+```
+app/api/nutrition/lookup/route.ts      (ersetzen)
+└── Neue Logik: Lokale Tabelle → OpenFoodFacts → null
+
+lib/nutrition/local-ingredients.ts     (neu)
+└── ~50 Grundzutaten mit Nährwerten pro 100g
+
+components/recipes/
+├── nutrition-card.tsx                 (erweitern)
+│   ├── + Quelle-Badge: "Berechnet" | "Manuell"
+│   └── + Hinweis bei unbekannten Zutaten
+└── nutrition-override-form.tsx        (neu)
+    ├── Felder: Kalorien, Eiweiß, Fett, Kohlenhydrate
+    └── Nur sichtbar wenn Nutzer "Manuell eingeben" klickt
+```
+
+### Datenmodell-Erweiterung
+
+Zwei neue Felder in der `recipe_nutrition`-Tabelle:
+
+| Feld | Typ | Inhalt |
+|------|-----|--------|
+| `nutrition_source` | text | `"calculated"` oder `"manual"` |
+| `unknown_ingredients` | text[] | Zutaten die nicht gefunden wurden |
+
+### Entscheidungen
+
+| Entscheidung | Begründung |
+|---|---|
+| Lokale Tabelle zuerst | ~80% der Grundzutaten abgedeckt, keine API-Abhängigkeit |
+| OpenFoodFacts | Kostenlos, kein Key, keine Rate Limits, DE-Datenbank |
+| Kein Claude-Fallback | Schätzungen sind unzuverlässig — lieber "unbekannt" als falsch |
+| Source-Badge | Transparenz für Nutzer (weiß woher die Werte kommen) |
+
+### Keine neuen Abhängigkeiten
+
+OpenFoodFacts ist eine einfache REST-API — kein npm-Paket nötig.
 
 ## QA Test Results
 _To be added by /qa_
