@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,9 @@ interface ImportFormProps {
 export function ImportForm({ categories }: ImportFormProps) {
   const router = useRouter();
   const supabase = createClient();
+
+  const filePickerRef = useRef<HTMLInputElement>(null);
+  const cameraPickerRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState<"input" | "preview">("input");
   const [url, setUrl] = useState("");
@@ -332,18 +335,17 @@ export function ImportForm({ categories }: ImportFormProps) {
           </div>
         )}
 
-        {/* Two hidden file inputs: one for gallery, one for camera */}
+        {/* Hidden file inputs — triggered programmatically to avoid iOS Safari label validation */}
         <input
-          id="file-picker"
+          ref={filePickerRef}
           type="file"
           accept="image/*"
           className="sr-only"
           onChange={handleFileChange}
         />
         <input
-          id="camera-picker"
+          ref={cameraPickerRef}
           type="file"
-          accept="image/*"
           capture="environment"
           className="sr-only"
           onChange={handleFileChange}
@@ -367,24 +369,26 @@ export function ImportForm({ categories }: ImportFormProps) {
               />
 
               {/* Gallery / file picker */}
-              <label
-                htmlFor="file-picker"
-                className="flex items-center justify-center h-10 w-10 shrink-0 rounded-md border border-input bg-background hover:bg-muted cursor-pointer transition-colors"
+              <button
+                type="button"
+                onClick={() => filePickerRef.current?.click()}
+                className="flex items-center justify-center h-10 w-10 shrink-0 rounded-md border border-input bg-background hover:bg-muted transition-colors"
                 aria-label="Bild aus Galerie wählen"
                 title="Bild aus Galerie"
               >
                 <Paperclip className="h-4 w-4 text-muted-foreground" />
-              </label>
+              </button>
 
               {/* Camera */}
-              <label
-                htmlFor="camera-picker"
-                className="flex items-center justify-center h-10 w-10 shrink-0 rounded-md border border-input bg-background hover:bg-muted cursor-pointer transition-colors"
+              <button
+                type="button"
+                onClick={() => cameraPickerRef.current?.click()}
+                className="flex items-center justify-center h-10 w-10 shrink-0 rounded-md border border-input bg-background hover:bg-muted transition-colors"
                 aria-label="Foto mit Kamera aufnehmen"
                 title="Kamera"
               >
                 <Camera className="h-4 w-4 text-muted-foreground" />
-              </label>
+              </button>
             </div>
 
             <p className="text-xs text-muted-foreground">
