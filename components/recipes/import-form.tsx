@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-import { Trash2, Plus, Loader2, ArrowLeft, Paperclip, Camera, X } from "lucide-react";
+import { Trash2, Plus, Loader2, ArrowLeft, Camera, X } from "lucide-react";
 import type { Category } from "@/lib/types";
 
 interface IngredientRow {
@@ -46,7 +46,6 @@ export function ImportForm({ categories }: ImportFormProps) {
   const supabase = createClient();
 
   const filePickerRef = useRef<HTMLInputElement>(null);
-  const cameraPickerRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState<"input" | "preview">("input");
   const [url, setUrl] = useState("");
@@ -335,18 +334,11 @@ export function ImportForm({ categories }: ImportFormProps) {
           </div>
         )}
 
-        {/* Hidden file inputs — triggered programmatically to avoid iOS Safari label validation */}
+        {/* Single file input — on iOS this shows a native sheet: "Take Photo" + "Photo Library" */}
         <input
           ref={filePickerRef}
           type="file"
           accept="image/*"
-          className="sr-only"
-          onChange={handleFileChange}
-        />
-        <input
-          ref={cameraPickerRef}
-          type="file"
-          capture="environment"
           className="sr-only"
           onChange={handleFileChange}
         />
@@ -368,24 +360,13 @@ export function ImportForm({ categories }: ImportFormProps) {
                 className={`text-base flex-1 ${isImageMode ? "text-muted-foreground" : ""}`}
               />
 
-              {/* Gallery / file picker */}
+              {/* Foto / Kamera — single button, iOS shows native sheet with camera + library */}
               <button
                 type="button"
                 onClick={() => filePickerRef.current?.click()}
                 className="flex items-center justify-center h-10 w-10 shrink-0 rounded-md border border-input bg-background hover:bg-muted transition-colors"
-                aria-label="Bild aus Galerie wählen"
-                title="Bild aus Galerie"
-              >
-                <Paperclip className="h-4 w-4 text-muted-foreground" />
-              </button>
-
-              {/* Camera */}
-              <button
-                type="button"
-                onClick={() => cameraPickerRef.current?.click()}
-                className="flex items-center justify-center h-10 w-10 shrink-0 rounded-md border border-input bg-background hover:bg-muted transition-colors"
-                aria-label="Foto mit Kamera aufnehmen"
-                title="Kamera"
+                aria-label="Foto auswählen oder aufnehmen"
+                title="Foto"
               >
                 <Camera className="h-4 w-4 text-muted-foreground" />
               </button>
