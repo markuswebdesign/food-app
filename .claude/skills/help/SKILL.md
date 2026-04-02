@@ -55,6 +55,12 @@ Based on the state analysis, determine what the user should do next:
 > Run `/frontend` to build the UI for `features/PROJ-X-name.md`
 > (If backend is needed, run `/backend` after frontend is done)
 
+**If the UX is unclear (flows, states, microcopy):**
+> Run `/ux-design` to define the happy path, edge cases, and interaction rules before architecture/implementation.
+
+**If the UI needs a strong visual direction (no mockups, redesign needed):**
+> Run `/frontend-design` to define the visual style, section structure, and component specs before `/frontend`.
+
 **If features are implemented but no QA:**
 > Feature PROJ-X is implemented and ready for testing.
 > Run `/qa` to test `features/PROJ-X-name.md` against its acceptance criteria.
@@ -72,7 +78,7 @@ Based on the state analysis, determine what the user should do next:
 
 If the user asked a specific question (via arguments), answer it in the context of the current project state. Common questions:
 
-- "What skills are available?" → List all 6 skills with brief descriptions
+- "What skills are available?" → List all available skills in `.claude/skills/` with brief descriptions
 - "How do I add a new feature?" → Explain `/requirements` workflow
 - "How do I customize this template?" → Point to CLAUDE.md, rules/, skills/
 - "What's the project structure?" → Explain the directory layout

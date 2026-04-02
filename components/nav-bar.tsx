@@ -81,7 +81,7 @@ export function NavBar({ user, profile }: NavBarProps) {
 
         <div className="flex items-center gap-3">
           <Button asChild size="sm" variant="outline" className="hidden md:inline-flex">
-            <Link href="/recipes/import">URL Import</Link>
+            <Link href="/recipes/import">Rezept Import</Link>
           </Button>
           <Button asChild size="sm" className="hidden md:inline-flex">
             <Link href="/recipes/new">+ Neues Rezept</Link>

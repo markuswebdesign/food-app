@@ -44,10 +44,26 @@
       "Bash(git filter-branch:*)",
       "Bash(git stash:*)",
       "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch \"env.local.sb-1aba6798-EWU2Ps\" \"env.rtf\"' --prune-empty HEAD)",
-      "mcp__supabase__list_projects"
+      "mcp__supabase__list_projects",
+      "Bash(npm run:*)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app ls-files src/components/)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app ls-files src/app/api/)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app ls-files src/)",
+      "mcp__supabase__list_tables",
+      "Bash(npx playwright@1.42.1 install chromium)",
+      "Skill(gsd:progress)",
+      "Skill(gsd:progress:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(curl -s http://localhost:3000/api/nutrition/lookup?q=Mehl)",
+      "Bash(curl -s \"http://localhost:3000/api/nutrition/lookup?q=Mehl\")",
+      "Bash(grep -l \"auth\\\\|login\\\\|session\\\\|cookie\" /Users/markuswestenhuber/Documents/food-app/tests/*.spec.ts)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/api/nutrition/lookup?q=test)",
+      "Bash(npx vitest:*)"
     ],
     "additionalDirectories": [
-      "/Users/markuswestenhuber/Documents/food-app"
+      "/Users/markuswestenhuber/Documents/food-app",
+      "/tmp",
+      "/Users/markuswestenhuber/Documents/food-app/.next"
     ]
   }
 }
