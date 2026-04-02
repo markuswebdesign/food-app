@@ -254,13 +254,31 @@ const LOCAL_INGREDIENTS: LocalIngredient[] = [
 /**
  * Sucht Nährwerte in der lokalen Tabelle.
  * Gibt null zurück wenn kein Match gefunden.
+ *
+ * Matching-Strategie (von eng zu weit):
+ * 1. Exakter Match: "mehl" === "mehl"
+ * 2. Wort-Match: Alle Wörter der Anfrage sind Wörter des Alias (oder umgekehrt)
+ *    z.B. "Knoblauchzehe" → query-Wort "knoblauchzehe" ist im Alias "knoblauchzehe" ✓
+ *    Verhindert "öl" in "trüffelöl" als Substring-Match.
  */
 export function lookupLocalIngredient(query: string): NutritionPer100g | null {
   const normalized = query.toLowerCase().trim();
+  if (!normalized) return null;
+
+  const queryWords = normalized.split(/\s+/);
 
   for (const ingredient of LOCAL_INGREDIENTS) {
     for (const alias of ingredient.aliases) {
-      if (normalized === alias || normalized.includes(alias) || alias.includes(normalized)) {
+      if (normalized === alias) {
+        const { aliases: _, ...nutrition } = ingredient;
+        return nutrition;
+      }
+
+      const aliasWords = alias.split(/\s+/);
+      const queryWordsInAlias = queryWords.every((w) => aliasWords.includes(w));
+      const aliasWordsInQuery = aliasWords.every((w) => queryWords.includes(w));
+
+      if (queryWordsInAlias || aliasWordsInQuery) {
         const { aliases: _, ...nutrition } = ingredient;
         return nutrition;
       }
