@@ -19,12 +19,13 @@ import {
 
 function getPasswordStrength(pw: string): { level: 0 | 1 | 2 | 3; label: string; color: string } {
   if (pw.length === 0) return { level: 0, label: "", color: "" };
+  if (pw.length < 8) return { level: 1, label: "Niedrig", color: "bg-red-500" };
   const hasUpper = /[A-Z]/.test(pw);
   const hasNumber = /[0-9]/.test(pw);
   const hasSpecial = /[^A-Za-z0-9]/.test(pw);
-  const score = (pw.length >= 8 ? 1 : 0) + (hasUpper ? 1 : 0) + (hasNumber ? 1 : 0) + (hasSpecial ? 1 : 0);
-  if (score <= 1) return { level: 1, label: "Niedrig", color: "bg-red-500" };
-  if (score <= 2) return { level: 2, label: "Mittel", color: "bg-yellow-500" };
+  const score = (hasUpper ? 1 : 0) + (hasNumber ? 1 : 0) + (hasSpecial ? 1 : 0);
+  if (score === 0) return { level: 1, label: "Niedrig", color: "bg-red-500" };
+  if (score === 1) return { level: 2, label: "Mittel", color: "bg-yellow-500" };
   return { level: 3, label: "Sicher", color: "bg-green-500" };
 }
 

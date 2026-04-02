@@ -124,15 +124,16 @@ export function NavBar({ user, profile }: NavBarProps) {
                   <Link
                     key={link.href}
                     href={link.href}
+                    onClick={() => setMobileOpen(false)}
                     className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted"
                   >
                     {link.label}
                   </Link>
                 ))}
-                <Link href="/recipes/import" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted">
+                <Link href="/recipes/import" onClick={() => setMobileOpen(false)} className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted">
                   URL Rezept Import
                 </Link>
-                <Link href="/recipes/new" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted">
+                <Link href="/recipes/new" onClick={() => setMobileOpen(false)} className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted">
                   + Neues Rezept
                 </Link>
               </nav>

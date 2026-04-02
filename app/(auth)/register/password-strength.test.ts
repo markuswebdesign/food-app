@@ -3,12 +3,13 @@ import { describe, it, expect } from "vitest";
 // Extracted logic from register/page.tsx for isolated testing
 function getPasswordStrength(pw: string): { level: 0 | 1 | 2 | 3; label: string; color: string } {
   if (pw.length === 0) return { level: 0, label: "", color: "" };
+  if (pw.length < 8) return { level: 1, label: "Niedrig", color: "bg-red-500" };
   const hasUpper = /[A-Z]/.test(pw);
   const hasNumber = /[0-9]/.test(pw);
   const hasSpecial = /[^A-Za-z0-9]/.test(pw);
-  const score = (pw.length >= 8 ? 1 : 0) + (hasUpper ? 1 : 0) + (hasNumber ? 1 : 0) + (hasSpecial ? 1 : 0);
-  if (score <= 1) return { level: 1, label: "Niedrig", color: "bg-red-500" };
-  if (score <= 2) return { level: 2, label: "Mittel", color: "bg-yellow-500" };
+  const score = (hasUpper ? 1 : 0) + (hasNumber ? 1 : 0) + (hasSpecial ? 1 : 0);
+  if (score === 0) return { level: 1, label: "Niedrig", color: "bg-red-500" };
+  if (score === 1) return { level: 2, label: "Mittel", color: "bg-yellow-500" };
   return { level: 3, label: "Sicher", color: "bg-green-500" };
 }
 
@@ -49,12 +50,11 @@ describe("getPasswordStrength", () => {
     expect(result.label).toBe("Sicher");
   });
 
-  it("kurzes Passwort mit allen anderen Kriterien → Mittel (score=2, da Länge fehlt)", () => {
-    // Kein Längenpunkt, aber Groß + Zahl + Sonderzeichen = score 3 → Sicher
-    // Prüfe: "Ab1!" → length=4 (kein Punkt), hasUpper, hasNumber, hasSpecial → score=3 → Sicher
+  it("kurzes Passwort mit allen anderen Kriterien → Niedrig (< 8 Zeichen ist K.O.-Kriterium)", () => {
+    // "Ab1!" hat Groß + Zahl + Sonderzeichen, aber nur 4 Zeichen → sofort Niedrig
     const result = getPasswordStrength("Ab1!");
-    expect(result.level).toBe(3);
-    expect(result.label).toBe("Sicher");
+    expect(result.level).toBe(1);
+    expect(result.label).toBe("Niedrig");
   });
 
   it("nur Zahlen, kurz → Niedrig", () => {
