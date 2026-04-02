@@ -116,8 +116,7 @@ export function ImportForm({ categories }: ImportFormProps) {
     );
   }
 
-  async function handleImport(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleImportClick() {
     if (!url.trim().startsWith("http")) {
       setError("Bitte eine gültige URL eingeben (beginnt mit http/https)");
       return;
@@ -180,8 +179,7 @@ export function ImportForm({ categories }: ImportFormProps) {
     }
   }
 
-  async function handleImageImport(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleImageImportClick() {
     if (!imageFile) return;
     setLoading(true);
     setError(null);
@@ -351,20 +349,18 @@ export function ImportForm({ categories }: ImportFormProps) {
           onChange={handleFileChange}
         />
 
-        <form
-          onSubmit={isImageMode ? handleImageImport : handleImport}
-          className="space-y-4"
-        >
+        {/* No <form> — avoids iOS Safari pattern-validation on URL fields */}
+        <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="url-input">Rezept importieren</Label>
 
-            {/* URL input + gallery icon + camera icon */}
             <div className="flex gap-2">
               <Input
                 id="url-input"
                 type="text"
                 value={isImageMode ? (imageFile?.name ?? "") : url}
                 onChange={(e) => { if (!isImageMode) setUrl(e.target.value); }}
+                onKeyDown={(e) => { if (e.key === "Enter" && !isImageMode) handleImportClick(); }}
                 readOnly={isImageMode}
                 placeholder="https://www.chefkoch.de/rezepte/..."
                 className={`text-base flex-1 ${isImageMode ? "text-muted-foreground" : ""}`}
@@ -399,9 +395,10 @@ export function ImportForm({ categories }: ImportFormProps) {
           </div>
 
           <Button
-            type="submit"
+            type="button"
             disabled={loading || (!isImageMode && !url.trim())}
             className="w-full"
+            onClick={isImageMode ? handleImageImportClick : handleImportClick}
           >
             {loading ? (
               <>
@@ -412,7 +409,7 @@ export function ImportForm({ categories }: ImportFormProps) {
               isImageMode ? "Rezept erkennen" : "Rezept importieren"
             )}
           </Button>
-        </form>
+        </div>
       </div>
     );
   }
