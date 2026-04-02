@@ -15,6 +15,7 @@ import { BadgesSection } from "@/components/profile/badges-section";
 import { DayLog } from "@/components/log/day-log";
 import type { LogEntry, RecipeOption } from "@/components/log/day-log";
 import { ProfileHealthForm } from "@/components/profile/profile-health-form";
+import { ProfileAvatar } from "@/components/profile/profile-avatar";
 
 type Tab = "ubersicht" | "logbuch" | "profil";
 
@@ -35,7 +36,7 @@ export default async function MePage({
   // Always fetch profile — needed for all tabs
   const { data: profile } = await supabase
     .from("profiles")
-    .select("custom_calorie_goal, goal_type, weight_kg, height_cm, age, activity_level, username, protein_goal_g, fat_goal_g, carbs_goal_g, longest_streak_days")
+    .select("custom_calorie_goal, goal_type, weight_kg, height_cm, age, activity_level, username, protein_goal_g, fat_goal_g, carbs_goal_g, longest_streak_days, avatar_url")
     .eq("id", user.id)
     .single();
 
@@ -204,10 +205,12 @@ export default async function MePage({
 
   if (tab === "profil") {
     profileContent = (
-      <div className="space-y-4">
-        {profile?.username && (
-          <p className="text-sm text-muted-foreground">@{profile.username}</p>
-        )}
+      <div className="space-y-6">
+        <ProfileAvatar
+          userId={user.id}
+          username={profile?.username ?? "??"}
+          currentAvatarUrl={profile?.avatar_url ?? null}
+        />
         <BadgesSection earnedBadges={earnedBadgeNums} longestStreak={streakData?.longestStreak ?? 0} />
         <ProfileHealthForm
           userId={user.id}
