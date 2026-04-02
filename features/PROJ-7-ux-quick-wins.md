@@ -1,6 +1,6 @@
 # PROJ-7: UX Quick Wins (Passwort anzeigen + Mobile Sidebar Auto-Close)
 
-## Status: Approved
+## Status: Deployed
 **Created:** 2026-04-01
 **Last Updated:** 2026-04-01
 
@@ -122,4 +122,6 @@ Inline-Implementierung ohne separate Architektur-Phase:
 Hinweis: E2E-Tests konnten wegen macOS 11.x / Playwright-Chromium macOS 12+ Inkompatibilität nicht ausgeführt werden. Tests sind korrekt implementiert.
 
 ## Deployment
-_To be added by /deploy_
+**Deployed:** 2026-04-02
+**Production URL:** https://food-app-one-sage.vercel.app
+**Git Tag:** v1.7.0-PROJ-7
