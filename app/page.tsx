@@ -26,7 +26,7 @@ export default async function Home() {
   if (user) redirect("/me");
 
   return (
-    <div className="min-h-screen flex flex-col bg-[radial-gradient(900px_520px_at_15%_-10%,rgba(15,23,42,0.06),transparent_60%),radial-gradient(900px_520px_at_90%_0%,rgba(13,148,136,0.08),transparent_62%),linear-gradient(180deg,#ffffff_0%,#ffffff_55%,#ffffff_100%)]">
+    <div className="min-h-screen flex flex-col bg-[#F5EFE0]">
       <LandingNav />
       <main className="flex-1">
         <HeroSection />

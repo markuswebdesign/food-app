@@ -1,51 +1,32 @@
 import Link from "next/link";
-import { ArrowRight, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export function FinalCtaSection() {
   return (
-    <section className="pb-20 pt-8 md:pb-28">
-      <div className="container max-w-6xl px-4">
-        <div className="relative overflow-hidden rounded-[2rem] border border-slate-900/10 bg-[linear-gradient(135deg,#0f172a,#0f766e_95%)] px-6 py-10 text-white shadow-[0_30px_80px_-35px_rgba(15,23,42,0.7)] md:px-10 md:py-12">
-          <div className="absolute right-0 top-0 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
-          <div className="absolute bottom-0 left-1/4 h-40 w-40 rounded-full bg-teal-300/15 blur-3xl" />
-
-          <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl space-y-4">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1 text-sm font-medium text-amber-100">
-                <ShieldCheck className="h-4 w-4" />
-                Kostenlos starten und heute noch planen
-              </div>
-              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-                Mach es dir leichter, dranzubleiben.
-              </h2>
-              <p className="text-base leading-7 text-white/80 md:text-lg">
-                Erstelle dein Konto, sammle Lieblingsrezepte und bau dir eine Woche,
-                die zu deinem Alltag passt.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button
-                asChild
-                size="lg"
-                className="h-12 rounded-full bg-white px-7 text-slate-900 hover:bg-amber-50"
-              >
-                <Link href="/register">
-                  Kostenlos starten
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="ghost"
-                className="h-12 rounded-full border border-white/20 bg-white/10 px-7 text-white hover:bg-white/15"
-              >
-                <Link href="/login">Anmelden</Link>
-              </Button>
-            </div>
-          </div>
+    <section className="bg-[#1D2D18] py-24 md:py-32">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-2xl">
+          <p className="text-xs uppercase tracking-[0.25em] text-[#F5EFE0]/30 mb-6">
+            Bereit?
+          </p>
+          <h2 className="font-display text-[clamp(2.2rem,5vw,4.5rem)] font-light leading-[1.1] text-[#F5EFE0] mb-6">
+            Dein erster Wochenplan
+            <br />
+            dauert{" "}
+            <em className="not-italic text-[#B85630]">weniger als</em>
+            <br />
+            fünf Minuten.
+          </h2>
+          <p className="text-sm text-[#F5EFE0]/40 mb-10 font-light leading-relaxed">
+            Konto erstellen, Rezepte sammeln, Woche planen. <br className="hidden md:block" />
+            Kein Download, keine Kreditkarte, kein Risiko.
+          </p>
+          <Link
+            href="/register"
+            className="inline-flex items-center gap-3 bg-[#B85630] text-[#F5EFE0] text-sm font-medium px-8 py-4 hover:bg-[#9A4220] transition-colors"
+          >
+            Jetzt kostenlos starten
+            <span className="text-base">→</span>
+          </Link>
         </div>
       </div>
     </section>

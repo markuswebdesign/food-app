@@ -1,16 +1,13 @@
 export function LandingFooter() {
   return (
-    <footer className="border-t border-slate-200 bg-white py-8">
-      <div className="container mx-auto flex max-w-6xl flex-col gap-3 px-4 text-center md:flex-row md:items-center md:justify-between md:text-left">
-        <div>
-          <p className="text-sm font-semibold text-slate-900">FoodApp</p>
-          <p className="text-sm text-slate-500">
-            Rezepte, Wochenplanung und Tracking in einem klaren Flow.
-          </p>
-        </div>
-        <div className="text-sm text-slate-500">
-          © {new Date().getFullYear()} FoodApp
-        </div>
+    <footer className="bg-[#1D2D18] border-t border-[#F5EFE0]/8 py-8">
+      <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-3">
+        <span className="font-display text-lg font-semibold text-[#F5EFE0]">
+          food<span className="text-[#B85630]">.</span>
+        </span>
+        <p className="text-xs text-[#F5EFE0]/25">
+          © {new Date().getFullYear()} FoodApp — Ernährungsroutine ohne Overhead
+        </p>
       </div>
     </footer>
   );

@@ -1,32 +1,26 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 export function LandingNav() {
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/80 backdrop-blur-xl">
-      <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-3 text-lg font-semibold text-slate-950">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-950 text-lg text-white shadow-sm">
-            F
-          </span>
-          <span className="tracking-tight">FoodApp</span>
+    <header className="sticky top-0 z-40 bg-[#F5EFE0]/90 backdrop-blur-md border-b border-[#DDD4BC]/60">
+      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <Link href="/" className="font-display text-xl font-semibold tracking-tight text-[#1D2D18]">
+          food<span className="text-[#B85630]">.</span>
         </Link>
-        <nav className="flex items-center gap-2">
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="rounded-full px-4 text-slate-700 hover:bg-slate-100 hover:text-slate-950"
+        <nav className="flex items-center gap-6">
+          <Link
+            href="/login"
+            className="text-sm text-[#7A7060] hover:text-[#1D2D18] transition-colors"
           >
-            <Link href="/login">Anmelden</Link>
-          </Button>
-          <Button
-            asChild
-            size="sm"
-            className="rounded-full bg-slate-950 px-4 text-white hover:bg-slate-800"
+            Anmelden
+          </Link>
+          <Link
+            href="/register"
+            className="text-sm font-medium text-[#B85630] hover:text-[#9A4220] transition-colors flex items-center gap-1"
           >
-            <Link href="/register">Kostenlos starten</Link>
-          </Button>
+            Kostenlos starten
+            <span className="text-base leading-none">→</span>
+          </Link>
         </nav>
       </div>
     </header>

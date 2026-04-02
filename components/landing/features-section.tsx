@@ -1,77 +1,64 @@
-import { BookOpen, Calendar, ShoppingCart, Activity } from "lucide-react";
-
 const features = [
   {
-    icon: BookOpen,
-    title: "Rezeptverwaltung & Import",
+    num: "01",
+    title: "Rezeptverwaltung",
     description:
-      "Speichere deine Lieblingsrezepte an einem Ort und importiere neue Ideen direkt per URL.",
-    accent: "from-slate-50 to-white",
-    iconClass: "bg-slate-900 text-white",
+      "Deine eigene Sammlung — ohne Bookmark-Chaos. Rezepte speichern, importieren und wiederfinden, wenn du sie brauchst.",
   },
   {
-    icon: Calendar,
+    num: "02",
     title: "Wochenplanung",
     description:
-      "Plane die Woche in Minuten und entscheide einmal, statt jeden Tag neu zu improvisieren.",
-    accent: "from-slate-50 to-white",
-    iconClass: "bg-slate-900 text-white",
+      "Einmal planen, die ganze Woche entspannter. Drag-and-drop, Rezepte zuordnen, fertig. Kein tägliches Neu-entscheiden.",
   },
   {
-    icon: ShoppingCart,
-    title: "Einkaufsliste",
+    num: "03",
+    title: "Automatische Einkaufsliste",
     description:
-      "Aus dem Wochenplan wird Einkauf: übersichtlich, praktisch, und du vergisst weniger.",
-    accent: "from-slate-50 to-white",
-    iconClass: "bg-slate-900 text-white",
+      "Aus deinem Wochenplan wird eine geordnete Einkaufsliste. Du vergisst nichts, kaufst nichts doppelt.",
   },
   {
-    icon: Activity,
-    title: "Kalorientracking & Nährwerte",
+    num: "04",
+    title: "Kalorien & Nährwerte",
     description:
-      "Behalte Kalorien und Nährwerte im Blick, ohne dass Tracking zur zweiten Vollzeitaufgabe wird.",
-    accent: "from-slate-50 to-white",
-    iconClass: "bg-slate-900 text-white",
+      "Tracking, das nicht zur zweiten Arbeit wird. Kalorien, Protein, Fett, Kohlenhydrate — immer im Blick, nie überwältigend.",
   },
 ];
 
 export function FeaturesSection() {
   return (
-    <section className="py-20 md:py-28">
-      <div className="container mx-auto max-w-6xl px-4">
-        <div className="mx-auto mb-12 max-w-2xl text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.28em] text-slate-600">
-            Kernfunktionen
-          </p>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-950 md:text-5xl">
-            Alles was du brauchst, um Essen planbarer zu machen.
+    <section className="py-20 md:py-28 bg-[#1D2D18]">
+      <div className="max-w-6xl mx-auto px-6">
+        {/* Section header */}
+        <div className="flex items-baseline justify-between mb-12 pb-6 border-b border-[#F5EFE0]/10">
+          <h2 className="font-display text-3xl md:text-4xl font-light text-[#F5EFE0]">
+            Was dich erwartet
           </h2>
-          <p className="mt-4 text-lg leading-8 text-slate-600">
-            Nicht als lose Sammlung von Features, sondern als durchgehender Produktfluss von
-            Rezept bis Einkauf.
-          </p>
+          <span className="text-xs uppercase tracking-[0.2em] text-[#F5EFE0]/30 hidden md:block">
+            Funktionen
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {features.map((feature) => {
-            const Icon = feature.icon;
-            return (
-              <article
-                key={feature.title}
-                className={`group relative overflow-hidden rounded-[1.75rem] border border-slate-200 bg-gradient-to-br ${feature.accent} p-6 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)] transition-transform duration-300 hover:-translate-y-1`}
-              >
-                <div className="absolute inset-x-6 top-0 h-px bg-slate-200" />
-                <div className={`mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm ${feature.iconClass}`}>
-                  <Icon className="h-5 w-5" />
-                </div>
-                <h3 className="mb-3 text-lg font-semibold text-slate-900">{feature.title}</h3>
-                <p className="text-sm leading-7 text-slate-600">{feature.description}</p>
-                <div className="mt-6 text-sm font-medium text-slate-800">
-                  Weniger Reibung im Alltag
-                </div>
-              </article>
-            );
-          })}
+        {/* Feature list */}
+        <div>
+          {features.map((f, i) => (
+            <div
+              key={f.num}
+              className={`grid md:grid-cols-[80px_1fr_1fr] gap-4 md:gap-8 py-7 ${
+                i < features.length - 1 ? "border-b border-[#F5EFE0]/10" : ""
+              }`}
+            >
+              <span className="font-display text-4xl font-light text-[#B85630]/50 leading-none">
+                {f.num}
+              </span>
+              <h3 className="font-display text-xl md:text-2xl font-light text-[#F5EFE0] self-center">
+                {f.title}
+              </h3>
+              <p className="text-sm text-[#F5EFE0]/50 leading-relaxed self-center font-light">
+                {f.description}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

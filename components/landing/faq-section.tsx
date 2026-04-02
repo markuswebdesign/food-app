@@ -1,54 +1,56 @@
-import { HelpCircle } from "lucide-react";
-
 const faqs = [
   {
     q: "Ist FoodApp wirklich kostenlos?",
-    a: "Ja. Du kannst kostenlos starten und die Kernfunktionen nutzen: Rezepte, Wochenplan, Einkaufsliste und Tracking-Grundlagen.",
+    a: "Ja. Du kannst kostenlos starten und alle Kernfunktionen nutzen: Rezepte, Wochenplan, Einkaufsliste und Tracking.",
   },
   {
-    q: "Muss ich jeden Tag alles perfekt tracken?",
-    a: "Nein. FoodApp ist so gedacht, dass Tracking hilft, aber nicht stresst. Du entscheidest, wie detailliert du loggst.",
+    q: "Muss ich jeden Tag perfekt tracken?",
+    a: "Nein. FoodApp hilft dir dabei, eine Routine aufzubauen — nicht, dich zu kontrollieren. Du entscheidest wie detailliert.",
   },
   {
-    q: "Funktioniert das auch auf dem Handy?",
-    a: "Ja. Die Oberfläche ist responsiv und auf mobile Nutzung ausgelegt, ohne dass du eine App installieren musst.",
+    q: "Funktioniert das auf dem Handy?",
+    a: "Ja. Die Oberfläche ist für mobile Nutzung ausgelegt, ohne App-Installation. Einfach im Browser öffnen.",
+  },
+  {
+    q: "Wie importiere ich Rezepte?",
+    a: "Einfach die URL einer Rezeptseite einfügen — FoodApp liest Zutaten, Mengen und Nährwerte automatisch aus.",
   },
 ];
 
 export function FaqSection() {
   return (
-    <section className="py-20 md:py-28">
-      <div className="container mx-auto max-w-6xl px-4">
-        <div className="mx-auto mb-10 max-w-2xl text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/70 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm">
-            <HelpCircle className="h-4 w-4 text-teal-700" />
-            Kurz beantwortet
+    <section className="py-20 md:py-28 bg-[#F5EFE0]">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="grid lg:grid-cols-[300px_1fr] gap-16">
+          {/* Left label */}
+          <div>
+            <p className="text-xs uppercase tracking-[0.25em] text-[#7A7060] mb-3">FAQ</p>
+            <h2 className="font-display text-3xl md:text-4xl font-light text-[#1D2D18] leading-tight">
+              Häufige<br />Fragen
+            </h2>
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-950 md:text-5xl">
-            Häufige Fragen
-          </h2>
-          <p className="mt-4 text-lg leading-8 text-slate-600">
-            Wenn du unsicher bist, fang klein an. Der Flow ist so gebaut, dass du dich nicht festfährst.
-          </p>
-        </div>
 
-        <div className="mx-auto grid max-w-3xl gap-4">
-          {faqs.map((item) => (
-            <details
-              key={item.q}
-              className="group rounded-[1.25rem] border border-slate-200 bg-white/85 p-6 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.4)]"
-            >
-              <summary className="cursor-pointer list-none select-none text-base font-semibold text-slate-950 outline-none">
-                <div className="flex items-center justify-between gap-4">
-                  <span>{item.q}</span>
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition-transform group-open:rotate-45">
+          {/* Right: accordion */}
+          <div className="border-t border-[#DDD4BC]">
+            {faqs.map((item) => (
+              <details
+                key={item.q}
+                className="group border-b border-[#DDD4BC] py-6"
+              >
+                <summary className="cursor-pointer list-none flex items-center justify-between gap-4 outline-none">
+                  <span className="font-display text-lg font-light text-[#1D2D18] leading-snug">
+                    {item.q}
+                  </span>
+                  <span className="text-[#B85630] text-2xl font-light shrink-0 leading-none group-open:rotate-45 transition-transform duration-200 inline-block">
                     +
                   </span>
-                </div>
-              </summary>
-              <p className="mt-4 text-sm leading-7 text-slate-600">{item.a}</p>
-            </details>
-          ))}
+                </summary>
+                <p className="mt-4 text-sm text-[#7A7060] leading-relaxed font-light max-w-prose">
+                  {item.a}
+                </p>
+              </details>
+            ))}
+          </div>
         </div>
       </div>
     </section>

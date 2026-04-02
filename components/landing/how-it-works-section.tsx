@@ -1,86 +1,59 @@
-import { ArrowRight, BookOpen, Calendar, ShoppingBasket } from "lucide-react";
-
 const steps = [
   {
-    icon: BookOpen,
-    eyebrow: "Schritt 1",
-    title: "Rezepte sammeln, die du wirklich kochst",
+    num: "1",
+    title: "Rezepte sammeln",
     description:
-      "Speichere eigene Rezepte oder importiere Ideen, die dir gefallen. So entsteht deine persönliche Bibliothek statt ein Bookmark-Friedhof.",
-    tone: "from-slate-50 to-white",
-    iconTone: "bg-slate-900 text-white",
+      "Speichere eigene Rezepte oder importiere sie per URL. Deine persönliche Bibliothek statt verstreuter Lesezeichen.",
   },
   {
-    icon: Calendar,
-    eyebrow: "Schritt 2",
-    title: "Woche planen, Entscheidungen reduzieren",
+    num: "2",
+    title: "Woche vorbereiten",
     description:
-      "Plane ein paar Tage im Voraus. Du musst nicht perfekt sein, nur vorbereitet genug, damit der Alltag leichter wird.",
-    tone: "from-slate-50 to-white",
-    iconTone: "bg-slate-900 text-white",
+      "Plane Frühstück, Mittag, Abend — für die Tage die du möchtest. Einmal entscheiden statt täglich improvisieren.",
   },
   {
-    icon: ShoppingBasket,
-    eyebrow: "Schritt 3",
-    title: "Einkauf ableiten, dranbleiben",
+    num: "3",
+    title: "Routine aufbauen",
     description:
-      "Aus Planung wird Einkauf. Und aus Einkauf wird Routine. Tracking bleibt dabei im Hintergrund, aber dein Ziel sichtbar.",
-    tone: "from-slate-100 via-white to-white",
-    iconTone: "bg-slate-900 text-white",
+      "Einkauf ableiten, Kalorien tracken, dranbleiben. Das System trägt sich selbst, wenn es einmal eingerichtet ist.",
   },
 ];
 
 export function HowItWorksSection() {
   return (
-    <section className="relative overflow-hidden py-20 md:py-28">
-      <div className="absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(circle_at_top,rgba(15,23,42,0.08),transparent_60%)]" />
-
-      <div className="container mx-auto max-w-6xl px-4">
-        <div className="mx-auto mb-12 max-w-2xl text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.28em] text-slate-600">
+    <section className="py-20 md:py-28 bg-[#F5EFE0]">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="mb-14">
+          <p className="text-xs uppercase tracking-[0.25em] text-[#7A7060] mb-3">
             So funktioniert es
           </p>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-950 md:text-5xl">
-            Ein Flow, der dich entlastet.
+          <h2 className="font-display text-3xl md:text-5xl font-light text-[#1D2D18] max-w-md leading-tight">
+            Drei Schritte.<br />
+            <em className="not-italic text-[#B85630]">Eine Gewohnheit.</em>
           </h2>
-          <p className="mt-4 text-lg leading-8 text-slate-600">
-            Nicht mehr Features, sondern weniger Reibung. Drei Schritte, die sich im Alltag bewähren.
-          </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {steps.map((step) => {
-            const Icon = step.icon;
-            return (
-              <article
-                key={step.title}
-                className={`relative overflow-hidden rounded-[1.75rem] border border-slate-200 bg-gradient-to-br ${step.tone} p-6 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)]`}
-              >
-                <div className="absolute inset-x-6 top-0 h-px bg-slate-200" />
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
-                      {step.eyebrow}
-                    </p>
-                    <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">
-                      {step.title}
-                    </h3>
-                  </div>
-                  <div className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl shadow-sm ${step.iconTone}`}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                </div>
-
-                <p className="mt-4 text-sm leading-7 text-slate-600">
-                  {step.description}
-                </p>
-
-                <div className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-slate-800">
-                  Weiterdenken statt neu anfangen <ArrowRight className="h-4 w-4" />
-                </div>
-              </article>
-            );
-          })}
+        <div className="grid md:grid-cols-3 gap-0">
+          {steps.map((step, i) => (
+            <div
+              key={step.num}
+              className={`relative py-8 md:py-0 ${
+                i < steps.length - 1
+                  ? "border-b md:border-b-0 md:border-r border-[#DDD4BC]"
+                  : ""
+              } ${i > 0 ? "md:pl-10" : ""} ${i < steps.length - 1 ? "md:pr-10" : ""}`}
+            >
+              <span className="font-display text-[5rem] md:text-[7rem] font-light leading-none text-[#DDD4BC] block mb-2">
+                {step.num}
+              </span>
+              <h3 className="font-display text-xl md:text-2xl font-light text-[#1D2D18] mb-3">
+                {step.title}
+              </h3>
+              <p className="text-sm text-[#7A7060] leading-relaxed font-light">
+                {step.description}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
