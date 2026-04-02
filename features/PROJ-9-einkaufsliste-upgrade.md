@@ -1,6 +1,6 @@
 # PROJ-9: Einkaufsliste Upgrade (Kategorien + Wochenplan-Import)
 
-## Status: Approved
+## Status: Deployed
 **Created:** 2026-04-01
 **Last Updated:** 2026-04-02
 
@@ -182,4 +182,9 @@ Rein client-seitige Logik — kein neues Paket notwendig.
 **✅ BEREIT** — BUG-1 behoben, alle Acceptance Criteria erfüllt, Unit Tests grün.
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-04-02
+**Via:** GitHub → Vercel (auto-deploy)
+**Commits:**
+- `d2e8c41` feat: Frontend (lookupCategory + gruppierte Einkaufsliste)
+- `638f129` test: QA + BUG-1 fix (keywordInQuery guard)
