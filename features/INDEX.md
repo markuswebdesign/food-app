@@ -20,8 +20,8 @@
 | PROJ-3 | [Kalorie-Defizit Dashboard](PROJ-3-kalorie-defizit-dashboard.md) | Deployed | PROJ-1, PROJ-2 |
 | PROJ-4 | [Makro-Tracking](PROJ-4-makro-tracking.md) | Planned | PROJ-1, PROJ-2, PROJ-3 |
 | PROJ-5 | [Streak & Motivation](PROJ-5-streak-motivation.md) | Approved | PROJ-3 |
-| PROJ-6 | [E-Mail Bestätigung bei Registrierung](PROJ-6-email-bestaetigung.md) | Approved | — |
-| PROJ-7 | [UX Quick Wins (Passwort anzeigen + Mobile Sidebar)](PROJ-7-ux-quick-wins.md) | Approved | — |
+| PROJ-6 | [E-Mail Bestätigung bei Registrierung](PROJ-6-email-bestaetigung.md) | Deployed | — |
+| PROJ-7 | [UX Quick Wins (Passwort anzeigen + Mobile Sidebar)](PROJ-7-ux-quick-wins.md) | Deployed | — |
 | PROJ-9 | [Einkaufsliste Upgrade (Kategorien + Wochenplan-Import)](PROJ-9-einkaufsliste-upgrade.md) | Planned | — |
 | PROJ-11 | [Genaue Nährwert-Berechnung](PROJ-11-naehrwert-berechnung-verbessern.md) | Planned | — |
 | PROJ-12 | [Nutzerprofil Erweiterung (Profilbild + Rezept-Autor)](PROJ-12-nutzerprofil-erweiterung.md) | Planned | PROJ-1 |
