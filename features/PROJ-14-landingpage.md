@@ -1,6 +1,6 @@
 # PROJ-14: Landingpage
 
-## Status: Planned
+## Status: In Progress
 **Created:** 2026-04-01
 **Last Updated:** 2026-04-01
 
@@ -41,7 +41,32 @@ Eine öffentlich zugängliche Landingpage, die die App und ihre Funktionen vorst
 ---
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Komponentenstruktur
+- `app/page.tsx` — RSC mit Server-side Auth-Check: Redirect zu `/me` für eingeloggte Nutzer, sonst Landingpage
+- `components/landing/landing-nav.tsx` — Logo + Login/Register-Buttons
+- `components/landing/hero-section.tsx` — Headline + Subtext + CTA-Button
+- `components/landing/features-section.tsx` — 4 Feature-Cards mit lucide-react Icons
+- `components/landing/landing-footer.tsx` — Minimaler Footer mit Jahreszahl
+
+### Entscheidungen
+- React Server Component für SSG-Rendering und SEO
+- Supabase Server Client für Auth-Check (keine neue Abhängigkeit)
+- Kein neues Backend nötig
+
+## Implementation Notes (Frontend)
+
+**Implementiert am 2026-04-02**
+
+Neue Dateien:
+- `app/page.tsx` — ersetzt bisherigen redirect("/me"), prüft Auth serverseitig
+- `components/landing/landing-nav.tsx`
+- `components/landing/hero-section.tsx`
+- `components/landing/features-section.tsx`
+- `components/landing/landing-footer.tsx`
+
+SEO-Meta (title + description) direkt in `app/page.tsx` via Next.js Metadata API.
+Build erfolgreich (`npm run build` ✓).
 
 ## QA Test Results
 _To be added by /qa_
