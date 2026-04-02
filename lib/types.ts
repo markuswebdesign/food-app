@@ -25,6 +25,8 @@ export type RecipeNutrition = {
   fat_g: number | null;
   carbohydrates_g: number | null;
   fiber_g: number | null;
+  nutrition_source?: "calculated" | "manual" | null;
+  unknown_ingredients?: string[] | null;
 };
 
 export type Recipe = {

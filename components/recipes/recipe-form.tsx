@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Trash2, Plus, Loader2, CheckCircle2 } from "lucide-react";
+import { Trash2, Plus, Loader2, CheckCircle2, Pencil, X } from "lucide-react";
 import { calculateRecipeNutrition } from "@/lib/utils/nutrition";
 import type { Category, Recipe } from "@/lib/types";
 
@@ -73,6 +73,13 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
   );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [manualOverride, setManualOverride] = useState(false);
+  const [manualNutrition, setManualNutrition] = useState({
+    calories: recipe?.recipe_nutrition?.nutrition_source === "manual" ? String(recipe.recipe_nutrition.calories ?? "") : "",
+    protein_g: recipe?.recipe_nutrition?.nutrition_source === "manual" ? String(recipe.recipe_nutrition.protein_g ?? "") : "",
+    fat_g: recipe?.recipe_nutrition?.nutrition_source === "manual" ? String(recipe.recipe_nutrition.fat_g ?? "") : "",
+    carbohydrates_g: recipe?.recipe_nutrition?.nutrition_source === "manual" ? String(recipe.recipe_nutrition.carbohydrates_g ?? "") : "",
+  });
 
   const mealTimes = categories.filter((c) => c.type === "meal_time");
   const diets = categories.filter((c) => c.type === "diet");
@@ -195,27 +202,46 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
     }
 
     // Nährwerte berechnen & speichern
-    const hasNutrition = validIngredients.some((i) => i.calories_per_100g != null);
-    if (hasNutrition) {
-      const nutrition = calculateRecipeNutrition(
-        validIngredients.map((i) => ({
-          amount: parseFloat(i.amount) || 0,
-          calories_per_100g: i.calories_per_100g,
-          protein_per_100g: i.protein_per_100g,
-          fat_per_100g: i.fat_per_100g,
-          carbs_per_100g: i.carbs_per_100g,
-          fiber_per_100g: i.fiber_per_100g,
-        }))
-      );
+    if (manualOverride && manualNutrition.calories) {
       await supabase.from("recipe_nutrition").upsert({
         recipe_id: recipeId!,
-        calories: nutrition.calories,
-        protein_g: nutrition.protein_g,
-        fat_g: nutrition.fat_g,
-        carbohydrates_g: nutrition.carbohydrates_g,
-        fiber_g: nutrition.fiber_g,
+        calories: parseFloat(manualNutrition.calories) || null,
+        protein_g: parseFloat(manualNutrition.protein_g) || null,
+        fat_g: parseFloat(manualNutrition.fat_g) || null,
+        carbohydrates_g: parseFloat(manualNutrition.carbohydrates_g) || null,
+        fiber_g: null,
+        nutrition_source: "manual",
+        unknown_ingredients: [],
         calculated_at: new Date().toISOString(),
       });
+    } else {
+      const hasNutrition = validIngredients.some((i) => i.calories_per_100g != null);
+      if (hasNutrition) {
+        const unknownIngredients = validIngredients
+          .filter((i) => i.nutritionStatus === "not_found")
+          .map((i) => i.name);
+        const nutrition = calculateRecipeNutrition(
+          validIngredients.map((i) => ({
+            amount: parseFloat(i.amount) || 0,
+            calories_per_100g: i.calories_per_100g,
+            protein_per_100g: i.protein_per_100g,
+            fat_per_100g: i.fat_per_100g,
+            carbs_per_100g: i.carbs_per_100g,
+            fiber_per_100g: i.fiber_per_100g,
+          }))
+        );
+        await supabase.from("recipe_nutrition").upsert({
+          recipe_id: recipeId!,
+          calories: nutrition.calories,
+          protein_g: nutrition.protein_g,
+          fat_g: nutrition.fat_g,
+          carbohydrates_g: nutrition.carbohydrates_g,
+          fiber_g: nutrition.fiber_g,
+          nutrition_source: "calculated",
+          unknown_ingredients: unknownIngredients,
+          calculated_at: new Date().toISOString(),
+        });
+      }
     }
 
     router.push(`/recipes/${recipeId}`);
@@ -345,6 +371,102 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
         <Button type="button" variant="outline" size="sm" onClick={addIngredient}>
           <Plus className="h-4 w-4 mr-1" /> Zutat hinzufügen
         </Button>
+
+        {/* Hinweis bei nicht gefundenen Zutaten */}
+        {ingredients.some((i) => i.nutritionStatus === "not_found") && !manualOverride && (
+          <p className="text-xs text-amber-600 dark:text-amber-400">
+            Einige Zutaten wurden nicht in der Datenbank gefunden.{" "}
+            <button
+              type="button"
+              className="underline"
+              onClick={() => setManualOverride(true)}
+            >
+              Nährwerte manuell eingeben
+            </button>
+          </p>
+        )}
+      </div>
+
+      {/* Manuelle Nährwert-Eingabe */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-medium">
+            Nährwerte (gesamt für das Rezept)
+          </Label>
+          {!manualOverride ? (
+            <button
+              type="button"
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => setManualOverride(true)}
+            >
+              <Pencil className="h-3 w-3" /> Manuell eingeben
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => setManualOverride(false)}
+            >
+              <X className="h-3 w-3" /> Automatisch berechnen
+            </button>
+          )}
+        </div>
+
+        {manualOverride && (
+          <div className="grid grid-cols-2 gap-3 p-3 border rounded-lg bg-muted/30">
+            <div className="space-y-1">
+              <Label htmlFor="manualCalories" className="text-xs">Kalorien (kcal)</Label>
+              <Input
+                id="manualCalories"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="z.B. 450"
+                value={manualNutrition.calories}
+                onChange={(e) => setManualNutrition((p) => ({ ...p, calories: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="manualProtein" className="text-xs">Eiweiß (g)</Label>
+              <Input
+                id="manualProtein"
+                type="number"
+                min="0"
+                step="0.1"
+                placeholder="z.B. 25"
+                value={manualNutrition.protein_g}
+                onChange={(e) => setManualNutrition((p) => ({ ...p, protein_g: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="manualFat" className="text-xs">Fett (g)</Label>
+              <Input
+                id="manualFat"
+                type="number"
+                min="0"
+                step="0.1"
+                placeholder="z.B. 15"
+                value={manualNutrition.fat_g}
+                onChange={(e) => setManualNutrition((p) => ({ ...p, fat_g: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="manualCarbs" className="text-xs">Kohlenhydrate (g)</Label>
+              <Input
+                id="manualCarbs"
+                type="number"
+                min="0"
+                step="0.1"
+                placeholder="z.B. 40"
+                value={manualNutrition.carbohydrates_g}
+                onChange={(e) => setManualNutrition((p) => ({ ...p, carbohydrates_g: e.target.value }))}
+              />
+            </div>
+            <p className="col-span-2 text-xs text-muted-foreground">
+              Gesamte Nährwerte für das Rezept — werden durch Portionen geteilt.
+            </p>
+          </div>
+        )}
       </div>
 
       <Separator />
