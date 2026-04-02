@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -44,8 +44,6 @@ interface ImportFormProps {
 export function ImportForm({ categories }: ImportFormProps) {
   const router = useRouter();
   const supabase = createClient();
-
-  const filePickerRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState<"input" | "preview">("input");
   const [url, setUrl] = useState("");
@@ -334,15 +332,6 @@ export function ImportForm({ categories }: ImportFormProps) {
           </div>
         )}
 
-        {/* Single file input — on iOS this shows a native sheet: "Take Photo" + "Photo Library" */}
-        <input
-          ref={filePickerRef}
-          type="file"
-          accept="image/*"
-          className="sr-only"
-          onChange={handleFileChange}
-        />
-
         {/* No <form> — avoids iOS Safari pattern-validation on URL fields */}
         <div className="space-y-4">
           <div className="space-y-2">
@@ -360,16 +349,21 @@ export function ImportForm({ categories }: ImportFormProps) {
                 className={`text-base flex-1 ${isImageMode ? "text-muted-foreground" : ""}`}
               />
 
-              {/* Foto / Kamera — single button, iOS shows native sheet with camera + library */}
-              <button
-                type="button"
-                onClick={() => filePickerRef.current?.click()}
-                className="flex items-center justify-center h-10 w-10 shrink-0 rounded-md border border-input bg-background hover:bg-muted transition-colors"
+              {/* Camera label wrapping input — most compatible on iOS Chrome.
+                  No capture, no programmatic .click(), just a native label+input. */}
+              <label
+                className="flex items-center justify-center h-10 w-10 shrink-0 rounded-md border border-input bg-background hover:bg-muted cursor-pointer transition-colors"
                 aria-label="Foto auswählen oder aufnehmen"
                 title="Foto"
               >
                 <Camera className="h-4 w-4 text-muted-foreground" />
-              </button>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={handleFileChange}
+                />
+              </label>
             </div>
 
             <p className="text-xs text-muted-foreground">
