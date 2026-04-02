@@ -9,8 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trash2, Plus, Loader2, ArrowLeft, Camera, Link } from "lucide-react";
+import { Trash2, Plus, Loader2, ArrowLeft, Paperclip, X } from "lucide-react";
 import type { Category } from "@/lib/types";
 
 interface IngredientRow {
@@ -301,109 +300,94 @@ export function ImportForm({ categories }: ImportFormProps) {
   }
 
   if (step === "input") {
+    const isImageMode = !!imageFile;
+
     return (
       <div className="space-y-4">
         {error && (
           <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</p>
         )}
 
-        <Tabs defaultValue="url">
-          <TabsList className="w-full">
-            <TabsTrigger value="url" className="flex-1 gap-2">
-              <Link className="h-4 w-4" /> URL
-            </TabsTrigger>
-            <TabsTrigger value="photo" className="flex-1 gap-2">
-              <Camera className="h-4 w-4" /> Foto
-            </TabsTrigger>
-          </TabsList>
+        {/* Image preview — shown above the input when a file is selected */}
+        {imagePreview && (
+          <div className="relative">
+            <img
+              src={imagePreview}
+              alt="Vorschau"
+              className="w-full rounded-xl object-cover max-h-56"
+            />
+            <button
+              type="button"
+              onClick={() => { setImageFile(null); setImagePreview(null); }}
+              className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1.5 hover:bg-black/80"
+              aria-label="Bild entfernen"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <div className="absolute bottom-2 left-3 text-xs text-white/80 bg-black/40 rounded px-2 py-0.5">
+              {imageFile?.name}
+            </div>
+          </div>
+        )}
 
-          {/* URL Tab */}
-          <TabsContent value="url">
-            <form onSubmit={handleImport} className="space-y-4 pt-3">
-              <div className="space-y-2">
-                <Label htmlFor="url">URL des Rezepts</Label>
-                <Input
-                  id="url"
-                  type="url"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  required
-                  placeholder="https://www.chefkoch.de/rezepte/..."
-                  className="text-base"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Unterstützt: Rezept-Websites, Instagram, TikTok
-                </p>
-              </div>
-              <Button type="submit" disabled={loading} className="w-full">
-                {loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Rezept wird geladen...
-                  </>
-                ) : (
-                  "Rezept importieren"
-                )}
-              </Button>
-            </form>
-          </TabsContent>
+        <form
+          onSubmit={isImageMode ? handleImageImport : handleImport}
+          className="space-y-4"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="url-input">Rezept importieren</Label>
 
-          {/* Photo Tab */}
-          <TabsContent value="photo">
-            <form onSubmit={handleImageImport} className="space-y-4 pt-3">
-              <div className="space-y-2">
-                <Label htmlFor="photo-input">Foto des Rezepts</Label>
-                {imagePreview ? (
-                  <div className="relative">
-                    <img
-                      src={imagePreview}
-                      alt="Vorschau"
-                      className="w-full rounded-lg object-cover max-h-64"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => { setImageFile(null); setImagePreview(null); }}
-                      className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
-                      aria-label="Bild entfernen"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <label
-                    htmlFor="photo-input"
-                    className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                  >
-                    <Camera className="h-8 w-8 text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground">Foto auswählen oder Kamera öffnen</p>
-                    <p className="text-xs text-muted-foreground mt-1">JPG, PNG, WEBP · max. 5 MB</p>
-                  </label>
-                )}
-                <input
-                  id="photo-input"
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  className="sr-only"
-                  onChange={handleFileChange}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Funktioniert mit Kochbuch-Fotos, Screenshots und handgeschriebenen Rezepten
-                </p>
-              </div>
-              <Button type="submit" disabled={loading || !imageFile} className="w-full">
-                {loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Rezept wird erkannt...
-                  </>
-                ) : (
-                  "Rezept erkennen"
-                )}
-              </Button>
-            </form>
-          </TabsContent>
-        </Tabs>
+            {/* Single row: URL input + clip icon */}
+            <div className="flex gap-2">
+              <Input
+                id="url-input"
+                type={isImageMode ? "text" : "url"}
+                value={isImageMode ? imageFile.name : url}
+                onChange={(e) => !isImageMode && setUrl(e.target.value)}
+                readOnly={isImageMode}
+                required={!isImageMode}
+                placeholder="https://www.chefkoch.de/rezepte/..."
+                className={`text-base flex-1 ${isImageMode ? "text-muted-foreground" : ""}`}
+              />
+
+              {/* Hidden file input */}
+              <input
+                id="photo-input"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="sr-only"
+                onChange={handleFileChange}
+              />
+
+              {/* Clip button */}
+              <label
+                htmlFor="photo-input"
+                className="flex items-center justify-center h-10 w-10 shrink-0 rounded-md border border-input bg-background hover:bg-muted cursor-pointer transition-colors"
+                aria-label="Foto oder Datei hinzufügen"
+              >
+                <Paperclip className="h-4 w-4 text-muted-foreground" />
+              </label>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              {isImageMode
+                ? "Foto erkannt · Claude liest Zutaten und Anleitung aus dem Bild"
+                : "Rezept-Websites, Instagram, TikTok · oder 📎 Foto / Screenshot"}
+            </p>
+          </div>
+
+          <Button type="submit" disabled={loading || (!isImageMode && !url.trim())} className="w-full">
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                {isImageMode ? "Rezept wird erkannt..." : "Rezept wird geladen..."}
+              </>
+            ) : (
+              isImageMode ? "Rezept erkennen" : "Rezept importieren"
+            )}
+          </Button>
+        </form>
       </div>
     );
   }
