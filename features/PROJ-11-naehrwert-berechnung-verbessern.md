@@ -1,6 +1,6 @@
 # PROJ-11: Genaue Nährwert-Berechnung
 
-## Status: In Progress
+## Status: Deployed
 **Created:** 2026-04-01
 **Last Updated:** 2026-04-02
 
@@ -150,4 +150,12 @@ OpenFoodFacts ist eine einfache REST-API — kein npm-Paket nötig.
 **✅ BEREIT** — BUG-1 behoben, alle Acceptance Criteria erfüllt, Unit Tests grün.
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-04-02
+**Via:** GitHub → Vercel (auto-deploy)
+**Commits:**
+- `f55e102` feat: Backend (3-layer lookup)
+- `90653d8` feat: Frontend (source badge, manual override)
+- `407d6e0` test: QA + BUG-1 fix (word-boundary matching)
+- `6a208bc` fix: Per-portion storage (Portionen-Bug)
+- `013118d` feat: Portions selector im Wochenplan
