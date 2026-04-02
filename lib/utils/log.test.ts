@@ -54,20 +54,20 @@ describe("scaleRecipeNutrition", () => {
     expect(result.calories).toBe(800);
   });
 
-  it("skaliert Makros proportional", () => {
-    const result = scaleRecipeNutrition(baseRecipe, 2);
-    // factor = 2 / 2 = 1
+  it("skaliert Makros für 1 Portion (direkt per-serving Wert)", () => {
+    // protein_per_serving = 15g/Port → 1 Port = 15g
+    const result = scaleRecipeNutrition(baseRecipe, 1);
     expect(result.protein_g).toBe(15);
     expect(result.fat_g).toBe(10);
     expect(result.carbs_g).toBe(60);
   });
 
-  it("skaliert Makros für halbe Portion", () => {
-    const result = scaleRecipeNutrition(baseRecipe, 1);
-    // factor = 1 / 2 = 0.5
-    expect(result.protein_g).toBe(7.5);
-    expect(result.fat_g).toBe(5);
-    expect(result.carbs_g).toBe(30);
+  it("skaliert Makros proportional für 2 Portionen", () => {
+    // protein_per_serving = 15g/Port → 2 Port = 30g
+    const result = scaleRecipeNutrition(baseRecipe, 2);
+    expect(result.protein_g).toBe(30);
+    expect(result.fat_g).toBe(20);
+    expect(result.carbs_g).toBe(120);
   });
 
   it("gibt 0 Kalorien zurück wenn calories_per_serving null ist", () => {
@@ -84,11 +84,12 @@ describe("scaleRecipeNutrition", () => {
     expect(result.carbs_g).toBeNull();
   });
 
-  it("behandelt servings=0 im Rezept ohne Division-by-zero", () => {
+  it("skaliert korrekt unabhängig von recipe.servings (keine Division)", () => {
+    // recipe.servings is no longer used for macro scaling after PROJ-11
     const recipe = { ...baseRecipe, servings: 0 };
     const result = scaleRecipeNutrition(recipe, 1);
-    // servings || 1 verhindert Division durch 0
     expect(result.calories).toBe(400);
+    expect(result.protein_g).toBe(15);
   });
 });
 

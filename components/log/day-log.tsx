@@ -276,7 +276,7 @@ export function DayLog({ userId, initialEntries, recipes, calorieGoal, macroGoal
         </div>
       )}
 
-      {/* Entry List */}
+      {/* Entry List grouped by meal time */}
       {loadingDate ? (
         <div className="flex justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -288,38 +288,88 @@ export function DayLog({ userId, initialEntries, recipes, calorieGoal, macroGoal
           <p className="text-xs">Füge deine erste Mahlzeit hinzu</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {entries.map((entry) => (
-            <Card key={entry.id}>
-              <CardContent className="py-3 px-4 flex items-center justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-medium text-sm truncate">{entry.name}</p>
-                    {entry.meal_time && (
-                      <Badge variant="outline" className="text-xs shrink-0">
-                        {MEAL_LABELS[entry.meal_time as MealTime] ?? entry.meal_time}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {Math.round(entry.calories)} kcal
-                    {entry.servings !== 1 && ` · ${entry.servings} Portionen`}
-                    {entry.protein_g != null && ` · ${entry.protein_g}g P`}
-                    {entry.fat_g != null && ` · ${entry.fat_g}g F`}
-                    {entry.carbs_g != null && ` · ${entry.carbs_g}g K`}
+        <div className="space-y-4">
+          {(["breakfast", "lunch", "dinner", "snack"] as MealTime[]).map((mealTime) => {
+            const group = entries.filter((e) => e.meal_time === mealTime);
+            if (group.length === 0) return null;
+            const groupCals = group.reduce((s, e) => s + e.calories, 0);
+            return (
+              <div key={mealTime}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {MEAL_LABELS[mealTime]}
+                  </p>
+                  <p className="text-xs text-muted-foreground tabular-nums">
+                    {Math.round(groupCals)} kcal
                   </p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="shrink-0 text-muted-foreground hover:text-destructive"
-                  onClick={() => setDeleteId(entry.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+                <div className="space-y-1.5">
+                  {group.map((entry) => (
+                    <Card key={entry.id}>
+                      <CardContent className="py-2.5 px-4 flex items-center justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{entry.name}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {Math.round(entry.calories)} kcal
+                            {entry.servings !== 1 && ` · ${entry.servings} Port.`}
+                            {entry.protein_g != null && ` · ${Math.round(entry.protein_g)}g P`}
+                            {entry.fat_g != null && ` · ${Math.round(entry.fat_g)}g F`}
+                            {entry.carbs_g != null && ` · ${Math.round(entry.carbs_g)}g K`}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="shrink-0 text-muted-foreground hover:text-destructive"
+                          onClick={() => setDeleteId(entry.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+          {/* Entries without meal_time */}
+          {(() => {
+            const ungrouped = entries.filter((e) => !e.meal_time);
+            if (ungrouped.length === 0) return null;
+            return (
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                  Sonstige
+                </p>
+                <div className="space-y-1.5">
+                  {ungrouped.map((entry) => (
+                    <Card key={entry.id}>
+                      <CardContent className="py-2.5 px-4 flex items-center justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{entry.name}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {Math.round(entry.calories)} kcal
+                            {entry.servings !== 1 && ` · ${entry.servings} Port.`}
+                            {entry.protein_g != null && ` · ${Math.round(entry.protein_g)}g P`}
+                            {entry.fat_g != null && ` · ${Math.round(entry.fat_g)}g F`}
+                            {entry.carbs_g != null && ` · ${Math.round(entry.carbs_g)}g K`}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="shrink-0 text-muted-foreground hover:text-destructive"
+                          onClick={() => setDeleteId(entry.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 

@@ -23,24 +23,25 @@ export type ScaledNutrition = {
   carbs_g: number | null;
 };
 
-/** Scale recipe nutrition by number of servings ordered */
+/** Scale recipe nutrition by number of servings ordered.
+ * All *_per_serving values are already per-portion (PROJ-11).
+ * Multiply directly by the number of servings logged. */
 export function scaleRecipeNutrition(
   recipe: RecipeOption,
   servings: number
 ): ScaledNutrition {
-  const factor = servings / (recipe.servings || 1);
   return {
     calories: recipe.calories_per_serving != null
       ? Math.round(recipe.calories_per_serving * servings)
       : 0,
     protein_g: recipe.protein_per_serving != null
-      ? Math.round(recipe.protein_per_serving * factor * 10) / 10
+      ? Math.round(recipe.protein_per_serving * servings * 10) / 10
       : null,
     fat_g: recipe.fat_per_serving != null
-      ? Math.round(recipe.fat_per_serving * factor * 10) / 10
+      ? Math.round(recipe.fat_per_serving * servings * 10) / 10
       : null,
     carbs_g: recipe.carbs_per_serving != null
-      ? Math.round(recipe.carbs_per_serving * factor * 10) / 10
+      ? Math.round(recipe.carbs_per_serving * servings * 10) / 10
       : null,
   };
 }
