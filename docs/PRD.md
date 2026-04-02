@@ -19,6 +19,16 @@ Gesundheitsbewusste Menschen, die ihr Gewicht reduzieren oder halten möchten un
 | P1 | PROJ-3: Kalorie-Defizit Dashboard | Planned |
 | P2 | PROJ-4: Makro-Tracking | Planned |
 | P2 | PROJ-5: Streak & Motivation | Planned |
+| P2 | PROJ-6: E-Mail Bestätigung | Planned |
+| P2 | PROJ-7: Passwort anzeigen beim Login | Planned |
+| P2 | PROJ-8: Mobile Sidebar Auto-Close | Planned |
+| P2 | PROJ-9: Einkaufsliste nach Kategorien | Planned |
+| P2 | PROJ-10: Wochenplan → Einkaufsliste | Planned |
+| P2 | PROJ-11: Genaue Nährwert-Berechnung | Planned |
+| P2 | PROJ-12: Profilbild | Planned |
+| P2 | PROJ-13: Rezept-Autor anzeigen | Planned |
+| P2 | PROJ-14: Landingpage | Planned |
+| P2 | PROJ-15: Styling-Überarbeitung | Planned |
 
 ## Success Metrics
 - Nutzer sehen täglich ihr Kaloriendefizit auf einen Blick
