@@ -108,12 +108,48 @@ async function fetchTikTokText(url: string): Promise<{ text: string; imageUrl: s
 }
 
 async function fetchInstagramText(url: string): Promise<{ text: string; imageUrl: string | null }> {
-  const oembedRes = await fetch(
-    `https://api.instagram.com/oembed?url=${encodeURIComponent(url)}`
-  );
-  const oembed = oembedRes.ok ? await oembedRes.json() : {};
-  const text = `Instagram Post von ${oembed.author_name ?? "unbekannt"}\n\nBeschreibung: ${oembed.title ?? ""}`;
-  return { text, imageUrl: oembed.thumbnail_url ?? null };
+  // Instagram's unauthenticated oEmbed API was deprecated in 2020.
+  // Scrape the page directly — og:description contains the post caption (recipe text),
+  // og:image contains the food photo.
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    },
+    signal: AbortSignal.timeout(15000),
+  });
+
+  const html = await res.text();
+  const $ = cheerio.load(html);
+
+  const imageUrl =
+    $('meta[property="og:image"]').attr("content") ??
+    $('meta[name="twitter:image"]').attr("content") ??
+    null;
+
+  // og:description on Instagram contains the full post caption
+  const caption =
+    $('meta[property="og:description"]').attr("content") ??
+    $('meta[name="description"]').attr("content") ??
+    "";
+
+  const title =
+    $('meta[property="og:title"]').attr("content") ??
+    $("title").text() ??
+    "";
+
+  // If meta tags have content, use them (most reliable on Instagram)
+  if (caption.length > 20) {
+    const text = `Instagram Rezept\n\nTitel: ${title}\n\nBeschreibung: ${caption}`;
+    return { text: text.slice(0, 10000), imageUrl };
+  }
+
+  // Fallback: cleaned page text (less likely to work due to Instagram's JS-rendering)
+  $("script, style, nav, header, footer, aside").remove();
+  const text = $.text().replace(/\s+/g, " ").trim();
+  return { text: text.slice(0, 10000), imageUrl };
 }
 
 // ─── Nutrition Lookup ─────────────────────────────────────────────────────────
@@ -230,6 +266,18 @@ export async function POST(request: NextRequest) {
       fetched = await fetchInstagramText(url);
     } else {
       fetched = await fetchPageText(url);
+    }
+
+    // Detect login walls / empty content before calling Claude
+    const textLower = fetched.text.toLowerCase();
+    if (
+      fetched.text.length < 100 ||
+      (url.includes("instagram.com") && (textLower.includes("log in") || textLower.includes("anmelden") || textLower.includes("sign in")))
+    ) {
+      return NextResponse.json(
+        { error: "Instagram-Seite konnte nicht geladen werden. Bitte stelle sicher, dass der Post öffentlich ist, oder kopiere die Rezeptbeschreibung manuell." },
+        { status: 422 }
+      );
     }
 
     // 2. Extract recipe with Claude Haiku
