@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-import { Trash2, Plus, Loader2, ArrowLeft, Paperclip, X } from "lucide-react";
+import { Trash2, Plus, Loader2, ArrowLeft, Paperclip, Camera, X } from "lucide-react";
 import type { Category } from "@/lib/types";
 
 interface IngredientRow {
@@ -118,6 +118,10 @@ export function ImportForm({ categories }: ImportFormProps) {
 
   async function handleImport(e: React.FormEvent) {
     e.preventDefault();
+    if (!url.trim().startsWith("http")) {
+      setError("Bitte eine gültige URL eingeben (beginnt mit http/https)");
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -330,6 +334,23 @@ export function ImportForm({ categories }: ImportFormProps) {
           </div>
         )}
 
+        {/* Two hidden file inputs: one for gallery, one for camera */}
+        <input
+          id="file-picker"
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          onChange={handleFileChange}
+        />
+        <input
+          id="camera-picker"
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="sr-only"
+          onChange={handleFileChange}
+        />
+
         <form
           onSubmit={isImageMode ? handleImageImport : handleImport}
           className="space-y-4"
@@ -337,47 +358,51 @@ export function ImportForm({ categories }: ImportFormProps) {
           <div className="space-y-2">
             <Label htmlFor="url-input">Rezept importieren</Label>
 
-            {/* Single row: URL input + clip icon */}
+            {/* URL input + gallery icon + camera icon */}
             <div className="flex gap-2">
               <Input
                 id="url-input"
-                type={isImageMode ? "text" : "url"}
-                value={isImageMode ? imageFile.name : url}
-                onChange={(e) => !isImageMode && setUrl(e.target.value)}
+                type="text"
+                value={isImageMode ? (imageFile?.name ?? "") : url}
+                onChange={(e) => { if (!isImageMode) setUrl(e.target.value); }}
                 readOnly={isImageMode}
-                required={!isImageMode}
                 placeholder="https://www.chefkoch.de/rezepte/..."
                 className={`text-base flex-1 ${isImageMode ? "text-muted-foreground" : ""}`}
               />
 
-              {/* Hidden file input */}
-              <input
-                id="photo-input"
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="sr-only"
-                onChange={handleFileChange}
-              />
-
-              {/* Clip button */}
+              {/* Gallery / file picker */}
               <label
-                htmlFor="photo-input"
+                htmlFor="file-picker"
                 className="flex items-center justify-center h-10 w-10 shrink-0 rounded-md border border-input bg-background hover:bg-muted cursor-pointer transition-colors"
-                aria-label="Foto oder Datei hinzufügen"
+                aria-label="Bild aus Galerie wählen"
+                title="Bild aus Galerie"
               >
                 <Paperclip className="h-4 w-4 text-muted-foreground" />
+              </label>
+
+              {/* Camera */}
+              <label
+                htmlFor="camera-picker"
+                className="flex items-center justify-center h-10 w-10 shrink-0 rounded-md border border-input bg-background hover:bg-muted cursor-pointer transition-colors"
+                aria-label="Foto mit Kamera aufnehmen"
+                title="Kamera"
+              >
+                <Camera className="h-4 w-4 text-muted-foreground" />
               </label>
             </div>
 
             <p className="text-xs text-muted-foreground">
               {isImageMode
-                ? "Foto erkannt · Claude liest Zutaten und Anleitung aus dem Bild"
-                : "Rezept-Websites, Instagram, TikTok · oder 📎 Foto / Screenshot"}
+                ? "Foto ausgewählt · Claude liest Zutaten und Anleitung aus dem Bild"
+                : "Rezept-Website, Instagram, TikTok · oder Foto aus Galerie / Kamera"}
             </p>
           </div>
 
-          <Button type="submit" disabled={loading || (!isImageMode && !url.trim())} className="w-full">
+          <Button
+            type="submit"
+            disabled={loading || (!isImageMode && !url.trim())}
+            className="w-full"
+          >
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
