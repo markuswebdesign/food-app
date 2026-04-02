@@ -1,8 +1,8 @@
 # PROJ-14: Landingpage
 
-## Status: In Progress
+## Status: Deployed
 **Created:** 2026-04-01
-**Last Updated:** 2026-04-01
+**Last Updated:** 2026-04-02
 
 ## Dependencies
 - Authentifizierung (deployed) — Login/Register-Links auf der Landingpage
@@ -72,4 +72,7 @@ Build erfolgreich (`npm run build` ✓).
 _To be added by /qa_
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-04-02
+**Via:** GitHub → Vercel (auto-deploy)
+**Commit:** 394fca1 (feat PROJ-14 extended sections)

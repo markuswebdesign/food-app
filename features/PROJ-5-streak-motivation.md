@@ -1,8 +1,8 @@
 # PROJ-5: Streak & Motivation
 
-## Status: In Progress
+## Status: Deployed
 **Created:** 2026-04-01
-**Last Updated:** 2026-04-01
+**Last Updated:** 2026-04-02
 
 ## Implementation Notes
 ### Frontend (done)
@@ -148,4 +148,7 @@
 **✅ BEREIT** — Alle Bugs behoben (2026-04-01). Unit Tests: 86/86 bestanden.
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-04-02
+**Via:** GitHub → Vercel (auto-deploy)
+**Commit:** 4666b8c (fix PROJ-5 QA bugs)
