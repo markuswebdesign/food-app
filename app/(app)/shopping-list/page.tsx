@@ -5,8 +5,9 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { lookupCategory, CATEGORY_ORDER } from "@/lib/nutrition/local-ingredients";
+import type { IngredientCategory } from "@/lib/nutrition/local-ingredients";
 import {
   Trash2,
   Printer,
@@ -32,6 +33,7 @@ type AggregatedItem = {
   amount: number | null;
   unit: string | null;
   sources: string[]; // recipe titles
+  category: IngredientCategory;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -158,6 +160,7 @@ export default function ShoppingListPage() {
             amount: parsedAmount,
             unit: ing.unit ?? null,
             sources: [recipe.title],
+            category: lookupCategory(ing.name),
           });
         }
       }
@@ -226,13 +229,34 @@ export default function ShoppingListPage() {
 
   // ─── Derived ────────────────────────────────────────────────────────────────
 
-  const uncheckedRecipe = recipeItems.filter((i) => !checkedKeys.has(i.key));
-  const checkedRecipe = recipeItems.filter((i) => checkedKeys.has(i.key));
-  const uncheckedManual = manualItems.filter((i) => !checkedKeys.has(i.id));
-  const checkedManual = manualItems.filter((i) => checkedKeys.has(i.id));
-  const totalUnchecked = uncheckedRecipe.length + uncheckedManual.length;
-  const totalChecked = checkedRecipe.length + checkedManual.length;
   const kw = getCalendarWeek(weekStart);
+
+  // Combine all items into a unified list with category
+  type UnifiedItem =
+    | { kind: "recipe"; item: AggregatedItem; id: string }
+    | { kind: "manual"; item: ManualItem; id: string };
+
+  const allItems: UnifiedItem[] = [
+    ...recipeItems.map((item) => ({ kind: "recipe" as const, item, id: item.key })),
+    ...manualItems.map((item) => ({ kind: "manual" as const, item, id: item.id })),
+  ];
+
+  const getCategory = (u: UnifiedItem): IngredientCategory =>
+    u.kind === "recipe" ? u.item.category : lookupCategory(u.item.name);
+
+  const uncheckedAll = allItems.filter((u) => !checkedKeys.has(u.id));
+  const checkedAll = allItems.filter((u) => checkedKeys.has(u.id));
+  const totalUnchecked = uncheckedAll.length;
+  const totalChecked = checkedAll.length;
+
+  // Group unchecked items by category in supermarket order
+  const groupedUnchecked = CATEGORY_ORDER.reduce<Record<IngredientCategory, UnifiedItem[]>>(
+    (acc, cat) => {
+      acc[cat] = uncheckedAll.filter((u) => getCategory(u) === cat);
+      return acc;
+    },
+    {} as Record<IngredientCategory, UnifiedItem[]>
+  );
 
   // ─── Render helpers ──────────────────────────────────────────────────────────
 
@@ -296,6 +320,12 @@ export default function ShoppingListPage() {
         </Button>
       </li>
     );
+  }
+
+  function UnifiedItemRow({ unified }: { unified: UnifiedItem }) {
+    return unified.kind === "recipe"
+      ? <RecipeItemRow item={unified.item} />
+      : <ManualItemRow item={unified.item} />;
   }
 
   // ─── Render ──────────────────────────────────────────────────────────────────
@@ -402,7 +432,7 @@ export default function ShoppingListPage() {
       ) : (
         <>
           {/* Empty state */}
-          {recipeItems.length === 0 && manualItems.length === 0 && (
+          {allItems.length === 0 && (
             <div className="text-center py-16 text-muted-foreground print:hidden">
               <ShoppingCart className="h-12 w-12 mx-auto mb-3 opacity-20" />
               <p>Keine Zutaten für KW {kw}.</p>
@@ -412,46 +442,40 @@ export default function ShoppingListPage() {
             </div>
           )}
 
-          {/* Recipe-derived items */}
-          {recipeItems.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                  Aus dem Wochenplan
-                </p>
-                <Badge variant="secondary" className="text-xs">
-                  KW {kw}
-                </Badge>
-              </div>
-              <ul className="divide-y divide-border">
-                {uncheckedRecipe.map((item) => (
-                  <RecipeItemRow key={item.key} item={item} />
-                ))}
-                {checkedRecipe.map((item) => (
-                  <RecipeItemRow key={item.key} item={item} />
-                ))}
-              </ul>
-            </div>
-          )}
+          {/* Grouped by category */}
+          {allItems.length > 0 && (
+            <div className="space-y-5">
+              {CATEGORY_ORDER.map((cat) => {
+                const items = groupedUnchecked[cat];
+                if (items.length === 0) return null;
+                return (
+                  <div key={cat}>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1 print:text-black">
+                      {cat}
+                    </p>
+                    <ul className="divide-y divide-border">
+                      {items.map((u) => (
+                        <UnifiedItemRow key={u.id} unified={u} />
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
 
-          {/* Manual items */}
-          {manualItems.length > 0 && (
-            <>
-              {recipeItems.length > 0 && <Separator className="print:hidden" />}
-              <div>
-                <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                  Manuell hinzugefügt
-                </p>
-                <ul className="divide-y divide-border">
-                  {uncheckedManual.map((item) => (
-                    <ManualItemRow key={item.id} item={item} />
-                  ))}
-                  {checkedManual.map((item) => (
-                    <ManualItemRow key={item.id} item={item} />
-                  ))}
-                </ul>
-              </div>
-            </>
+              {/* Checked items at the bottom */}
+              {checkedAll.length > 0 && (
+                <div className="opacity-60 print:hidden">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                    Erledigt ({checkedAll.length})
+                  </p>
+                  <ul className="divide-y divide-border">
+                    {checkedAll.map((u) => (
+                      <UnifiedItemRow key={u.id} unified={u} />
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           )}
 
           {/* Clear checked */}

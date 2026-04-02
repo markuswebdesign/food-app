@@ -1,8 +1,8 @@
 # PROJ-9: Einkaufsliste Upgrade (Kategorien + Wochenplan-Import)
 
-## Status: Planned
+## Status: In Progress
 **Created:** 2026-04-01
-**Last Updated:** 2026-04-01
+**Last Updated:** 2026-04-02
 
 ## Dependencies
 - Einkaufsliste (deployed)
@@ -68,7 +68,74 @@ Zwei zusammengehörige Erweiterungen der Einkaufsliste:
 ---
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Kernentscheidung: Kein Datenbank-Feld für Kategorien
+
+Der Nutzer möchte **keine manuelle Kategorieauswahl** — nur automatische Gruppierung in der Listenansicht. Daher: Kategorien werden **zur Laufzeit berechnet** (aus dem Zutatennamen) und **nicht gespeichert**. Keine DB-Migration notwendig.
+
+### Wie Kategorisierung funktioniert
+
+Gleiche Technik wie der bestehende Nährwert-Lookup (PROJ-11):
+
+```
+lookupCategory("Karotte")  → "Gemüse & Obst"
+lookupCategory("Hackfleisch") → "Fleisch & Fisch"
+lookupCategory("Quinoa")   → "Sonstiges"
+```
+
+Wort-Grenz-Matching auf den Zutatennamen → Kategorie. Kein API-Call, kein Datenbank-Zugriff.
+
+### Vordefinierte Kategorien (Supermarkt-Reihenfolge)
+
+| Reihenfolge | Kategorie | Beispiele |
+|---|---|---|
+| 1 | Gemüse & Obst | Karotte, Zwiebel, Tomate, Apfel, Zitrone |
+| 2 | Fleisch & Fisch | Hackfleisch, Hähnchen, Lachs, Wurst |
+| 3 | Milchprodukte & Eier | Milch, Butter, Käse, Joghurt, Ei |
+| 4 | Brot & Backwaren | Brot, Brötchen, Mehl, Toast |
+| 5 | Tiefkühl | Tiefkühlgemüse, Tiefkühlpizza |
+| 6 | Gewürze & Öle | Salz, Pfeffer, Öl, Senf, Essig |
+| 7 | Konserven & Trockenware | Nudeln, Reis, Linsen, Dosentomaten |
+| 8 | Getränke | Wasser, Milch (Tetrapack), Saft |
+| 9 | Sonstiges | Alles ohne Match |
+
+### Betroffene Dateien
+
+```
+lib/nutrition/local-ingredients.ts    (erweitern)
+└── + Kategorie-Feld pro Zutat
+└── + lookupCategory(name): string
+
+app/(app)/shopping-list/page.tsx      (erweitern)
+└── Items gruppiert nach Kategorie anzeigen
+└── Statt "Aus dem Wochenplan" (flach) → Kategorien mit Überschrift
+└── Manuelle Items ebenfalls auto-kategorisiert
+```
+
+### Was sich NICHT ändert
+
+- Kein Kategorie-Dropdown beim Hinzufügen (manuelle Items)
+- Kein Kategorie-Feld in der Datenbank
+- Keine DB-Migration
+- Keine neue API-Route
+
+### Bereits implementiert (kein neuer Aufwand)
+
+Die Einkaufsliste lädt Wochenplan-Zutaten **bereits automatisch** und aggregiert Mengen. Teil 2 des ursprünglichen Specs (Wochenplan-Import) ist damit bereits erfüllt. Neu hinzu kommt nur die **Anzeige** als Kategorien-Gruppen.
+
+Optional: Link "Zur Einkaufsliste →" im Wochenplan als Navigations-Shortcut.
+
+### Keine neuen npm-Pakete
+
+Rein client-seitige Logik — kein neues Paket notwendig.
+
+## Implementation Notes (Frontend)
+
+**Implementiert am 2026-04-02**
+
+- `lib/nutrition/local-ingredients.ts` — `lookupCategory(name)` + `CATEGORY_ORDER` + `IngredientCategory` Typ hinzugefügt. 9 Kategorien mit ~100 deutschen Keyword-Einträgen. Gleiche Wort-Grenz-Matching-Strategie wie PROJ-11.
+- `app/(app)/shopping-list/page.tsx` — Items werden nach Kategorie gruppiert angezeigt. `AggregatedItem` hat jetzt `category`-Feld. Manuelle Items werden ebenfalls auto-kategorisiert. Rezept-Items und manuelle Items werden zusammen in Kategorien-Gruppen (in Supermarkt-Reihenfolge) angezeigt. Erledigte Items gesammelt am Ende.
+- Keine DB-Migration, keine neuen API-Routes, kein neues npm-Paket.
 
 ## QA Test Results
 _To be added by /qa_

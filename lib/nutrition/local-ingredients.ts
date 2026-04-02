@@ -251,6 +251,177 @@ const LOCAL_INGREDIENTS: LocalIngredient[] = [
   },
 ];
 
+// ─── PROJ-9: Kategorie-Lookup ─────────────────────────────────────────────────
+
+export type IngredientCategory =
+  | "Gemüse & Obst"
+  | "Fleisch & Fisch"
+  | "Milchprodukte & Eier"
+  | "Brot & Backwaren"
+  | "Tiefkühl"
+  | "Gewürze & Öle"
+  | "Konserven & Trockenware"
+  | "Getränke"
+  | "Sonstiges";
+
+export const CATEGORY_ORDER: IngredientCategory[] = [
+  "Gemüse & Obst",
+  "Fleisch & Fisch",
+  "Milchprodukte & Eier",
+  "Brot & Backwaren",
+  "Tiefkühl",
+  "Gewürze & Öle",
+  "Konserven & Trockenware",
+  "Getränke",
+  "Sonstiges",
+];
+
+type CategoryEntry = {
+  category: IngredientCategory;
+  keywords: string[];
+};
+
+const CATEGORY_ENTRIES: CategoryEntry[] = [
+  {
+    category: "Gemüse & Obst",
+    keywords: [
+      "karotte", "karotten", "möhre", "möhren", "gelbe rübe",
+      "kartoffel", "kartoffeln", "süßkartoffel", "süßkartoffeln",
+      "tomate", "tomaten",
+      "paprika", "paprikaschote",
+      "zucchini", "spinat", "blattspinat", "brokkoli", "broccoli",
+      "champignon", "champignons", "pilze",
+      "lauch", "porree", "sellerie", "staudensellerie", "knollensellerie",
+      "erbsen", "mais", "maiskörner", "zuckermais",
+      "zwiebel", "zwiebeln", "gemüsezwiebel", "frühlingszwiebel",
+      "knoblauch", "knoblauchzehe", "knoblauchzehen",
+      "apfel", "äpfel", "banane", "bananen", "zitrone", "zitronen",
+      "orange", "orangen", "mandarine", "mandarinen",
+      "gurke", "gurken", "salat", "blattsalat", "feldsalat", "rucola",
+      "kohl", "rotkohl", "weißkohl", "blumenkohl", "rosenkohl",
+      "spargel", "rote bete", "fenchel", "aubergine", "avocado",
+      "ingwer", "pak choi", "steckrübe", "pastinake",
+    ],
+  },
+  {
+    category: "Fleisch & Fisch",
+    keywords: [
+      "hähnchenbrust", "hühnerbrust", "hähnchen", "hühnchen", "chicken",
+      "hackfleisch", "gemischtes hackfleisch", "rinderhackfleisch", "hack",
+      "rindfleisch", "rind", "rindersteak", "rinderhüfte",
+      "schweinefleisch", "schwein", "schweinefilet", "schweineschnitzel",
+      "lachs", "lachsfilet", "thunfisch",
+      "wurst", "bratwurst", "leberwurst", "salami", "aufschnitt",
+      "speck", "bacon", "schinken",
+      "pute", "putenfleisch", "putenbrust",
+      "lammfleisch", "lamm", "lammhack",
+      "garnelen", "shrimps", "forelle", "kabeljau", "pangasius",
+    ],
+  },
+  {
+    category: "Milchprodukte & Eier",
+    keywords: [
+      "butter",
+      "milch", "vollmilch", "kuhmilch", "h-milch",
+      "sahne", "schlagsahne", "crème fraîche", "creme fraiche", "schmand",
+      "joghurt", "naturjoghurt", "griechischer joghurt",
+      "magerquark", "quark", "topfen",
+      "gouda", "käse", "schnittkäse", "parmesan", "parmigiano",
+      "mozzarella", "frischkäse", "camembert", "brie", "ricotta", "feta",
+      "ei", "eier", "hühnerei", "hühnereier",
+      "kondensmilch",
+    ],
+  },
+  {
+    category: "Brot & Backwaren",
+    keywords: [
+      "brot", "weißbrot", "toastbrot", "toast",
+      "vollkornbrot", "schwarzbrot", "roggenbrot",
+      "brötchen", "semmel", "laugenbrezel", "bagel", "ciabatta",
+      "mehl", "weizenmehl", "vollkornmehl", "dinkelmehl",
+      "paniermehl", "semmelbrösel",
+      "haferflocken", "hafer",
+      "backpulver", "hefe", "natron",
+    ],
+  },
+  {
+    category: "Tiefkühl",
+    keywords: [
+      "tiefkühlgemüse", "tiefkühlerbsen", "tiefkühlspinat",
+      "tiefkühlpizza", "tiefkühlfisch", "tiefkühlbrot", "tiefkühl",
+    ],
+  },
+  {
+    category: "Gewürze & Öle",
+    keywords: [
+      "salz", "meersalz", "kochsalz",
+      "pfeffer", "schwarzer pfeffer", "weißer pfeffer",
+      "olivenöl", "sonnenblumenöl", "pflanzenöl", "öl", "rapsöl", "neutrales öl",
+      "essig", "weißweinessig", "apfelessig", "balsamico", "rotweinessig",
+      "senf", "mittelscharfer senf", "dijonsenf",
+      "paprikapulver", "kümmel", "kreuzkümmel",
+      "oregano", "thymian", "rosmarin", "basilikum", "petersilie", "schnittlauch",
+      "lorbeer", "lorbeerblatt", "zimt", "curry", "currypulver",
+      "kurkuma", "chili", "chilipulver", "muskat", "muskatnuss",
+      "zucker", "haushaltszucker", "brauner zucker", "rohrzucker",
+      "honig", "ahornsirup",
+      "vanille", "vanillezucker", "vanilleextrakt",
+    ],
+  },
+  {
+    category: "Konserven & Trockenware",
+    keywords: [
+      "nudeln", "pasta", "spaghetti", "penne", "fusilli", "tagliatelle", "makkaroni",
+      "reis", "weißer reis", "langkornreis", "basmati", "jasminreis",
+      "tomaten dose", "dosentomaten", "gehackte tomaten", "passierte tomaten",
+      "tomatenmark", "tomatenpüree",
+      "linsen", "rote linsen", "grüne linsen", "beluga linsen",
+      "kichererbsen", "kidneybohnen", "bohnen", "weiße bohnen",
+      "kokosmilch", "sojasoße", "sojasauce",
+      "brühe", "gemüsebrühe", "hühnerbrühe", "rinderbrühe",
+      "walnüsse", "walnuss", "mandeln", "cashews", "erdnüsse",
+      "mais dose",
+    ],
+  },
+  {
+    category: "Getränke",
+    keywords: [
+      "wasser", "mineralwasser", "sprudel",
+      "saft", "orangensaft", "apfelsaft", "multivitaminsaft",
+      "wein", "rotwein", "weißwein", "prosecco",
+      "bier",
+    ],
+  },
+];
+
+/**
+ * PROJ-9: Bestimmt die Supermarkt-Kategorie eines Zutatennamens.
+ * Gleiche Matching-Strategie wie lookupLocalIngredient (Wort-Grenzen, kein Substring).
+ * Gibt "Sonstiges" zurück wenn kein Match gefunden.
+ */
+export function lookupCategory(query: string): IngredientCategory {
+  const normalized = query.toLowerCase().trim();
+  if (!normalized) return "Sonstiges";
+
+  const queryWords = normalized.split(/\s+/);
+
+  for (const entry of CATEGORY_ENTRIES) {
+    for (const keyword of entry.keywords) {
+      if (normalized === keyword) return entry.category;
+
+      const keywordWords = keyword.split(/\s+/);
+      const queryInKeyword = queryWords.every((w) => keywordWords.includes(w));
+      const keywordInQuery = keywordWords.every((w) => queryWords.includes(w));
+
+      if (queryInKeyword || keywordInQuery) return entry.category;
+    }
+  }
+
+  return "Sonstiges";
+}
+
+// ─── PROJ-11: Nährwert-Lookup ─────────────────────────────────────────────────
+
 /**
  * Sucht Nährwerte in der lokalen Tabelle.
  * Gibt null zurück wenn kein Match gefunden.
