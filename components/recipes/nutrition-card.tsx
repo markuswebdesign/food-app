@@ -22,32 +22,29 @@ function MacroTile({ icon, value, label }: MacroTileProps) {
 
 export function NutritionCard({
   nutrition,
-  servings,
 }: {
   nutrition: RecipeNutrition;
-  servings: number;
+  servings?: number; // nur noch für Rückwärtskompatibilität, wird nicht mehr verwendet
 }) {
-  const s = servings || 1;
-
   const tiles = [
     nutrition.calories != null && {
       icon: <Flame className="h-5 w-5" />,
-      value: `${Math.round(nutrition.calories / s)} kcal`,
+      value: `${Math.round(nutrition.calories)} kcal`,
       label: "Energie",
     },
     nutrition.protein_g != null && {
       icon: <Egg className="h-5 w-5" />,
-      value: `${(nutrition.protein_g / s).toFixed(1)} g`,
+      value: `${nutrition.protein_g.toFixed(1)} g`,
       label: "Eiweiß",
     },
     nutrition.fat_g != null && {
       icon: <Droplets className="h-5 w-5" />,
-      value: `${(nutrition.fat_g / s).toFixed(1)} g`,
+      value: `${nutrition.fat_g.toFixed(1)} g`,
       label: "Fett",
     },
     nutrition.carbohydrates_g != null && {
       icon: <Wheat className="h-5 w-5" />,
-      value: `${(nutrition.carbohydrates_g / s).toFixed(1)} g`,
+      value: `${nutrition.carbohydrates_g.toFixed(1)} g`,
       label: "Kohlenhydrate",
     },
   ].filter(Boolean) as MacroTileProps[];
@@ -74,7 +71,7 @@ export function NutritionCard({
 
       {nutrition.fiber_g != null && (
         <p className="text-sm text-muted-foreground">
-          Ballaststoffe: {(nutrition.fiber_g / s).toFixed(1)} g
+          Ballaststoffe: {nutrition.fiber_g.toFixed(1)} g
         </p>
       )}
 

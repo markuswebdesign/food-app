@@ -201,14 +201,15 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
       );
     }
 
-    // Nährwerte berechnen & speichern
+    // Nährwerte berechnen & speichern — immer PRO PORTION
+    const srv = parseInt(servings) || 1;
     if (manualOverride && manualNutrition.calories) {
       await supabase.from("recipe_nutrition").upsert({
         recipe_id: recipeId!,
-        calories: parseFloat(manualNutrition.calories) || null,
-        protein_g: parseFloat(manualNutrition.protein_g) || null,
-        fat_g: parseFloat(manualNutrition.fat_g) || null,
-        carbohydrates_g: parseFloat(manualNutrition.carbohydrates_g) || null,
+        calories: (parseFloat(manualNutrition.calories) || null) && Math.round((parseFloat(manualNutrition.calories) / srv) * 10) / 10,
+        protein_g: (parseFloat(manualNutrition.protein_g) || null) && Math.round((parseFloat(manualNutrition.protein_g) / srv) * 10) / 10,
+        fat_g: (parseFloat(manualNutrition.fat_g) || null) && Math.round((parseFloat(manualNutrition.fat_g) / srv) * 10) / 10,
+        carbohydrates_g: (parseFloat(manualNutrition.carbohydrates_g) || null) && Math.round((parseFloat(manualNutrition.carbohydrates_g) / srv) * 10) / 10,
         fiber_g: null,
         nutrition_source: "manual",
         unknown_ingredients: [],
@@ -220,7 +221,7 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
         const unknownIngredients = validIngredients
           .filter((i) => i.nutritionStatus === "not_found")
           .map((i) => i.name);
-        const nutrition = calculateRecipeNutrition(
+        const total = calculateRecipeNutrition(
           validIngredients.map((i) => ({
             amount: parseFloat(i.amount) || 0,
             calories_per_100g: i.calories_per_100g,
@@ -232,11 +233,11 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
         );
         await supabase.from("recipe_nutrition").upsert({
           recipe_id: recipeId!,
-          calories: nutrition.calories,
-          protein_g: nutrition.protein_g,
-          fat_g: nutrition.fat_g,
-          carbohydrates_g: nutrition.carbohydrates_g,
-          fiber_g: nutrition.fiber_g,
+          calories: total.calories != null ? Math.round(total.calories / srv) : null,
+          protein_g: total.protein_g != null ? Math.round((total.protein_g / srv) * 10) / 10 : null,
+          fat_g: total.fat_g != null ? Math.round((total.fat_g / srv) * 10) / 10 : null,
+          carbohydrates_g: total.carbohydrates_g != null ? Math.round((total.carbohydrates_g / srv) * 10) / 10 : null,
+          fiber_g: total.fiber_g != null ? Math.round((total.fiber_g / srv) * 10) / 10 : null,
           nutrition_source: "calculated",
           unknown_ingredients: unknownIngredients,
           calculated_at: new Date().toISOString(),

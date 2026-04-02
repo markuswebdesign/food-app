@@ -45,15 +45,14 @@ export default async function LogPage() {
 
   const recipes: RecipeOption[] = (recipesRaw ?? []).map((r: any) => {
     const nutrition = r.recipe_nutrition;
-    const srv = r.servings || 1;
     return {
       id: r.id,
       title: r.title,
-      servings: srv,
-      calories_per_serving: nutrition?.calories != null ? nutrition.calories / srv : null,
-      protein_per_serving: nutrition?.protein_g != null ? nutrition.protein_g / srv : null,
-      fat_per_serving: nutrition?.fat_g != null ? nutrition.fat_g / srv : null,
-      carbs_per_serving: nutrition?.carbohydrates_g != null ? nutrition.carbohydrates_g / srv : null,
+      servings: r.servings || 1,
+      calories_per_serving: nutrition?.calories ?? null,
+      protein_per_serving: nutrition?.protein_g ?? null,
+      fat_per_serving: nutrition?.fat_g ?? null,
+      carbs_per_serving: nutrition?.carbohydrates_g ?? null,
     };
   });
 

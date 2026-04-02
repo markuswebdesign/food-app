@@ -423,9 +423,7 @@ export function WeekPlan({ recipes, categories, macroGoals, calorieGoal }: WeekP
   for (const entry of entries) {
     const n = (entry as any).recipes?.recipe_nutrition;
     if (!n) continue;
-    const srv = entry.servings || 1;
-    const totalSrv = (entry as any).recipes?.servings || 1;
-    const factor = srv / totalSrv;
+    const factor = entry.servings || 1; // n.calories ist bereits pro Portion
     if (!macrosByDay[entry.day_of_week]) {
       macrosByDay[entry.day_of_week] = { protein_g: 0, fat_g: 0, carbs_g: 0, calories: 0 };
     }
