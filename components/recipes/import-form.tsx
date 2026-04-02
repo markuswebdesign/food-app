@@ -169,14 +169,54 @@ export function ImportForm({ categories }: ImportFormProps) {
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null;
-    setImageFile(file);
-    if (file) {
+    // Reset so the same file can be re-selected after clearing
+    e.target.value = "";
+    if (!file) { setImageFile(null); setImagePreview(null); return; }
+
+    // Resize/compress to stay under Claude's 5MB base64 limit (~3.75MB raw)
+    const MAX_PX = 1600;
+    const MAX_BYTES = 3.5 * 1024 * 1024;
+
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      let { width, height } = img;
+      if (width > MAX_PX || height > MAX_PX) {
+        const ratio = Math.min(MAX_PX / width, MAX_PX / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+
+      // Try quality 0.85 first, drop to 0.7 if still too large
+      let dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      const approxBytes = (dataUrl.length * 3) / 4;
+      if (approxBytes > MAX_BYTES) {
+        dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+      }
+
+      // Convert dataUrl back to File for FormData
+      const byteString = atob(dataUrl.split(",")[1]);
+      const ab = new Uint8Array(byteString.length);
+      for (let i = 0; i < byteString.length; i++) ab[i] = byteString.charCodeAt(i);
+      const compressed = new File([ab], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" });
+
+      setImageFile(compressed);
+      setImagePreview(dataUrl);
+    };
+    img.onerror = () => {
+      // Fallback: use original file if canvas fails
+      URL.revokeObjectURL(objectUrl);
+      setImageFile(file);
       const reader = new FileReader();
       reader.onload = (ev) => setImagePreview(ev.target?.result as string);
       reader.readAsDataURL(file);
-    } else {
-      setImagePreview(null);
-    }
+    };
+    img.src = objectUrl;
   }
 
   async function handleImageImportClick() {
