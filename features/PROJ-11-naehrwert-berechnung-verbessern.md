@@ -1,8 +1,8 @@
 # PROJ-11: Genaue Nährwert-Berechnung
 
-## Status: Planned
+## Status: In Progress
 **Created:** 2026-04-01
-**Last Updated:** 2026-04-01
+**Last Updated:** 2026-04-02
 
 ## Dependencies
 - Rezeptverwaltung (deployed)
@@ -91,6 +91,16 @@ Zwei neue Felder in der `recipe_nutrition`-Tabelle:
 ### Keine neuen Abhängigkeiten
 
 OpenFoodFacts ist eine einfache REST-API — kein npm-Paket nötig.
+
+## Implementation Notes (Backend)
+
+**Implementiert am 2026-04-02**
+
+- `app/api/nutrition/lookup/route.ts` — Claude-Schätzung ersetzt durch 3-Layer-Lookup
+- `lib/nutrition/local-ingredients.ts` — 55 deutsche Grundzutaten mit USDA-Werten
+- `supabase/migrations/20260402000000_nutrition_source.sql` — `nutrition_source` + `unknown_ingredients` Felder hinzugefügt
+- API-Response enthält jetzt zusätzlich `source: "local" | "openfoodfacts"` — für Frontend-Badge nutzbar
+- Kein neues npm-Paket benötigt
 
 ## QA Test Results
 _To be added by /qa_
