@@ -410,8 +410,13 @@ export function lookupCategory(query: string): IngredientCategory {
       if (normalized === keyword) return entry.category;
 
       const keywordWords = keyword.split(/\s+/);
+      // All query words appear in keyword (e.g. "Pfeffer" matches "Schwarzer Pfeffer")
       const queryInKeyword = queryWords.every((w) => keywordWords.includes(w));
-      const keywordInQuery = keywordWords.every((w) => queryWords.includes(w));
+      // All keyword words appear in query — only when keyword is as long as query,
+      // preventing single-word keywords from matching multi-word queries.
+      const keywordInQuery =
+        keywordWords.length >= queryWords.length &&
+        keywordWords.every((w) => queryWords.includes(w));
 
       if (queryInKeyword || keywordInQuery) return entry.category;
     }

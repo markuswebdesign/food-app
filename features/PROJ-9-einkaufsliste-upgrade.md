@@ -1,6 +1,6 @@
 # PROJ-9: Einkaufsliste Upgrade (Kategorien + Wochenplan-Import)
 
-## Status: In Progress
+## Status: Approved
 **Created:** 2026-04-01
 **Last Updated:** 2026-04-02
 
@@ -138,7 +138,48 @@ Rein client-seitige Logik — kein neues Paket notwendig.
 - Keine DB-Migration, keine neuen API-Routes, kein neues npm-Paket.
 
 ## QA Test Results
-_To be added by /qa_
+
+**Datum:** 2026-04-02
+**Tester:** QA Engineer (Claude)
+**Unit Tests:** 131/131 bestanden (`npm test`) — 17 neue Tests für `lookupCategory`
+**E2E Tests:** 1 passed (unauthenticated), 8 skipped (require TEST_USER_EMAIL/TEST_USER_PASSWORD)
+
+### Acceptance Criteria
+
+| # | Kriterium | Status | Anmerkung |
+|---|-----------|--------|-----------|
+| 1 | Zutaten nach Kategorien gruppiert angezeigt | ✅ PASS | 9 Kategorien in Supermarkt-Reihenfolge |
+| 2 | Jede Kategorie hat eine Überschrift | ✅ PASS | Nur Kategorien mit Items werden angezeigt |
+| 3 | Beim Hinzufügen kann Kategorie ausgewählt werden | ✅ PASS (angepasst) | Auto-Kategorisierung statt Dropdown — per Nutzer-Anforderung |
+| 4 | Vordefinierte Kategorien vollständig | ✅ PASS | Alle 9 Kategorien implementiert |
+| 5 | Zutaten ohne Kategorie unter "Sonstiges" | ✅ PASS | Fallback implementiert |
+| 6 | Wochenplan-Import mit Kategorien | ✅ PASS | Wochenplan-Items werden ebenfalls auto-kategorisiert |
+
+### Bugs gefunden & behoben
+
+| ID | Schwere | Beschreibung | Behebung |
+|----|---------|--------------|---------|
+| BUG-1 | **High** | `lookupCategory`: Einzel-Keyword "tomaten" (Gemüse & Obst) matchte "Gehackte Tomaten" statt Konserven & Trockenware | `keywordInQuery` nur wenn Keyword mind. so lang wie Query |
+
+### Unit Tests (lib/nutrition/local-ingredients-category.test.ts)
+
+17 Tests: Gemüse, Fleisch, Milchprodukte, Brot, Gewürze, Konserven, Tiefkühl, Fallback Sonstiges, Groß-/Kleinschreibung, leere Eingabe, Wort-Grenz-Schutz (kein Substring-Matching), Mehrwort-Queries — alle bestanden.
+
+### Security Audit
+
+- ✅ Rein client-seitige Logik — keine neuen API-Endpoints, keine sensitiven Daten
+- ✅ localStorage-Daten verlassen den Browser nicht
+- ✅ Keine Änderungen an Supabase-Zugriffen
+
+### Regression
+
+- ✅ `npm test` 131/131 bestanden — keine Regression
+- ✅ Build erfolgreich (`npm run build`)
+- ✅ `lookupLocalIngredient` (PROJ-11) unverändert — alle 17 Nährwert-Tests weiterhin grün
+
+### Produktion-Freigabe
+
+**✅ BEREIT** — BUG-1 behoben, alle Acceptance Criteria erfüllt, Unit Tests grün.
 
 ## Deployment
 _To be added by /deploy_
