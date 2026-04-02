@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Clock, Users } from "lucide-react";
 import type { Recipe } from "@/lib/types";
 import { FavoriteButton } from "./favorite-button";
@@ -47,17 +48,30 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
             </div>
           </CardContent>
 
-          <CardFooter className="text-xs text-muted-foreground flex gap-4">
-            {totalTime > 0 && (
+          <CardFooter className="text-xs text-muted-foreground flex flex-col gap-2 items-start">
+            <div className="flex gap-4">
+              {totalTime > 0 && (
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" /> {totalTime} Min
+                </span>
+              )}
               <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" /> {totalTime} Min
+                <Users className="h-3 w-3" /> {recipe.servings} Portionen
               </span>
-            )}
-            <span className="flex items-center gap-1">
-              <Users className="h-3 w-3" /> {recipe.servings} Portionen
-            </span>
-            {recipe.recipe_nutrition?.calories && (
-              <span>{Math.round(recipe.recipe_nutrition.calories)} kcal</span>
+              {recipe.recipe_nutrition?.calories && (
+                <span>{Math.round(recipe.recipe_nutrition.calories)} kcal</span>
+              )}
+            </div>
+            {recipe.profiles?.username && (
+              <div className="flex items-center gap-1.5">
+                <Avatar className="h-4 w-4">
+                  <AvatarImage src={recipe.profiles.avatar_url ?? undefined} />
+                  <AvatarFallback className="text-[8px]">
+                    {recipe.profiles.username.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span>@{recipe.profiles.username}</span>
+              </div>
             )}
           </CardFooter>
         </Card>

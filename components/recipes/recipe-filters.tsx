@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useCallback, useState } from "react";
 import type { Category } from "@/lib/types";
 
-export function RecipeFilters({ categories }: { categories: Category[] }) {
+export function RecipeFilters({ categories, showMineFilter }: { categories: Category[]; showMineFilter?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -46,6 +46,11 @@ export function RecipeFilters({ categories }: { categories: Category[] }) {
     router.push(`${pathname}?${createQueryString("favorites", current === "1" ? "" : "1")}`);
   }
 
+  function toggleMine() {
+    const current = searchParams.get("mine");
+    router.push(`${pathname}?${createQueryString("mine", current === "1" ? "" : "1")}`);
+  }
+
   return (
     <div className="space-y-3">
       <Input
@@ -62,6 +67,15 @@ export function RecipeFilters({ categories }: { categories: Category[] }) {
         >
           ❤️ MeinFavorit
         </Badge>
+        {showMineFilter && (
+          <Badge
+            variant={searchParams.get("mine") === "1" ? "default" : "outline"}
+            className="cursor-pointer"
+            onClick={toggleMine}
+          >
+            👤 Meine Rezepte
+          </Badge>
+        )}
         <div className="w-px bg-border mx-1" />
         {mealTimes.map((cat) => (
           <Badge

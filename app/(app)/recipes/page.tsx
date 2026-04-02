@@ -9,7 +9,7 @@ import type { Recipe } from "@/lib/types";
 export default async function RecipesPage({
   searchParams,
 }: {
-  searchParams: { category?: string; diet?: string; q?: string; favorites?: string };
+  searchParams: { category?: string; diet?: string; q?: string; favorites?: string; mine?: string };
 }) {
   const supabase = createClient();
 
@@ -38,7 +38,7 @@ export default async function RecipesPage({
     .select(`
       id, title, description, image_url, prep_time_minutes, cook_time_minutes,
       servings, is_public, created_at, user_id,
-      profiles!recipes_user_id_fkey(username),
+      profiles!recipes_user_id_fkey(username, avatar_url),
       recipe_categories(category_id, categories(id, name, slug, type, icon)),
       recipe_nutrition(calories)
     `)
@@ -63,9 +63,11 @@ export default async function RecipesPage({
   const { data: categories } = await supabase.from("categories").select("*").order("type");
 
   let favoriteIds = new Set<string>();
+  let currentUserId: string | null = null;
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
+      currentUserId = user.id;
       const { data: favs } = await supabase
         .from("favorites")
         .select("recipe_id")
@@ -87,6 +89,10 @@ export default async function RecipesPage({
     normalized = normalized.filter((r) => r.is_favorited);
   }
 
+  if (searchParams.mine === "1" && currentUserId) {
+    normalized = normalized.filter((r) => r.user_id === currentUserId);
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -102,7 +108,7 @@ export default async function RecipesPage({
       </div>
 
       <Suspense fallback={<div className="h-16" />}>
-        <RecipeFilters categories={categories ?? []} />
+        <RecipeFilters categories={categories ?? []} showMineFilter={!!currentUserId} />
       </Suspense>
 
       {normalized.length === 0 ? (

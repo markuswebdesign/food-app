@@ -8,6 +8,7 @@ import { NutritionCard } from "@/components/recipes/nutrition-card";
 import { DeleteRecipeButton } from "@/components/recipes/delete-recipe-button";
 import { FavoriteButton } from "@/components/recipes/favorite-button";
 import { Clock, Users } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default async function RecipeDetailPage({
   params,
@@ -21,7 +22,7 @@ export default async function RecipeDetailPage({
     .from("recipes")
     .select(`
       *,
-      profiles!recipes_user_id_fkey(username),
+      profiles!recipes_user_id_fkey(username, avatar_url),
       recipe_categories(categories(id, name, slug, type, icon)),
       ingredients(*),
       recipe_nutrition(*)
@@ -101,6 +102,17 @@ export default async function RecipeDetailPage({
           <span className="flex items-center gap-1.5">
             <Users className="h-4 w-4" /> {recipe.servings} Portionen
           </span>
+          {recipe.profiles?.username && (
+            <span className="flex items-center gap-1.5">
+              <Avatar className="h-5 w-5">
+                <AvatarImage src={(recipe.profiles as any).avatar_url ?? undefined} />
+                <AvatarFallback className="text-[10px]">
+                  {recipe.profiles.username.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              @{recipe.profiles.username}
+            </span>
+          )}
         </div>
       </div>
 
