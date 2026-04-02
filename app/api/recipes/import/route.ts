@@ -247,9 +247,124 @@ ${rawText}`,
   return JSON.parse(match[0]) as ParsedRecipe;
 }
 
+// ─── Claude Vision Extraction (image) ────────────────────────────────────────
+
+async function extractRecipeFromImage(
+  base64Data: string,
+  mediaType: string
+): Promise<ParsedRecipe> {
+  const client = new Anthropic();
+
+  const response = await client.messages.create({
+    model: "claude-haiku-4-5",
+    max_tokens: 2048,
+    system:
+      "Du bist ein Rezept-Extraktions-Assistent. Extrahiere aus dem Bild ein strukturiertes Rezept auf Deutsch. Antworte NUR mit validem JSON, ohne Markdown-Codeblock. Übersetze ins Deutsche falls nötig. Mengenangaben ohne Zahl: amount null setzen. Zubereitungsschritte als nummerierte Liste. Schätze die Nährwerte pro 100g für jede Zutat basierend auf deinem Ernährungswissen.",
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "image",
+            source: { type: "base64", media_type: mediaType as "image/jpeg" | "image/png" | "image/gif" | "image/webp", data: base64Data },
+          },
+          {
+            type: "text",
+            text: `Extrahiere das Rezept aus diesem Bild als JSON mit diesen Feldern:
+{
+  "title": "string",
+  "description": "string oder null",
+  "instructions": "nummerierte Schritte als string",
+  "servings": number,
+  "prep_time_minutes": number oder null,
+  "cook_time_minutes": number oder null,
+  "image_url": null,
+  "category": "Frühstück|Mittagessen|Abendessen|Dessert|Snack oder null",
+  "ingredients": [
+    {
+      "name": "string",
+      "amount": number oder null,
+      "unit": "string oder null",
+      "calories_per_100g": number,
+      "protein_per_100g": number,
+      "fat_per_100g": number,
+      "carbs_per_100g": number,
+      "fiber_per_100g": number oder null
+    }
+  ]
+}
+
+Falls das Bild kein Rezept zeigt, gib trotzdem JSON zurück mit title "Unbekanntes Rezept" und leerer ingredients-Liste.`,
+          },
+        ],
+      },
+    ],
+  });
+
+  const text = response.content[0].type === "text" ? response.content[0].text : "";
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error("Kein JSON in der Antwort gefunden");
+  return JSON.parse(match[0]) as ParsedRecipe;
+}
+
+// ─── Shared: enrich ingredients with OpenFoodFacts ────────────────────────────
+
+async function enrichIngredients(recipe: ParsedRecipe) {
+  return Promise.all(
+    recipe.ingredients.map(async (ing) => {
+      const nutrition = await lookupNutrition(ing.name);
+      const ingAny = ing as any;
+      return {
+        ...ing,
+        calories_per_100g: nutrition.calories_per_100g ?? ingAny.calories_per_100g ?? null,
+        protein_per_100g:  nutrition.protein_per_100g  ?? ingAny.protein_per_100g  ?? null,
+        fat_per_100g:      nutrition.fat_per_100g      ?? ingAny.fat_per_100g      ?? null,
+        carbs_per_100g:    nutrition.carbs_per_100g    ?? ingAny.carbs_per_100g    ?? null,
+        fiber_per_100g:    nutrition.fiber_per_100g    ?? ingAny.fiber_per_100g    ?? null,
+      };
+    })
+  );
+}
+
 // ─── API Route ────────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
+  const contentType = request.headers.get("content-type") ?? "";
+
+  // ── Image upload mode ──────────────────────────────────────────────────────
+  if (contentType.includes("multipart/form-data")) {
+    try {
+      const formData = await request.formData();
+      const file = formData.get("image") as File | null;
+      if (!file) {
+        return NextResponse.json({ error: "Kein Bild hochgeladen" }, { status: 400 });
+      }
+
+      const maxBytes = 5 * 1024 * 1024; // 5 MB
+      if (file.size > maxBytes) {
+        return NextResponse.json({ error: "Bild zu groß (max. 5 MB)" }, { status: 400 });
+      }
+
+      const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+      const mediaType = allowedTypes.includes(file.type) ? file.type : "image/jpeg";
+
+      const arrayBuffer = await file.arrayBuffer();
+      const base64Data = Buffer.from(arrayBuffer).toString("base64");
+
+      const recipe = await extractRecipeFromImage(base64Data, mediaType);
+      const ingredientsWithNutrition = await enrichIngredients(recipe);
+
+      return NextResponse.json({ ...recipe, source_url: null, ingredients: ingredientsWithNutrition });
+    } catch (error) {
+      console.error("Image import error:", error);
+      return NextResponse.json(
+        { error: "Import fehlgeschlagen: " + (error instanceof Error ? error.message : "Unbekannter Fehler") },
+        { status: 500 }
+      );
+    }
+  }
+
+  // ── URL mode ───────────────────────────────────────────────────────────────
   const { url } = await request.json();
 
   if (!url) {
@@ -257,7 +372,6 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // 1. Fetch page content
     let fetched: { text: string; imageUrl: string | null };
 
     if (url.includes("tiktok.com")) {
@@ -280,36 +394,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Extract recipe with Claude Haiku
     const recipe = await extractRecipeWithClaude(fetched.text, url);
-
-    // Use scraped image if Claude didn't find one
     if (!recipe.image_url && fetched.imageUrl) {
       recipe.image_url = fetched.imageUrl;
     }
 
-    // 3. Auto-lookup nutrition for all ingredients in parallel
-    // Prefer OpenFoodFacts values where available; fall back to Claude's estimates
-    const ingredientsWithNutrition = await Promise.all(
-      recipe.ingredients.map(async (ing) => {
-        const nutrition = await lookupNutrition(ing.name);
-        const ingAny = ing as any;
-        return {
-          ...ing,
-          calories_per_100g: nutrition.calories_per_100g ?? ingAny.calories_per_100g ?? null,
-          protein_per_100g:  nutrition.protein_per_100g  ?? ingAny.protein_per_100g  ?? null,
-          fat_per_100g:      nutrition.fat_per_100g      ?? ingAny.fat_per_100g      ?? null,
-          carbs_per_100g:    nutrition.carbs_per_100g    ?? ingAny.carbs_per_100g    ?? null,
-          fiber_per_100g:    nutrition.fiber_per_100g    ?? ingAny.fiber_per_100g    ?? null,
-        };
-      })
-    );
+    const ingredientsWithNutrition = await enrichIngredients(recipe);
 
-    return NextResponse.json({
-      ...recipe,
-      source_url: url,
-      ingredients: ingredientsWithNutrition,
-    });
+    return NextResponse.json({ ...recipe, source_url: url, ingredients: ingredientsWithNutrition });
   } catch (error) {
     console.error("Import error:", error);
     return NextResponse.json(

@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-import { Trash2, Plus, Loader2, ArrowLeft } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Trash2, Plus, Loader2, ArrowLeft, Camera, Link } from "lucide-react";
 import type { Category } from "@/lib/types";
 
 interface IngredientRow {
@@ -47,6 +48,8 @@ export function ImportForm({ categories }: ImportFormProps) {
 
   const [step, setStep] = useState<"input" | "preview">("input");
   const [url, setUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -162,6 +165,66 @@ export function ImportForm({ categories }: ImportFormProps) {
     }
   }
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null;
+    setImageFile(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setImagePreview(null);
+    }
+  }
+
+  async function handleImageImport(e: React.FormEvent) {
+    e.preventDefault();
+    if (!imageFile) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("image", imageFile);
+
+      const res = await fetch("/api/recipes/import", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Import fehlgeschlagen");
+
+      setTitle(data.title ?? "");
+      setDescription(data.description ?? "");
+      setInstructions(data.instructions ?? "");
+      // Use the uploaded image as preview (no remote URL from Claude for image mode)
+      setImageUrl(""); // data: URLs can't be stored in DB; user can add a URL in preview
+      const totalTime = (data.prep_time_minutes ?? 0) + (data.cook_time_minutes ?? 0);
+      setWorkTime(totalTime > 0 ? String(totalTime) : "");
+      setSelectedCategories(detectCategories(data.category));
+      setIngredients(
+        data.ingredients?.length
+          ? data.ingredients.map((i: any) =>
+              typeof i === "string"
+                ? parseIngredient(i)
+                : {
+                    name: i.name ?? "",
+                    amount: i.amount != null ? String(i.amount) : "",
+                    unit: i.unit ?? "",
+                    calories_per_100g: i.calories_per_100g ?? null,
+                    protein_per_100g: i.protein_per_100g ?? null,
+                    fat_per_100g: i.fat_per_100g ?? null,
+                    carbs_per_100g: i.carbs_per_100g ?? null,
+                    fiber_per_100g: i.fiber_per_100g ?? null,
+                  }
+            )
+          : [{ name: "", amount: "", unit: "" }]
+      );
+      setStep("preview");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Import fehlgeschlagen");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleSave() {
     setSaving(true);
     setError(null);
@@ -239,36 +302,109 @@ export function ImportForm({ categories }: ImportFormProps) {
 
   if (step === "input") {
     return (
-      <form onSubmit={handleImport} className="space-y-4">
+      <div className="space-y-4">
         {error && (
           <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</p>
         )}
-        <div className="space-y-2">
-          <Label htmlFor="url">URL des Rezepts</Label>
-          <Input
-            id="url"
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            required
-            placeholder="https://www.chefkoch.de/rezepte/..."
-            className="text-base"
-          />
-          <p className="text-xs text-muted-foreground">
-            Unterstützt: Rezept-Websites mit strukturierten Daten (Schema.org), Instagram, TikTok
-          </p>
-        </div>
-        <Button type="submit" disabled={loading} className="w-full">
-          {loading ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Rezept wird geladen...
-            </>
-          ) : (
-            "Rezept importieren"
-          )}
-        </Button>
-      </form>
+
+        <Tabs defaultValue="url">
+          <TabsList className="w-full">
+            <TabsTrigger value="url" className="flex-1 gap-2">
+              <Link className="h-4 w-4" /> URL
+            </TabsTrigger>
+            <TabsTrigger value="photo" className="flex-1 gap-2">
+              <Camera className="h-4 w-4" /> Foto
+            </TabsTrigger>
+          </TabsList>
+
+          {/* URL Tab */}
+          <TabsContent value="url">
+            <form onSubmit={handleImport} className="space-y-4 pt-3">
+              <div className="space-y-2">
+                <Label htmlFor="url">URL des Rezepts</Label>
+                <Input
+                  id="url"
+                  type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  required
+                  placeholder="https://www.chefkoch.de/rezepte/..."
+                  className="text-base"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Unterstützt: Rezept-Websites, Instagram, TikTok
+                </p>
+              </div>
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Rezept wird geladen...
+                  </>
+                ) : (
+                  "Rezept importieren"
+                )}
+              </Button>
+            </form>
+          </TabsContent>
+
+          {/* Photo Tab */}
+          <TabsContent value="photo">
+            <form onSubmit={handleImageImport} className="space-y-4 pt-3">
+              <div className="space-y-2">
+                <Label htmlFor="photo-input">Foto des Rezepts</Label>
+                {imagePreview ? (
+                  <div className="relative">
+                    <img
+                      src={imagePreview}
+                      alt="Vorschau"
+                      className="w-full rounded-lg object-cover max-h-64"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { setImageFile(null); setImagePreview(null); }}
+                      className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
+                      aria-label="Bild entfernen"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    htmlFor="photo-input"
+                    className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                  >
+                    <Camera className="h-8 w-8 text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">Foto auswählen oder Kamera öffnen</p>
+                    <p className="text-xs text-muted-foreground mt-1">JPG, PNG, WEBP · max. 5 MB</p>
+                  </label>
+                )}
+                <input
+                  id="photo-input"
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="sr-only"
+                  onChange={handleFileChange}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Funktioniert mit Kochbuch-Fotos, Screenshots und handgeschriebenen Rezepten
+                </p>
+              </div>
+              <Button type="submit" disabled={loading || !imageFile} className="w-full">
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Rezept wird erkannt...
+                  </>
+                ) : (
+                  "Rezept erkennen"
+                )}
+              </Button>
+            </form>
+          </TabsContent>
+        </Tabs>
+      </div>
     );
   }
 
@@ -282,7 +418,7 @@ export function ImportForm({ categories }: ImportFormProps) {
         onClick={() => setStep("input")}
         className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft className="h-4 w-4" /> Andere URL versuchen
+        <ArrowLeft className="h-4 w-4" /> Neu importieren
       </button>
 
       {/* Vorschau-Bild */}
