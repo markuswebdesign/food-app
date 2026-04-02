@@ -31,6 +31,7 @@ interface PlanRecipe {
   title: string;
   image_url: string | null;
   category_slugs: string[];
+  recipe_nutrition?: { calories: number | null } | null;
 }
 
 interface PlanEntry {
@@ -223,6 +224,8 @@ export function WeekPlan({ recipes, categories, macroGoals, calorieGoal }: WeekP
   const [selectedSlot, setSelectedSlot] = useState<{ day: number; mealTime: MealTime } | null>(null);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [pickerSelectedId, setPickerSelectedId] = useState<string | null>(null);
+  const [pickerServings, setPickerServings] = useState("1");
 
   useEffect(() => {
     loadWeekPlan();
@@ -258,10 +261,12 @@ export function WeekPlan({ recipes, categories, macroGoals, calorieGoal }: WeekP
     setSelectedSlot({ day, mealTime });
     setSearch("");
     setActiveCategory(null);
+    setPickerSelectedId(null);
+    setPickerServings("1");
     setPickerOpen(true);
   }
 
-  async function addEntry(recipeId: string) {
+  async function addEntry(recipeId: string, servings = 1) {
     if (!selectedSlot) return;
     setSaving(true);
 
@@ -308,11 +313,11 @@ export function WeekPlan({ recipes, categories, macroGoals, calorieGoal }: WeekP
         user_id: user.id,
         date: entryDate,
         name: recipe?.title ?? "Unbekanntes Rezept",
-        calories: nutrition?.calories ?? 0,
-        protein_g: nutrition?.protein_g ?? null,
-        fat_g: nutrition?.fat_g ?? null,
-        carbs_g: nutrition?.carbohydrates_g ?? null,
-        servings: 1,
+        calories: (nutrition?.calories ?? 0) * servings,
+        protein_g: nutrition?.protein_g != null ? nutrition.protein_g * servings : null,
+        fat_g: nutrition?.fat_g != null ? nutrition.fat_g * servings : null,
+        carbs_g: nutrition?.carbohydrates_g != null ? nutrition.carbohydrates_g * servings : null,
+        servings,
         meal_time: selectedSlot.mealTime,
         recipe_id: recipeId,
       })
@@ -327,7 +332,7 @@ export function WeekPlan({ recipes, categories, macroGoals, calorieGoal }: WeekP
         recipe_id: recipeId,
         day_of_week: selectedSlot.day,
         meal_time: selectedSlot.mealTime,
-        servings: 1,
+        servings,
         food_log_entry_id: logEntry?.id ?? null,
       })
       .select("id, meal_plan_id, recipe_id, day_of_week, meal_time, servings, food_log_entry_id, recipes(id, title, image_url)")
@@ -623,9 +628,11 @@ export function WeekPlan({ recipes, categories, macroGoals, calorieGoal }: WeekP
               filteredRecipes.map((recipe) => (
                 <button
                   key={recipe.id}
-                  onClick={() => addEntry(recipe.id)}
+                  onClick={() => { setPickerSelectedId(recipe.id); setPickerServings("1"); }}
                   disabled={saving}
-                  className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors text-left"
+                  className={`w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors text-left ${
+                    pickerSelectedId === recipe.id ? "bg-primary/10 ring-1 ring-primary/30" : ""
+                  }`}
                 >
                   {recipe.image_url ? (
                     <img
@@ -638,11 +645,56 @@ export function WeekPlan({ recipes, categories, macroGoals, calorieGoal }: WeekP
                       🍽
                     </div>
                   )}
-                  <span className="text-sm font-medium line-clamp-2">{recipe.title}</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-medium line-clamp-2">{recipe.title}</span>
+                    {recipe.recipe_nutrition?.calories != null && (
+                      <p className="text-xs text-muted-foreground">
+                        {Math.round(recipe.recipe_nutrition.calories)} kcal/Port.
+                      </p>
+                    )}
+                  </div>
                 </button>
               ))
             )}
           </div>
+
+          {/* Portionen-Auswahl + Bestätigen */}
+          {pickerSelectedId && (
+            <div className="px-4 py-4 border-t space-y-3">
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium shrink-0">Portionen</label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="h-8 w-8 rounded-full border flex items-center justify-center text-lg font-medium hover:bg-muted disabled:opacity-40"
+                    onClick={() => setPickerServings((v) => String(Math.max(0.5, parseFloat(v) - 0.5)))}
+                    disabled={parseFloat(pickerServings) <= 0.5}
+                  >−</button>
+                  <span className="w-8 text-center text-sm font-semibold">{pickerServings}</span>
+                  <button
+                    type="button"
+                    className="h-8 w-8 rounded-full border flex items-center justify-center text-lg font-medium hover:bg-muted"
+                    onClick={() => setPickerServings((v) => String(parseFloat(v) + 0.5))}
+                  >+</button>
+                </div>
+                <span className="text-xs text-muted-foreground ml-auto">
+                  {(() => {
+                    const r = filteredRecipes.find((r) => r.id === pickerSelectedId);
+                    const cal = r?.recipe_nutrition?.calories;
+                    return cal != null ? `${Math.round(cal * parseFloat(pickerServings))} kcal` : "";
+                  })()}
+                </span>
+              </div>
+              <Button
+                className="w-full"
+                disabled={saving}
+                onClick={() => addEntry(pickerSelectedId, parseFloat(pickerServings))}
+              >
+                {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                Hinzufügen
+              </Button>
+            </div>
+          )}
         </SheetContent>
       </Sheet>
     </div>

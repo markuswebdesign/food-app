@@ -12,7 +12,7 @@ export default async function MealPlanPage() {
   const [{ data: recipesRaw }, { data: categories }, { data: favoritesRaw }, { data: profile }] = await Promise.all([
     supabase
       .from("recipes")
-      .select("id, title, image_url, recipe_categories(categories(slug))")
+      .select("id, title, image_url, recipe_categories(categories(slug)), recipe_nutrition(calories)")
       .or(`is_public.eq.true,user_id.eq.${user.id}`)
       .order("title"),
     supabase
@@ -40,6 +40,7 @@ export default async function MealPlanPage() {
       ...(r.recipe_categories?.map((rc: any) => rc.categories?.slug).filter(Boolean) ?? []),
       ...(favoriteIds.has(r.id) ? ["favorite"] : []),
     ],
+    recipe_nutrition: Array.isArray(r.recipe_nutrition) ? r.recipe_nutrition[0] ?? null : r.recipe_nutrition ?? null,
   }));
 
   const allCategories = [
