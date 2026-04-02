@@ -339,11 +339,25 @@ export function WeekPlan({ recipes, categories, macroGoals, calorieGoal }: WeekP
       .single();
 
     if (entry) {
+      const entryWithNutrition = {
+        ...(entry as unknown as PlanEntry),
+        recipes: {
+          ...(entry as any).recipes,
+          recipe_nutrition: nutrition
+            ? {
+                calories: nutrition.calories,
+                protein_g: nutrition.protein_g,
+                fat_g: nutrition.fat_g,
+                carbohydrates_g: nutrition.carbohydrates_g,
+              }
+            : null,
+        },
+      };
       setEntries((prev) => [
         ...prev.filter(
           (e) => !(e.day_of_week === selectedSlot.day && e.meal_time === selectedSlot.mealTime)
         ),
-        entry as unknown as PlanEntry,
+        entryWithNutrition,
       ]);
     }
     setSaving(false);
@@ -483,6 +497,13 @@ export function WeekPlan({ recipes, categories, macroGoals, calorieGoal }: WeekP
         </Button>
       </div>
 
+      {/* Makro-Übersicht */}
+      <WeekMacroSummary
+        macrosByDay={macrosByDay}
+        macroGoals={macroGoals}
+        calorieGoal={calorieGoal}
+      />
+
       {/* Raster */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
@@ -547,13 +568,6 @@ export function WeekPlan({ recipes, categories, macroGoals, calorieGoal }: WeekP
           </DragOverlay>
         </DndContext>
       )}
-
-      {/* Makro-Übersicht */}
-      <WeekMacroSummary
-        macrosByDay={macrosByDay}
-        macroGoals={macroGoals}
-        calorieGoal={calorieGoal}
-      />
 
       {/* Rezept-Picker */}
       <Sheet open={pickerOpen} onOpenChange={setPickerOpen}>

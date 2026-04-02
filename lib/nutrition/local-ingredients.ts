@@ -249,6 +249,180 @@ const LOCAL_INGREDIENTS: LocalIngredient[] = [
     aliases: ["mandeln"],
     calories_per_100g: 579, protein_per_100g: 21, fat_per_100g: 50, carbs_per_100g: 22, fiber_per_100g: 13,
   },
+  {
+    aliases: ["erdnüsse", "erdnuss"],
+    calories_per_100g: 567, protein_per_100g: 26, fat_per_100g: 49, carbs_per_100g: 16, fiber_per_100g: 9,
+  },
+  {
+    aliases: ["cashews", "cashewkerne"],
+    calories_per_100g: 553, protein_per_100g: 18, fat_per_100g: 44, carbs_per_100g: 30, fiber_per_100g: 3,
+  },
+  {
+    aliases: ["erdnussbutter", "peanutbutter", "peanut butter"],
+    calories_per_100g: 588, protein_per_100g: 25, fat_per_100g: 50, carbs_per_100g: 20, fiber_per_100g: 6,
+  },
+
+  // ── Obst ──────────────────────────────────────────────────────────
+  {
+    aliases: ["apfel", "äpfel"],
+    calories_per_100g: 52, protein_per_100g: 0.3, fat_per_100g: 0.2, carbs_per_100g: 14, fiber_per_100g: 2,
+  },
+  {
+    aliases: ["banane", "bananen"],
+    calories_per_100g: 89, protein_per_100g: 1.1, fat_per_100g: 0.3, carbs_per_100g: 23, fiber_per_100g: 3,
+  },
+  {
+    aliases: ["birne", "birnen"],
+    calories_per_100g: 57, protein_per_100g: 0.4, fat_per_100g: 0.1, carbs_per_100g: 15, fiber_per_100g: 3,
+  },
+  {
+    aliases: ["orange", "orangen", "mandarine", "mandarinen"],
+    calories_per_100g: 47, protein_per_100g: 0.9, fat_per_100g: 0.1, carbs_per_100g: 12, fiber_per_100g: 2,
+  },
+  {
+    aliases: ["erdbeere", "erdbeeren"],
+    calories_per_100g: 32, protein_per_100g: 0.7, fat_per_100g: 0.3, carbs_per_100g: 8, fiber_per_100g: 2,
+  },
+  {
+    aliases: ["weintrauben", "weintraube", "trauben", "traube"],
+    calories_per_100g: 69, protein_per_100g: 0.7, fat_per_100g: 0.2, carbs_per_100g: 18, fiber_per_100g: 1,
+  },
+  {
+    aliases: ["mango", "mangos"],
+    calories_per_100g: 60, protein_per_100g: 0.8, fat_per_100g: 0.4, carbs_per_100g: 15, fiber_per_100g: 2,
+  },
+  {
+    aliases: ["ananas"],
+    calories_per_100g: 50, protein_per_100g: 0.5, fat_per_100g: 0.1, carbs_per_100g: 13, fiber_per_100g: 1,
+  },
+  {
+    aliases: ["kiwi", "kiwis"],
+    calories_per_100g: 61, protein_per_100g: 1.1, fat_per_100g: 0.5, carbs_per_100g: 15, fiber_per_100g: 3,
+  },
+  {
+    aliases: ["zitrone", "zitronen"],
+    calories_per_100g: 29, protein_per_100g: 1.1, fat_per_100g: 0.3, carbs_per_100g: 9, fiber_per_100g: 3,
+  },
+  {
+    aliases: ["blaubeeren", "heidelbeeren"],
+    calories_per_100g: 57, protein_per_100g: 0.7, fat_per_100g: 0.3, carbs_per_100g: 14, fiber_per_100g: 2,
+  },
+  {
+    aliases: ["himbeeren"],
+    calories_per_100g: 52, protein_per_100g: 1.2, fat_per_100g: 0.7, carbs_per_100g: 12, fiber_per_100g: 7,
+  },
+  {
+    aliases: ["wassermelone", "melone"],
+    calories_per_100g: 30, protein_per_100g: 0.6, fat_per_100g: 0.2, carbs_per_100g: 8, fiber_per_100g: 0.4,
+  },
+  {
+    aliases: ["avocado", "avocados"],
+    calories_per_100g: 160, protein_per_100g: 2, fat_per_100g: 15, carbs_per_100g: 9, fiber_per_100g: 7,
+  },
+
+  // ── Süßes & Snacks ────────────────────────────────────────────────
+  {
+    aliases: ["schokolade", "vollmilchschokolade", "zartbitterschokolade", "schokolade 70%"],
+    calories_per_100g: 535, protein_per_100g: 7, fat_per_100g: 31, carbs_per_100g: 59, fiber_per_100g: 3,
+  },
+  {
+    aliases: ["snickers"],
+    calories_per_100g: 488, protein_per_100g: 4.9, fat_per_100g: 24, carbs_per_100g: 62, fiber_per_100g: 1,
+  },
+  {
+    aliases: ["twix"],
+    calories_per_100g: 495, protein_per_100g: 4.5, fat_per_100g: 23, carbs_per_100g: 66, fiber_per_100g: 1,
+  },
+  {
+    aliases: ["kitkat", "kit kat"],
+    calories_per_100g: 513, protein_per_100g: 6.5, fat_per_100g: 26, carbs_per_100g: 63, fiber_per_100g: 1,
+  },
+  {
+    aliases: ["keks", "kekse", "butterkeks", "butterkekse"],
+    calories_per_100g: 458, protein_per_100g: 7, fat_per_100g: 18, carbs_per_100g: 67, fiber_per_100g: 2,
+  },
+  {
+    aliases: ["chips", "kartoffelchips"],
+    calories_per_100g: 536, protein_per_100g: 7, fat_per_100g: 35, carbs_per_100g: 50, fiber_per_100g: 4,
+  },
+  {
+    aliases: ["popcorn"],
+    calories_per_100g: 387, protein_per_100g: 13, fat_per_100g: 5, carbs_per_100g: 78, fiber_per_100g: 15,
+  },
+  {
+    aliases: ["gummibärchen", "haribo"],
+    calories_per_100g: 343, protein_per_100g: 6.9, fat_per_100g: 0.5, carbs_per_100g: 77, fiber_per_100g: 0,
+  },
+  {
+    aliases: ["croissant", "croissants"],
+    calories_per_100g: 406, protein_per_100g: 8, fat_per_100g: 21, carbs_per_100g: 48, fiber_per_100g: 2,
+  },
+  {
+    aliases: ["nutella", "nuss-nougat-creme"],
+    calories_per_100g: 539, protein_per_100g: 6.3, fat_per_100g: 31, carbs_per_100g: 58, fiber_per_100g: 3,
+  },
+  {
+    aliases: ["müsliriegel", "energieriegel", "getreideriegel"],
+    calories_per_100g: 380, protein_per_100g: 6, fat_per_100g: 8, carbs_per_100g: 70, fiber_per_100g: 4,
+  },
+
+  // ── Proteinprodukte ───────────────────────────────────────────────
+  {
+    aliases: ["proteinshake", "protein shake", "eiweißshake", "whey shake"],
+    calories_per_100g: 98, protein_per_100g: 20, fat_per_100g: 2, carbs_per_100g: 3, fiber_per_100g: 0,
+  },
+  {
+    aliases: ["whey protein", "whey", "proteinpulver", "eiweißpulver"],
+    calories_per_100g: 380, protein_per_100g: 80, fat_per_100g: 4, carbs_per_100g: 8, fiber_per_100g: 0,
+  },
+  {
+    aliases: ["proteinriegel", "protein riegel", "eiweißriegel"],
+    calories_per_100g: 350, protein_per_100g: 33, fat_per_100g: 9, carbs_per_100g: 37, fiber_per_100g: 3,
+  },
+
+  // ── Getränke ──────────────────────────────────────────────────────
+  {
+    aliases: ["orangensaft", "oj"],
+    calories_per_100g: 45, protein_per_100g: 0.7, fat_per_100g: 0.2, carbs_per_100g: 10, fiber_per_100g: 0.2,
+  },
+  {
+    aliases: ["apfelsaft"],
+    calories_per_100g: 46, protein_per_100g: 0.1, fat_per_100g: 0.1, carbs_per_100g: 11, fiber_per_100g: 0.2,
+  },
+  {
+    aliases: ["cola", "coca-cola", "pepsi"],
+    calories_per_100g: 42, protein_per_100g: 0, fat_per_100g: 0, carbs_per_100g: 11, fiber_per_100g: 0,
+  },
+  {
+    aliases: ["bier", "pils", "helles"],
+    calories_per_100g: 43, protein_per_100g: 0.5, fat_per_100g: 0, carbs_per_100g: 3.5, fiber_per_100g: 0,
+  },
+  {
+    aliases: ["kaffee", "schwarzer kaffee", "espresso"],
+    calories_per_100g: 2, protein_per_100g: 0.3, fat_per_100g: 0, carbs_per_100g: 0, fiber_per_100g: 0,
+  },
+  {
+    aliases: ["milchkaffee", "latte macchiato", "cappuccino"],
+    calories_per_100g: 40, protein_per_100g: 2, fat_per_100g: 1.5, carbs_per_100g: 5, fiber_per_100g: 0,
+  },
+
+  // ── Fertigprodukte & Fast Food ────────────────────────────────────
+  {
+    aliases: ["pizza", "tiefkühlpizza", "pizza margherita"],
+    calories_per_100g: 266, protein_per_100g: 11, fat_per_100g: 11, carbs_per_100g: 33, fiber_per_100g: 2,
+  },
+  {
+    aliases: ["burger", "hamburger", "cheeseburger"],
+    calories_per_100g: 254, protein_per_100g: 14, fat_per_100g: 11, carbs_per_100g: 25, fiber_per_100g: 1,
+  },
+  {
+    aliases: ["pommes", "pommes frites", "fritten"],
+    calories_per_100g: 312, protein_per_100g: 3.4, fat_per_100g: 15, carbs_per_100g: 41, fiber_per_100g: 3,
+  },
+  {
+    aliases: ["döner", "döner kebab"],
+    calories_per_100g: 235, protein_per_100g: 16, fat_per_100g: 12, carbs_per_100g: 17, fiber_per_100g: 1,
+  },
 ];
 
 // ─── PROJ-9: Kategorie-Lookup ─────────────────────────────────────────────────

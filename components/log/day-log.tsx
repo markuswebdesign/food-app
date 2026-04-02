@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ChevronLeft, ChevronRight, Plus, Trash2, Loader2, Flame, UtensilsCrossed } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2, Loader2, Flame, UtensilsCrossed, Search, X } from "lucide-react";
 import { toDateString, isToday, formatDate, scaleRecipeNutrition, sumCalories, calorieBalanceLabel } from "@/lib/utils/log";
 import { MacroProgress, sumMacros, effectiveMacroGoals, type MacroGoals } from "@/components/log/macro-progress";
 
@@ -50,13 +50,20 @@ export type RecipeOption = {
 
 type MealTime = "breakfast" | "lunch" | "dinner" | "snack";
 
+type FoodLookupResult = {
+  calories_per_100g: number;
+  protein_per_100g: number;
+  fat_per_100g: number;
+  carbs_per_100g: number;
+  source: "local" | "openfoodfacts";
+};
+
 const MEAL_LABELS: Record<MealTime, string> = {
   breakfast: "Frühstück",
   lunch: "Mittagessen",
   dinner: "Abendessen",
   snack: "Snack",
 };
-
 
 // ─── DayLog ──────────────────────────────────────────────────────────────────
 
@@ -76,10 +83,26 @@ export function DayLog({ userId, initialEntries, recipes, calorieGoal, macroGoal
   const [loadingDate, setLoadingDate] = useState(false);
 
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetMealTime, setSheetMealTime] = useState<MealTime | "">("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // Manual entry form state
+  // ─── Food search state ────────────────────────────────────────────────────
+  const [foodQuery, setFoodQuery] = useState("");
+  const [foodResult, setFoodResult] = useState<FoodLookupResult | null>(null);
+  const [foodSearching, setFoodSearching] = useState(false);
+  const [foodNotFound, setFoodNotFound] = useState(false);
+  const [foodAmount, setFoodAmount] = useState("100");
+  const [foodMealTime, setFoodMealTime] = useState<MealTime | "">("");
+  const foodDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ─── Recipe search state ──────────────────────────────────────────────────
+  const [recipeSearch, setRecipeSearch] = useState("");
+  const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
+  const [recipeServings, setRecipeServings] = useState("1");
+  const [recipeMealTime, setRecipeMealTime] = useState<MealTime | "">("");
+
+  // ─── Manual form state ────────────────────────────────────────────────────
   const [manualName, setManualName] = useState("");
   const [manualCals, setManualCals] = useState("");
   const [manualProtein, setManualProtein] = useState("");
@@ -87,13 +110,6 @@ export function DayLog({ userId, initialEntries, recipes, calorieGoal, macroGoal
   const [manualCarbs, setManualCarbs] = useState("");
   const [manualMealTime, setManualMealTime] = useState<MealTime | "">("");
   const [manualError, setManualError] = useState("");
-
-  // Recipe entry form state
-  const [selectedRecipeId, setSelectedRecipeId] = useState("");
-  const [recipeServings, setRecipeServings] = useState("1");
-  const [recipeMealTime, setRecipeMealTime] = useState<MealTime | "">("");
-  const [recipeSearch, setRecipeSearch] = useState("");
-  const [recipeError, setRecipeError] = useState("");
 
   // ─── Date navigation ───────────────────────────────────────────────────────
 
@@ -109,7 +125,6 @@ export function DayLog({ userId, initialEntries, recipes, calorieGoal, macroGoal
     setLoadingDate(false);
   }, [userId, supabase]);
 
-  // Refresh when window/tab becomes visible again (picks up Wochenplan changes)
   useEffect(() => {
     function onVisibilityChange() {
       if (document.visibilityState === "visible") {
@@ -141,51 +156,83 @@ export function DayLog({ userId, initialEntries, recipes, calorieGoal, macroGoal
     loadEntriesForDate(today);
   }
 
-  // ─── Add manual entry ─────────────────────────────────────────────────────
+  // ─── Food search / lookup ─────────────────────────────────────────────────
 
-  async function handleAddManual() {
-    setManualError("");
-    if (!manualName.trim()) { setManualError("Name ist erforderlich"); return; }
-    if (manualCals === "") { setManualError("Kalorien sind erforderlich"); return; }
+  function handleFoodQueryChange(value: string) {
+    setFoodQuery(value);
+    setFoodResult(null);
+    setFoodNotFound(false);
 
+    if (foodDebounceRef.current) clearTimeout(foodDebounceRef.current);
+    if (value.trim().length < 2) { setFoodSearching(false); return; }
+
+    setFoodSearching(true);
+    foodDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/nutrition/lookup?q=${encodeURIComponent(value.trim())}`);
+        const data: FoodLookupResult | null = await res.json();
+        if (data) {
+          setFoodResult(data);
+          setFoodNotFound(false);
+        } else {
+          setFoodNotFound(true);
+        }
+      } catch {
+        setFoodNotFound(true);
+      } finally {
+        setFoodSearching(false);
+      }
+    }, 400);
+  }
+
+  const foodAmountNum = parseFloat(foodAmount) || 0;
+  const foodFactor = foodAmountNum / 100;
+  const calculatedFood = foodResult && foodAmountNum > 0 ? {
+    calories: Math.round(foodResult.calories_per_100g * foodFactor),
+    protein_g: Math.round(foodResult.protein_per_100g * foodFactor * 10) / 10,
+    fat_g: Math.round(foodResult.fat_per_100g * foodFactor * 10) / 10,
+    carbs_g: Math.round(foodResult.carbs_per_100g * foodFactor * 10) / 10,
+  } : null;
+
+  async function handleAddFood() {
+    if (!foodResult || !calculatedFood) return;
     setSaving(true);
     const { data, error } = await supabase
       .from("food_log_entries")
       .insert({
         user_id: userId,
         date: toDateString(currentDate),
-        name: manualName.trim(),
-        calories: parseFloat(manualCals),
-        protein_g: manualProtein ? parseFloat(manualProtein) : null,
-        fat_g: manualFat ? parseFloat(manualFat) : null,
-        carbs_g: manualCarbs ? parseFloat(manualCarbs) : null,
+        name: foodQuery.trim(),
+        calories: calculatedFood.calories,
+        protein_g: calculatedFood.protein_g,
+        fat_g: calculatedFood.fat_g,
+        carbs_g: calculatedFood.carbs_g,
         servings: 1,
-        meal_time: manualMealTime || null,
+        meal_time: foodMealTime || null,
         recipe_id: null,
       })
       .select()
       .single();
-
     setSaving(false);
-    if (error) { setManualError("Fehler beim Speichern"); return; }
-
+    if (error) return;
     setEntries((prev) => [...prev, data as LogEntry]);
-    setManualName(""); setManualCals(""); setManualProtein("");
-    setManualFat(""); setManualCarbs(""); setManualMealTime("");
+    resetFoodState();
     setSheetOpen(false);
   }
 
-  // ─── Add recipe entry ─────────────────────────────────────────────────────
+  function resetFoodState() {
+    setFoodQuery(""); setFoodResult(null); setFoodNotFound(false);
+    setFoodAmount("100"); setFoodMealTime(""); setFoodSearching(false);
+  }
+
+  // ─── Add recipe ───────────────────────────────────────────────────────────
 
   async function handleAddRecipe() {
-    setRecipeError("");
     const recipe = recipes.find((r) => r.id === selectedRecipeId);
-    if (!recipe) { setRecipeError("Bitte ein Rezept auswählen"); return; }
+    if (!recipe) return;
     const srv = parseFloat(recipeServings);
-    if (!srv || srv <= 0) { setRecipeError("Portionen müssen > 0 sein"); return; }
-
+    if (!srv || srv <= 0) return;
     const scaled = scaleRecipeNutrition(recipe, srv);
-
     setSaving(true);
     const { data, error } = await supabase
       .from("food_log_entries")
@@ -203,16 +250,45 @@ export function DayLog({ userId, initialEntries, recipes, calorieGoal, macroGoal
       })
       .select()
       .single();
-
     setSaving(false);
-    if (error) { setRecipeError("Fehler beim Speichern"); return; }
-
+    if (error) return;
     setEntries((prev) => [...prev, data as LogEntry]);
-    setSelectedRecipeId(""); setRecipeServings("1"); setRecipeMealTime(""); setRecipeSearch("");
+    setSelectedRecipeId(null); setRecipeServings("1"); setRecipeMealTime(""); setRecipeSearch("");
     setSheetOpen(false);
   }
 
-  // ─── Delete entry ─────────────────────────────────────────────────────────
+  // ─── Add manual ───────────────────────────────────────────────────────────
+
+  async function handleAddManual() {
+    setManualError("");
+    if (!manualName.trim()) { setManualError("Name ist erforderlich"); return; }
+    if (manualCals === "") { setManualError("Kalorien sind erforderlich"); return; }
+    setSaving(true);
+    const { data, error } = await supabase
+      .from("food_log_entries")
+      .insert({
+        user_id: userId,
+        date: toDateString(currentDate),
+        name: manualName.trim(),
+        calories: parseFloat(manualCals),
+        protein_g: manualProtein ? parseFloat(manualProtein) : null,
+        fat_g: manualFat ? parseFloat(manualFat) : null,
+        carbs_g: manualCarbs ? parseFloat(manualCarbs) : null,
+        servings: 1,
+        meal_time: manualMealTime || null,
+        recipe_id: null,
+      })
+      .select()
+      .single();
+    setSaving(false);
+    if (error) { setManualError("Fehler beim Speichern"); return; }
+    setEntries((prev) => [...prev, data as LogEntry]);
+    setManualName(""); setManualCals(""); setManualProtein("");
+    setManualFat(""); setManualCarbs(""); setManualMealTime("");
+    setSheetOpen(false);
+  }
+
+  // ─── Delete ───────────────────────────────────────────────────────────────
 
   async function handleDelete(id: string) {
     await supabase.from("food_log_entries").delete().eq("id", id);
@@ -220,7 +296,18 @@ export function DayLog({ userId, initialEntries, recipes, calorieGoal, macroGoal
     setDeleteId(null);
   }
 
-  // ─── Computed totals ──────────────────────────────────────────────────────
+  function openSheet(mealTime: MealTime | "" = "") {
+    setSheetMealTime(mealTime);
+    setFoodMealTime(mealTime);
+    setRecipeMealTime(mealTime);
+    setManualMealTime(mealTime);
+    resetFoodState();
+    setSelectedRecipeId(null); setRecipeServings("1"); setRecipeSearch("");
+    setManualName(""); setManualCals(""); setManualProtein(""); setManualFat(""); setManualCarbs(""); setManualError("");
+    setSheetOpen(true);
+  }
+
+  // ─── Computed ─────────────────────────────────────────────────────────────
 
   const totalCals = sumCalories(entries);
   const macroTotals = sumMacros(entries);
@@ -228,6 +315,7 @@ export function DayLog({ userId, initialEntries, recipes, calorieGoal, macroGoal
   const filteredRecipes = recipes.filter((r) =>
     r.title.toLowerCase().includes(recipeSearch.toLowerCase())
   );
+  const selectedRecipe = recipes.find((r) => r.id === selectedRecipeId) ?? null;
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
@@ -299,9 +387,17 @@ export function DayLog({ userId, initialEntries, recipes, calorieGoal, macroGoal
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {MEAL_LABELS[mealTime]}
                   </p>
-                  <p className="text-xs text-muted-foreground tabular-nums">
-                    {Math.round(groupCals)} kcal
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs text-muted-foreground tabular-nums">
+                      {Math.round(groupCals)} kcal
+                    </p>
+                    <button
+                      onClick={() => openSheet(mealTime)}
+                      className="h-5 w-5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary flex items-center justify-center transition-colors"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-1.5">
                   {group.map((entry) => (
@@ -349,7 +445,6 @@ export function DayLog({ userId, initialEntries, recipes, calorieGoal, macroGoal
                           <p className="font-medium text-sm truncate">{entry.name}</p>
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {Math.round(entry.calories)} kcal
-                            {entry.servings !== 1 && ` · ${entry.servings} Port.`}
                             {entry.protein_g != null && ` · ${Math.round(entry.protein_g)}g P`}
                             {entry.fat_g != null && ` · ${Math.round(entry.fat_g)}g F`}
                             {entry.carbs_g != null && ` · ${Math.round(entry.carbs_g)}g K`}
@@ -374,92 +469,233 @@ export function DayLog({ userId, initialEntries, recipes, calorieGoal, macroGoal
       )}
 
       {/* Add Button */}
-      <Button className="w-full" onClick={() => setSheetOpen(true)}>
+      <Button className="w-full" onClick={() => openSheet()}>
         <Plus className="h-4 w-4 mr-2" /> Mahlzeit hinzufügen
       </Button>
 
       {/* Add Entry Sheet */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-2xl">
-          <SheetHeader className="pb-2">
+        <SheetContent side="right" className="w-full sm:max-w-sm flex flex-col gap-0 p-0">
+          <SheetHeader className="px-6 pt-6 pb-4 border-b">
             <SheetTitle>Mahlzeit hinzufügen</SheetTitle>
           </SheetHeader>
 
-          <Tabs defaultValue="recipe" className="mt-2">
-            <TabsList className="w-full">
-              <TabsTrigger value="recipe" className="flex-1">Rezept wählen</TabsTrigger>
-              <TabsTrigger value="manual" className="flex-1">Manuell eingeben</TabsTrigger>
+          <Tabs defaultValue="food" className="flex flex-col flex-1 min-h-0">
+            <TabsList className="mx-4 mt-3 mb-0 shrink-0">
+              <TabsTrigger value="food" className="flex-1 text-xs">Lebensmittel</TabsTrigger>
+              <TabsTrigger value="recipe" className="flex-1 text-xs">Rezept</TabsTrigger>
+              <TabsTrigger value="manual" className="flex-1 text-xs">Manuell</TabsTrigger>
             </TabsList>
 
-            {/* Recipe Tab */}
-            <TabsContent value="recipe" className="space-y-4 pt-3">
-              <div className="space-y-1.5">
-                <Label>Rezept suchen</Label>
-                <Input
-                  placeholder="Rezeptname..."
-                  value={recipeSearch}
-                  onChange={(e) => setRecipeSearch(e.target.value)}
-                />
+            {/* ── Lebensmittel Tab ─────────────────────────────────────────── */}
+            <TabsContent value="food" className="flex flex-col flex-1 min-h-0 mt-0">
+              <div className="px-4 pt-4 pb-3 border-b space-y-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    className="pl-9 pr-9"
+                    placeholder="z.B. Apfel, Snickers, Proteinshake..."
+                    value={foodQuery}
+                    onChange={(e) => handleFoodQueryChange(e.target.value)}
+                    autoFocus
+                  />
+                  {foodQuery && (
+                    <button
+                      onClick={() => { setFoodQuery(""); setFoodResult(null); setFoodNotFound(false); }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
               </div>
 
-              <div className="space-y-1.5 max-h-48 overflow-y-auto border rounded-lg">
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+                {/* Searching indicator */}
+                {foodSearching && (
+                  <div className="flex items-center justify-center gap-2 py-6 text-muted-foreground text-sm">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Suche Nährwerte...</span>
+                  </div>
+                )}
+
+                {/* Not found */}
+                {!foodSearching && foodNotFound && (
+                  <div className="text-center py-6 text-muted-foreground text-sm space-y-1">
+                    <p>Keine Nährwerte für &quot;{foodQuery}&quot; gefunden.</p>
+                    <p className="text-xs">Versuche eine andere Schreibweise oder nutze &quot;Manuell&quot;.</p>
+                  </div>
+                )}
+
+                {/* Result card */}
+                {!foodSearching && foodResult && (
+                  <div className="space-y-4">
+                    {/* Nutrition per 100g info */}
+                    <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium text-sm capitalize">{foodQuery}</p>
+                        <Badge variant="outline" className="text-xs">
+                          {foodResult.source === "local" ? "Datenbank" : "OpenFoodFacts"}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Pro 100g: {foodResult.calories_per_100g} kcal · {foodResult.protein_per_100g}g P · {foodResult.fat_per_100g}g F · {foodResult.carbs_per_100g}g K
+                      </p>
+                    </div>
+
+                    {/* Amount input */}
+                    <div className="space-y-1.5">
+                      <Label>Menge (g)</Label>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          className="h-9 w-9 rounded-full border flex items-center justify-center text-lg font-medium hover:bg-muted disabled:opacity-40 shrink-0"
+                          onClick={() => setFoodAmount((v) => String(Math.max(5, (parseFloat(v) || 100) - 10)))}
+                        >−</button>
+                        <Input
+                          type="number"
+                          min="1"
+                          className="text-center font-semibold"
+                          value={foodAmount}
+                          onChange={(e) => setFoodAmount(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="h-9 w-9 rounded-full border flex items-center justify-center text-lg font-medium hover:bg-muted shrink-0"
+                          onClick={() => setFoodAmount((v) => String((parseFloat(v) || 100) + 10))}
+                        >+</button>
+                      </div>
+                    </div>
+
+                    {/* Calculated macros preview */}
+                    {calculatedFood && (
+                      <div className="rounded-lg bg-primary/5 border border-primary/20 px-4 py-3">
+                        <p className="text-xs text-muted-foreground mb-1">Berechnete Nährwerte</p>
+                        <p className="font-semibold text-base">{calculatedFood.calories} kcal</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {calculatedFood.protein_g}g Protein · {calculatedFood.fat_g}g Fett · {calculatedFood.carbs_g}g Kohlenhydrate
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Meal time */}
+                    <div className="space-y-1.5">
+                      <Label>Mahlzeit</Label>
+                      <Select value={foodMealTime} onValueChange={(v) => setFoodMealTime(v as MealTime)}>
+                        <SelectTrigger><SelectValue placeholder="Optional" /></SelectTrigger>
+                        <SelectContent>
+                          {(Object.keys(MEAL_LABELS) as MealTime[]).map((k) => (
+                            <SelectItem key={k} value={k}>{MEAL_LABELS[k]}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
+                {/* Empty state */}
+                {!foodSearching && !foodResult && !foodNotFound && (
+                  <div className="flex flex-col items-center justify-center py-10 text-center text-muted-foreground gap-2">
+                    <Search className="h-8 w-8 opacity-20" />
+                    <p className="text-sm">Lebensmittel suchen</p>
+                    <p className="text-xs">Nährwerte werden automatisch berechnet</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Add button pinned to bottom */}
+              {foodResult && calculatedFood && (
+                <div className="px-4 py-4 border-t">
+                  <Button className="w-full" onClick={handleAddFood} disabled={saving || foodAmountNum <= 0}>
+                    {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                    Hinzufügen · {calculatedFood.calories} kcal
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* ── Rezept Tab ───────────────────────────────────────────────── */}
+            <TabsContent value="recipe" className="flex flex-col flex-1 min-h-0 mt-0">
+              <div className="px-4 pt-4 pb-3 border-b">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    className="pl-9"
+                    placeholder="Rezept suchen..."
+                    value={recipeSearch}
+                    onChange={(e) => setRecipeSearch(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
                 {filteredRecipes.length === 0 ? (
-                  <p className="text-sm text-muted-foreground p-3 text-center">Keine Rezepte gefunden</p>
+                  <p className="text-sm text-muted-foreground text-center py-10">Keine Rezepte gefunden</p>
                 ) : (
                   filteredRecipes.map((r) => (
                     <button
                       key={r.id}
-                      className={`w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors ${
-                        selectedRecipeId === r.id ? "bg-primary/10 font-medium" : ""
+                      onClick={() => { setSelectedRecipeId(r.id); setRecipeServings("1"); }}
+                      className={`w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors text-left ${
+                        selectedRecipeId === r.id ? "bg-primary/10 ring-1 ring-primary/30" : ""
                       }`}
-                      onClick={() => setSelectedRecipeId(r.id)}
                     >
-                      <span>{r.title}</span>
-                      {r.calories_per_serving != null && (
-                        <span className="text-muted-foreground ml-2">
-                          ({Math.round(r.calories_per_serving)} kcal/Port.)
-                        </span>
-                      )}
+                      <div className="h-10 w-14 rounded bg-muted flex items-center justify-center text-lg shrink-0">
+                        🍽
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium line-clamp-1">{r.title}</p>
+                        {r.calories_per_serving != null && (
+                          <p className="text-xs text-muted-foreground">{Math.round(r.calories_per_serving)} kcal/Port.</p>
+                        )}
+                      </div>
                     </button>
                   ))
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="recipe-servings">Portionen</Label>
-                  <Input
-                    id="recipe-servings"
-                    type="number"
-                    min="0.5"
-                    step="0.5"
-                    value={recipeServings}
-                    onChange={(e) => setRecipeServings(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Mahlzeit</Label>
+              {selectedRecipe && (
+                <div className="px-4 py-4 border-t space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Label className="shrink-0 text-sm">Portionen</Label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        className="h-8 w-8 rounded-full border flex items-center justify-center text-lg font-medium hover:bg-muted disabled:opacity-40"
+                        onClick={() => setRecipeServings((v) => String(Math.max(0.5, parseFloat(v) - 0.5)))}
+                        disabled={parseFloat(recipeServings) <= 0.5}
+                      >−</button>
+                      <span className="w-8 text-center text-sm font-semibold">{recipeServings}</span>
+                      <button
+                        type="button"
+                        className="h-8 w-8 rounded-full border flex items-center justify-center text-lg font-medium hover:bg-muted"
+                        onClick={() => setRecipeServings((v) => String(parseFloat(v) + 0.5))}
+                      >+</button>
+                    </div>
+                    {selectedRecipe.calories_per_serving != null && (
+                      <span className="text-xs text-muted-foreground ml-auto">
+                        {Math.round(selectedRecipe.calories_per_serving * parseFloat(recipeServings))} kcal
+                      </span>
+                    )}
+                  </div>
                   <Select value={recipeMealTime} onValueChange={(v) => setRecipeMealTime(v as MealTime)}>
-                    <SelectTrigger><SelectValue placeholder="Optional" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Mahlzeit (optional)" /></SelectTrigger>
                     <SelectContent>
                       {(Object.keys(MEAL_LABELS) as MealTime[]).map((k) => (
                         <SelectItem key={k} value={k}>{MEAL_LABELS[k]}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  <Button className="w-full" onClick={handleAddRecipe} disabled={saving}>
+                    {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                    Hinzufügen
+                  </Button>
                 </div>
-              </div>
-
-              {recipeError && <p className="text-xs text-destructive">{recipeError}</p>}
-
-              <Button className="w-full" onClick={handleAddRecipe} disabled={saving}>
-                {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Hinzufügen
-              </Button>
+              )}
             </TabsContent>
 
-            {/* Manual Tab */}
-            <TabsContent value="manual" className="space-y-4 pt-3">
+            {/* ── Manuell Tab ──────────────────────────────────────────────── */}
+            <TabsContent value="manual" className="flex-1 overflow-y-auto px-4 py-4 space-y-4 mt-0">
               <div className="space-y-1.5">
                 <Label htmlFor="manual-name">Name *</Label>
                 <Input
@@ -477,7 +713,7 @@ export function DayLog({ userId, initialEntries, recipes, calorieGoal, macroGoal
                     id="manual-cals"
                     type="number"
                     min="0"
-                    placeholder="z.B. 200"
+                    placeholder="200"
                     value={manualCals}
                     onChange={(e) => setManualCals(e.target.value)}
                   />
@@ -505,7 +741,7 @@ export function DayLog({ userId, initialEntries, recipes, calorieGoal, macroGoal
                   <Input id="manual-fat" type="number" min="0" placeholder="opt." value={manualFat} onChange={(e) => setManualFat(e.target.value)} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="manual-carbs">Kohlenhydrate (g)</Label>
+                  <Label htmlFor="manual-carbs">KH (g)</Label>
                   <Input id="manual-carbs" type="number" min="0" placeholder="opt." value={manualCarbs} onChange={(e) => setManualCarbs(e.target.value)} />
                 </div>
               </div>
