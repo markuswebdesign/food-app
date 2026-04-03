@@ -19,33 +19,34 @@ const faqs = [
 
 export function FaqSection() {
   return (
-    <section className="py-20 md:py-28 bg-[#F5EFE0]">
+    <section className="py-20 md:py-28 bg-white">
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid lg:grid-cols-[300px_1fr] gap-16">
           {/* Left label */}
           <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-[#7A7060] mb-3">FAQ</p>
-            <h2 className="font-display text-3xl md:text-4xl font-light text-[#1D2D18] leading-tight">
-              Häufige<br />Fragen
+            <p className="text-xs uppercase tracking-[0.2em] text-[#D4A853] font-semibold mb-3">
+              FAQ
+            </p>
+            <h2 className="font-display text-3xl md:text-4xl font-normal text-[#1D2D18] leading-tight">
+              Häufige
+              <br />
+              Fragen
             </h2>
           </div>
 
-          {/* Right: accordion */}
-          <div className="border-t border-[#DDD4BC]">
+          {/* Accordion */}
+          <div className="border-t border-[#E5E7EB]">
             {faqs.map((item) => (
-              <details
-                key={item.q}
-                className="group border-b border-[#DDD4BC] py-6"
-              >
+              <details key={item.q} className="group border-b border-[#E5E7EB] py-6">
                 <summary className="cursor-pointer list-none flex items-center justify-between gap-4 outline-none">
-                  <span className="font-display text-lg font-light text-[#1D2D18] leading-snug">
+                  <span className="font-display text-lg font-normal text-[#1D2D18] leading-snug">
                     {item.q}
                   </span>
-                  <span className="text-[#B85630] text-2xl font-light shrink-0 leading-none group-open:rotate-45 transition-transform duration-200 inline-block">
+                  <span className="text-[#D4A853] text-2xl font-normal shrink-0 leading-none group-open:rotate-45 transition-transform duration-200 inline-block">
                     +
                   </span>
                 </summary>
-                <p className="mt-4 text-sm text-[#7A7060] leading-relaxed font-light max-w-prose">
+                <p className="mt-4 text-base text-[#4B5563] leading-relaxed max-w-prose">
                   {item.a}
                 </p>
               </details>

@@ -1,19 +1,21 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("PROJ-14: Landingpage", () => {
+// NOTE: PROJ-14 (Landingpage) wurde durch PROJ-16 (Redesign) visuell überarbeitet.
+// Diese Tests prüfen weiterhin das strukturelle Verhalten (nicht spezifische Texte).
+// Detaillierte Inhalts-Tests befinden sich in PROJ-16-landingpage-redesign.spec.ts
+
+test.describe("PROJ-14: Landingpage (strukturelle Tests)", () => {
   // AC1: Route / zeigt Landingpage für nicht eingeloggte Nutzer
   test("AC: Route / zeigt Landingpage für nicht eingeloggte Nutzer", async ({
     page,
   }) => {
     await page.goto("/");
-    // Sollte nicht zu /login oder /me weitergeleitet werden
     await expect(page).toHaveURL("http://localhost:3000/");
-    // Landingpage-Inhalt sichtbar
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 
   // AC2: Hero-Section
-  test("AC: Hero-Section zeigt App-Name / Headline", async ({ page }) => {
+  test("AC: Hero-Section zeigt H1-Headline", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
@@ -35,36 +37,26 @@ test.describe("PROJ-14: Landingpage", () => {
     await expect(page).toHaveURL(/\/register/);
   });
 
-  // AC3: Feature-Section — mindestens 4 Kernfunktionen
-  test("AC: Feature-Section zeigt mindestens 4 Funktions-Karten", async ({
-    page,
-  }) => {
+  // AC3: Feature-Section — 4 Kernfunktionen
+  test("AC: Features-Leiste zeigt 4 Funktions-Labels", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Rezeptverwaltung & Import" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Wochenplanung" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Einkaufsliste" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Kalorientracking & Nährwerte" })).toBeVisible();
-  });
-
-  test("AC: Jede Feature-Karte enthält eine Beschreibung", async ({ page }) => {
-    await page.goto("/");
-    await expect(page.getByText(/Eigene Rezepte erstellen/)).toBeVisible();
-    await expect(page.getByText(/Mahlzeiten für die ganze Woche/)).toBeVisible();
-    await expect(page.getByText(/Automatisch aus dem Wochenplan/)).toBeVisible();
-    await expect(page.getByText(/Täglichen Kalorienbedarf/)).toBeVisible();
+    await expect(page.getByText("Rezepte verwalten & importieren")).toBeVisible();
+    await expect(page.getByText("Wochenplan erstellen")).toBeVisible();
+    await expect(page.getByText("Einkaufsliste automatisch")).toBeVisible();
+    await expect(page.getByText("Kalorien & Nährwerte tracken")).toBeVisible();
   });
 
   // AC4: Navigation
-  test("AC: Navigation zeigt Logo / App-Name", async ({ page }) => {
+  test("AC: Navigation zeigt Logo", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("banner").getByText(/FoodApp/)).toBeVisible();
+    await expect(page.getByRole("banner").getByText(/food/i)).toBeVisible();
   });
 
   test("AC: Navigation zeigt Login-Button mit Link zu /login", async ({
     page,
   }) => {
     await page.goto("/");
-    const loginLink = page.getByRole("link", { name: /anmelden/i });
+    const loginLink = page.getByRole("banner").getByRole("link", { name: "Anmelden" });
     await expect(loginLink).toBeVisible();
     await expect(loginLink).toHaveAttribute("href", "/login");
   });
@@ -82,16 +74,14 @@ test.describe("PROJ-14: Landingpage", () => {
 
   test("AC: Navigation Login-Button führt zu /login", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("link", { name: /anmelden/i }).click();
+    await page.getByRole("banner").getByRole("link", { name: "Anmelden" }).click();
     await expect(page).toHaveURL(/\/login/);
   });
 
   // AC5: Footer
-  test("AC: Footer ist sichtbar und enthält App-Name", async ({ page }) => {
+  test("AC: Footer ist sichtbar", async ({ page }) => {
     await page.goto("/");
-    const footer = page.getByRole("contentinfo");
-    await expect(footer).toBeVisible();
-    await expect(footer.getByText(/FoodApp/)).toBeVisible();
+    await expect(page.getByRole("contentinfo")).toBeVisible();
   });
 
   test("AC: Footer enthält aktuelles Jahr", async ({ page }) => {
@@ -110,7 +100,6 @@ test.describe("PROJ-14: Landingpage", () => {
     await expect(
       page.getByRole("link", { name: /kostenlos starten/i }).first()
     ).toBeVisible();
-    // Layout bricht nicht — kein horizontaler Scroll
     const bodyWidth = await page.evaluate(() => document.body.scrollWidth);
     expect(bodyWidth).toBeLessThanOrEqual(375);
   });
@@ -121,7 +110,6 @@ test.describe("PROJ-14: Landingpage", () => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.getByText("Rezeptverwaltung & Import")).toBeVisible();
   });
 
   test("AC: Landingpage rendert korrekt auf Desktop (1440px)", async ({
@@ -130,10 +118,9 @@ test.describe("PROJ-14: Landingpage", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.getByText("Wochenplanung")).toBeVisible();
   });
 
-  // AC7: Keine JS-Fehler (Proxy für Ladezeit + Stabilität)
+  // AC7: Keine JS-Fehler
   test("AC: Landingpage lädt ohne JavaScript-Fehler", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (err) => errors.push(err.message));

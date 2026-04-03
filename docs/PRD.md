@@ -29,6 +29,7 @@ Gesundheitsbewusste Menschen, die ihr Gewicht reduzieren oder halten möchten un
 | P2 | PROJ-13: Rezept-Autor anzeigen | Planned |
 | P2 | PROJ-14: Landingpage | Planned |
 | P2 | PROJ-15: Styling-Überarbeitung | Planned |
+| P2 | PROJ-16: Landingpage Redesign (Greenive-Style) | Planned |
 
 ## Success Metrics
 - Nutzer sehen täglich ihr Kaloriendefizit auf einen Blick

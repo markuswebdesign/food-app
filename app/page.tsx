@@ -3,10 +3,11 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { LandingNav } from "@/components/landing/landing-nav";
 import { HeroSection } from "@/components/landing/hero-section";
-import { FeaturesSection } from "@/components/landing/features-section";
 import { BenefitsStrip } from "@/components/landing/benefits-strip";
 import { HowItWorksSection } from "@/components/landing/how-it-works-section";
+import { FeaturesSection } from "@/components/landing/features-section";
 import { PreviewSection } from "@/components/landing/preview-section";
+import { TestimonialsSection } from "@/components/landing/testimonials-section";
 import { FaqSection } from "@/components/landing/faq-section";
 import { FinalCtaSection } from "@/components/landing/final-cta-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
@@ -26,14 +27,15 @@ export default async function Home() {
   if (user) redirect("/me");
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5EFE0]">
+    <div className="min-h-screen flex flex-col">
       <LandingNav />
       <main className="flex-1">
         <HeroSection />
         <BenefitsStrip />
-        <FeaturesSection />
         <HowItWorksSection />
+        <FeaturesSection />
         <PreviewSection />
+        <TestimonialsSection />
         <FaqSection />
         <FinalCtaSection />
       </main>
