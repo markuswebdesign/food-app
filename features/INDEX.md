@@ -27,4 +27,4 @@
 | PROJ-12 | [Nutzerprofil Erweiterung (Profilbild + Rezept-Autor)](PROJ-12-nutzerprofil-erweiterung.md) | Approved | PROJ-1 |
 | PROJ-14 | [Landingpage](PROJ-14-landingpage.md) | Deployed | — |
 | PROJ-15 | [Styling-Überarbeitung](PROJ-15-styling-ueberarbeitung.md) | Planned | PROJ-14 (empfohlen) |
-| PROJ-16 | [Landingpage Redesign (Greenive-Style)](PROJ-16-landingpage-redesign.md) | Approved | PROJ-14 |
+| PROJ-16 | [Landingpage Redesign (Greenive-Style)](PROJ-16-landingpage-redesign.md) | Deployed | PROJ-14 |

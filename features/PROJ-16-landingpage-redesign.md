@@ -282,4 +282,8 @@ Kein Datenbank-Zugriff, keine neuen API-Routen.
 - **Recommendation:** Deploy
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-04-03
+**Via:** GitHub → Vercel (auto-deploy on push to master)
+**Commit:** 07cc95d
+**Tag:** v1.16.0-PROJ-16
