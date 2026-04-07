@@ -37,6 +37,19 @@ async function fetchPageText(url: string): Promise<{ text: string; imageUrl: str
     signal: AbortSignal.timeout(15000),
   });
 
+  if (res.status === 403 || res.status === 401) {
+    throw new Error(
+      "Diese Website blockiert automatische Anfragen (HTTP " + res.status + "). " +
+      "Bitte kopiere die Zutaten und Zubereitung manuell in ein neues Rezept."
+    );
+  }
+  if (!res.ok) {
+    throw new Error(
+      "Die Website konnte nicht geladen werden (HTTP " + res.status + "). " +
+      "Bitte prüfe die URL und versuche es erneut."
+    );
+  }
+
   const html = await res.text();
   const $ = cheerio.load(html);
 
