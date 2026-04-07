@@ -59,8 +59,6 @@ export function ImportForm({ categories }: ImportFormProps) {
   const [description, setDescription] = useState("");
   const [instructions, setInstructions] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const [imageFileLocal, setImageFileLocal] = useState<File | null>(null);
-  const [imagePreviewLocal, setImagePreviewLocal] = useState<string | null>(null);
   const [sourceUrl, setSourceUrl] = useState("");
   const [servings, setServings] = useState("2");
   const [workTime, setWorkTime] = useState("");
@@ -296,10 +294,10 @@ export function ImportForm({ categories }: ImportFormProps) {
 
     if (recipeError) { setError(recipeError.message); setSaving(false); return; }
 
-    // Upload image file if selected
-    if (imageFileLocal) {
+    // Upload image file if selected — overwrite the imported URL
+    if (imageFile) {
       const formData = new FormData();
-      formData.append("image", imageFileLocal);
+      formData.append("image", imageFile);
       const imgRes = await fetch(`/api/recipes/${recipe.id}/image`, { method: "POST", body: formData });
       const imgData = await imgRes.json();
       if (imgRes.ok) {
@@ -461,10 +459,10 @@ export function ImportForm({ categories }: ImportFormProps) {
         <ArrowLeft className="h-4 w-4" /> Neu importieren
       </button>
 
-      {/* Vorschau-Bild */}
-      {imageUrl && (
+      {/* Titelbild-Vorschau */}
+      {(imageUrl || imagePreview) && (
         <div className="aspect-video w-full overflow-hidden rounded-xl">
-          <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
+          <img src={imagePreview || imageUrl} alt={title} className="w-full h-full object-cover" />
         </div>
       )}
 
@@ -521,18 +519,6 @@ export function ImportForm({ categories }: ImportFormProps) {
               onChange={(e) => { setImageUrl(e.target.value); }}
               placeholder="https://..."
             />
-            {imagePreviewLocal && (
-              <div className="relative mb-2">
-                <img src={imagePreviewLocal} alt="Vorschau" className="w-full max-h-32 object-cover rounded-lg" />
-                <button
-                  type="button"
-                  onClick={() => { setImageFileLocal(null); setImagePreviewLocal(null); setImageUrl(""); }}
-                  className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            )}
             <label className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer">
               <Upload className="h-3.5 w-3.5" />
               Bild hochladen
@@ -543,9 +529,12 @@ export function ImportForm({ categories }: ImportFormProps) {
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {
-                    setImageFileLocal(file);
+                    setImageFile(file);
+                    // Setze imageUrl auf das lokale Bild als Data-URL (nur als Upload, nicht gespeichert)
                     const reader = new FileReader();
-                    reader.onload = (ev) => setImagePreviewLocal(ev.target?.result as string);
+                    reader.onload = (ev) => {
+                      setImageUrl(ev.target?.result as string);
+                    };
                     reader.readAsDataURL(file);
                   }
                 }}
