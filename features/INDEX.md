@@ -28,7 +28,7 @@
 | PROJ-14 | [Landingpage](PROJ-14-landingpage.md) | Deployed | — |
 | PROJ-15 | [Styling-Überarbeitung](PROJ-15-styling-ueberarbeitung.md) | Planned | PROJ-14 (empfohlen) |
 | PROJ-16 | [Landingpage Redesign (Greenive-Style)](PROJ-16-landingpage-redesign.md) | Deployed | PROJ-14 |
-| PROJ-17 | [Passwort Zurücksetzen](PROJ-17-passwort-zuruecksetzen.md) | In Review | PROJ-6 |
+| PROJ-17 | [Passwort Zurücksetzen](PROJ-17-passwort-zuruecksetzen.md) | Approved | PROJ-6 |
 | PROJ-18 | [Rollen-System (Admin/User)](PROJ-18-rollen-system.md) | Deployed | — |
 | PROJ-19 | [Admin Panel (Dashboard & User-Verwaltung)](PROJ-19-admin-panel.md) | Approved | PROJ-18 |
 | PROJ-20 | [Globale Rezepte](PROJ-20-globale-rezepte.md) | Planned | PROJ-18 |

@@ -1,6 +1,6 @@
 # PROJ-17: Passwort Zurücksetzen
 
-## Status: In Review
+## Status: Approved
 **Created:** 2026-04-07
 **Last Updated:** 2026-04-07
 
@@ -109,7 +109,7 @@ Der Flow nutzt Supabase Auth's built-in `resetPasswordForEmail` und `updateUser`
 | AC5 | Erfolgsmeldung nach Absenden | ✅ PASS |
 | AC6 | Fehlermeldung bei API-Fehler | ✅ PASS |
 | AC7 | "Zurück zum Login"-Link vorhanden | ✅ PASS |
-| AC8 | `/update-password` über Reset-Link erreichbar | ⚠️ BUG-1 (High) |
+| AC8 | `/update-password` über Reset-Link erreichbar | ✅ FIXED |
 | AC9 | Zwei Passwortfelder: "Neues Passwort" + "Bestätigen" | ✅ PASS (Code-Review) |
 | AC10 | Passwort-Stärke-Anzeige | ✅ PASS (Code-Review) |
 | AC11 | Passwörter müssen übereinstimmen | ✅ PASS (Code-Review) |
@@ -143,12 +143,12 @@ Der Flow nutzt Supabase Auth's built-in `resetPasswordForEmail` und `updateUser`
 
 | # | Schwere | Beschreibung |
 |---|---------|-------------|
-| BUG-1 | **High** | **`redirectTo` zeigt direkt auf `/update-password` statt `/auth/callback?next=/update-password`** — In Supabase's Standard-PKCE-Flow sendet der Auth-Server den User zum `redirectTo` mit `?code=xxx`. Die `/update-password`-Seite ruft aber nie `exchangeCodeForSession()` auf, weshalb `getSession()` null zurückgibt und der User sofort "Link abgelaufen" sieht. Fix: `redirectTo: window.location.origin + '/auth/callback?next=/update-password'`. Betroffene Datei: `app/(auth)/forgot-password/page.tsx` Zeile 33. |
+| BUG-1 | ~~**High**~~ | ~~`redirectTo` zeigt direkt auf `/update-password`~~ → **FIXED**: `redirectTo` zeigt jetzt auf `/auth/callback?next=/update-password`. Der bestehende Callback tauscht den Code aus und redirectet zu `/update-password` mit gültiger Session. |
 | BUG-2 | **Low** | **Eingeloggter User kann `/forgot-password` aufrufen** — Edge Case aus Spec ("Weiterleitung zum Dashboard") ist nicht implementiert. Ist funktional unproblematisch, da der User trotzdem einen Reset-Link anfordern kann. |
 
 ### Produktionsbereitschaft
 
-**NOT READY** — BUG-1 (High) kann den kompletten Password-Reset-Flow bei Supabase-PKCE-Konfiguration brechen. Muss gefixt und getestet werden.
+**READY** — BUG-1 (High) gefixt. Offener Low-Bug (BUG-2: kein Redirect für eingeloggte User auf /forgot-password) blockiert Deployment nicht.
 
 ## Deployment
 _To be added by /deploy_
