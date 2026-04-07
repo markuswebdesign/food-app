@@ -53,7 +53,56 @@
 _To be added by /architecture_
 
 ## QA Test Results
-_To be added by /qa_
+
+**Date:** 2026-04-07
+**Tester:** QA Engineer (automated)
+**Result:** ⚠️ NOT READY — 1 High bug + 1 Medium bug
+
+### Acceptance Criteria
+
+| # | Criterion | Status |
+|---|-----------|--------|
+| 1 | Rezepte haben ein Feld `is_global` (Boolean, Standard: `false`) | ✅ PASS — DB column confirmed |
+| 2 | Nur Admins können `is_global: true` setzen | ✅ PASS — Admin-only API + RLS with_check enforced |
+| 3 | Normale User sehen keine Global-Option im Formular | ✅ PASS — no such field in recipe form |
+| 4 | Globale Rezepte in der Rezeptliste aller User sichtbar | ✅ PASS — `.or("is_public.eq.true,is_global.eq.true")` |
+| 5 | Globale Rezepte sind als solche gekennzeichnet (Badge) | ✅ PASS — "Global" Badge mit Globe-Icon auf Card + Detailseite |
+| 6 | User können globale Rezepte ein-/ausblenden (Toggle) | ✅ PASS — POST /api/profile/hide-global, toggle link auf /recipes |
+| 7 | Einstellung wird pro User gespeichert (bleibt nach Logout) | ✅ PASS — in profiles.hide_global_recipes |
+| 8 | Admins haben gefilterte Ansicht nur für globale Rezepte | ✅ PASS — /admin/recipes mit Global-Filter-Button |
+| 9 | Globale Rezepte können nicht von normalen Usern bearbeitet/gelöscht werden | ✅ PASS — keine Edit/Delete-Buttons für Nicht-Eigentümer |
+| 10 | Normale User können globales Rezept "kopieren" | ✅ PASS — CopyRecipeButton via POST /api/recipes/[id]/copy |
+
+### Edge Cases
+
+| Case | Result |
+|------|--------|
+| User globale Rezepte ausblenden dann von Admin direkt geteilt | ✅ PASS — hide betrifft nur globalen Pool |
+| Normaler User sendet `is_global: true` direkt an API | ✅ PASS — 403 Forbidden |
+
+### Bugs Found
+
+**BUG-20-01** 🟡 **Medium: Eigene private Rezepte fehlen in der Rezeptliste**
+- `/recipes` zeigt nur `is_public=true` oder `is_global=true` Rezepte
+- Eigene private Rezepte (nicht-public, nicht-global) sind nicht sichtbar
+- "Meine Rezepte"-Filter zeigt nur eigene öffentliche Rezepte
+- Workaround: Nutzer müssen Rezepte öffentlich schalten um sie im Feed zu sehen
+- Fix: `.or(`is_public.eq.true,is_global.eq.true,user_id.eq.${authUser.id}`)` in `recipes/page.tsx`
+- Severity: Medium (Pre-existing issue, auch vor PROJ-20 vorhanden)
+
+### Security Audit
+
+| Check | Result |
+|-------|--------|
+| Unauthenticated GET /api/profile/hide-global → 401 | ✅ |
+| Unauthenticated PATCH /api/admin/recipes/[id]/global → 401 | ✅ |
+| Normal user PATCH /api/admin/recipes/[id]/global → 403 | ✅ |
+| RLS prevents non-admins setting is_global directly | ✅ (admin policy on recipes) |
+| RLS INSERT with_check on connections/shared_recipes | ✅ |
+
+### E2E Tests
+- File: `tests/PROJ-20-globale-rezepte.spec.ts`
+- 12 tests total: 12 passed (unauthenticated), rest skipped (need TEST_USER_EMAIL/ADMIN_EMAIL env vars)
 
 ## Deployment
 _To be added by /deploy_

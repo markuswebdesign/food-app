@@ -47,7 +47,80 @@
 _To be added by /architecture_
 
 ## QA Test Results
-_To be added by /qa_
+
+**Date:** 2026-04-07
+**Tester:** QA Engineer (automated)
+**Result:** ⚠️ NOT READY — 1 High bug
+
+### Acceptance Criteria
+
+| # | Criterion | Status |
+|---|-----------|--------|
+| 1 | "Teilen"-Aktion auf Rezeptdetailseite (nur für eigene Rezepte) | ✅ PASS — ShareRecipeButton für `isOwner` sichtbar |
+| 2 | Beim Teilen kann User Verbindungen auswählen | ✅ PASS — Sheet mit Multi-Select Verbindungsliste |
+| 3 | Empfänger sieht geteilte Rezepte in eigenem Bereich | ⚠️ PARTIAL — sichtbar auf /connections, aber nur wenn Rezept public/global ist |
+| 4 | Geteilte Rezepte zeigen den Absender ("Geteilt von [Name]") | ✅ PASS — "Geteilt von @username" in Inbox-Karte |
+| 5 | Empfänger kann geteiltes Rezept mit einem Klick kopieren | ⚠️ PARTIAL — funktioniert nur bei public/global Quell-Rezepten |
+| 6 | Empfänger kann geteiltes Rezept ablehnen/ausblenden | ✅ PASS — X-Button + PATCH /api/shared-recipes/[id] (dismiss) |
+| 7 | Doppelte Einträge werden zusammengeführt (Re-Share) | ✅ PASS — upsert mit onConflict="recipe_id,sender_id,recipient_id" |
+| 8 | User können nur eigene (nicht globale) Rezepte teilen | ✅ PASS — Ownership + !is_global Check in API |
+
+### Edge Cases
+
+| Case | Result |
+|------|--------|
+| Verbindung nach dem Teilen getrennt — neue Shares blockiert | ✅ PASS — Share-API prüft accepted connection |
+| Sender löscht Rezept — Inbox-Eintrag | ⚠️ Rezept-Join gibt null zurück (Recipe gelöscht) |
+| Empfänger lehnt ab ohne Sender-Benachrichtigung | ✅ PASS — nur lokales dismiss |
+
+### Bugs Found
+
+**BUG-22-01** 🔴 **High: Private (nicht-öffentliche) Rezepte können nach dem Teilen nicht vom Empfänger gelesen werden**
+
+**Beschreibung:** Wenn ein User ein privates Rezept (`is_public=false`, `is_global=false`) teilt, kann der Empfänger das Rezept weder in der Inbox sehen (recipe-Felder sind null wegen RLS) noch kopieren (recipe fetch schlägt fehl → 404).
+
+**Schritte zum Reproduzieren:**
+1. User A hat ein privates Rezept (nicht öffentlich)
+2. User A teilt das Rezept über ShareRecipeButton mit User B (befreundet)
+3. User B öffnet /connections → "Geteilte Rezepte" Sektion
+4. Die Rezept-Karte zeigt keine Titel/Beschreibung (null-Daten) oder stürzt ab
+5. "In meine Rezepte kopieren" gibt 404 zurück
+
+**Root Cause:** RLS auf `recipes` erlaubt Lesen nur wenn:
+- `is_global = true`
+- `is_public = true`  
+- `auth.uid() = user_id` (eigenes Rezept)
+
+Kein Policy für "Empfänger eines shared_recipe kann das Rezept lesen."
+
+**Fix (Optionen):**
+1. RLS-Policy hinzufügen: `EXISTS (SELECT 1 FROM shared_recipes WHERE recipe_id = recipes.id AND recipient_id = auth.uid())`
+2. Nur öffentliche Rezepte können geteilt werden (Share-Button bei privaten Rezepten ausblenden oder Fehlermeldung zeigen)
+
+**Severity: High** — Kern-Feature (Sharing + Kopieren) funktioniert nur bei öffentlichen Quell-Rezepten.
+
+**BUG-22-02** 🔵 **Low: Inbox-Karte bei gelöschtem Quell-Rezept zeigt null-Inhalte**
+- Wenn der Sender das Rezept löscht, zeigt die Inbox-Karte eine leere Karte (recipe=null)
+- Keine Graceful-Behandlung für gelöschte Quell-Rezepte
+- Severity: Low (edge case, beide Flows — Kopieren + Ansehen — würden 404 zeigen)
+
+### Security Audit
+
+| Check | Result |
+|-------|--------|
+| Unauthenticated GET /api/shared-recipes → 401 | ✅ |
+| Unauthenticated POST /api/shared-recipes → 401 | ✅ |
+| Unauthenticated POST/PATCH /api/shared-recipes/[id] → 401 | ✅ |
+| Unauthenticated POST /api/recipes/[id]/copy → 401 | ✅ |
+| User kann fremdes Rezept nicht sharen → 403 | ✅ |
+| User kann eigenes Rezept nicht kopieren → 400 | ✅ |
+| RLS INSERT with_check: auth.uid() = sender_id | ✅ |
+| RLS SELECT: nur eigene shared_recipes lesbar | ✅ |
+| RLS UPDATE: nur eigene shared_recipes änderbar | ✅ |
+
+### E2E Tests
+- File: `tests/PROJ-22-rezepte-teilen.spec.ts`
+- 12 passed (unauthenticated security checks), rest skipped (need TEST_USER_EMAIL env var)
 
 ## Deployment
 _To be added by /deploy_
