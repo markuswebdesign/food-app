@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, BookOpen, User } from "lucide-react";
+import { LayoutDashboard, BookOpen, User, Users } from "lucide-react";
 
 const TABS = [
-  { key: "ubersicht", label: "Übersicht", icon: LayoutDashboard },
-  { key: "logbuch",   label: "Logbuch",   icon: BookOpen },
-  { key: "profil",    label: "Profil",    icon: User },
+  { key: "ubersicht",    label: "Übersicht",    icon: LayoutDashboard },
+  { key: "logbuch",      label: "Logbuch",      icon: BookOpen },
+  { key: "profil",       label: "Profil",       icon: User },
+  { key: "verbindungen", label: "Verbindungen", icon: Users },
 ] as const;
 
 export function MeTabs() {

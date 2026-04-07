@@ -27,7 +27,6 @@ const navLinks = [
   { href: "/recipes", label: "Rezepte" },
   { href: "/meal-plan", label: "Wochenplan" },
   { href: "/shopping-list", label: "Einkaufsliste" },
-  { href: "/connections", label: "Verbindungen" },
 ];
 
 export function NavBar({ user, profile }: NavBarProps) {

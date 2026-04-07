@@ -16,8 +16,9 @@ import { DayLog } from "@/components/log/day-log";
 import type { LogEntry, RecipeOption } from "@/components/log/day-log";
 import { ProfileHealthForm } from "@/components/profile/profile-health-form";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
+import { ConnectionsClient } from "@/app/(app)/connections/connections-client";
 
-type Tab = "ubersicht" | "logbuch" | "profil";
+type Tab = "ubersicht" | "logbuch" | "verbindungen" | "profil";
 
 export default async function MePage({
   searchParams,
@@ -36,7 +37,7 @@ export default async function MePage({
   // Always fetch profile — needed for all tabs
   const { data: profile } = await supabase
     .from("profiles")
-    .select("custom_calorie_goal, goal_type, weight_kg, height_cm, age, activity_level, username, protein_goal_g, fat_goal_g, carbs_goal_g, longest_streak_days, avatar_url")
+    .select("custom_calorie_goal, goal_type, weight_kg, height_cm, age, activity_level, username, protein_goal_g, fat_goal_g, carbs_goal_g, longest_streak_days, avatar_url, hide_global_recipes")
     .eq("id", user.id)
     .single();
 
@@ -199,6 +200,42 @@ export default async function MePage({
     );
   }
 
+  // ── Tab: Verbindungen ───────────────────────────────────────────────────────
+  let verbindungenContent: React.ReactNode = null;
+
+  if (tab === "verbindungen") {
+    const [{ data: connections }, { data: sharedInbox }] = await Promise.all([
+      supabase
+        .from("connections")
+        .select(`
+          id, status, created_at,
+          requester:profiles!connections_requester_id_fkey(id, username, avatar_url),
+          recipient:profiles!connections_recipient_id_fkey(id, username, avatar_url)
+        `)
+        .or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`)
+        .in("status", ["accepted", "pending"])
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("shared_recipes")
+        .select(`
+          id, status, created_at,
+          sender:profiles!shared_recipes_sender_id_fkey(id, username, avatar_url),
+          recipe:recipes(id, title, description, image_url, servings, prep_time_minutes, cook_time_minutes)
+        `)
+        .eq("recipient_id", user.id)
+        .neq("status", "dismissed")
+        .order("created_at", { ascending: false }),
+    ]);
+
+    verbindungenContent = (
+      <ConnectionsClient
+        currentUserId={user.id}
+        initialConnections={(connections ?? []) as any}
+        initialInbox={(sharedInbox ?? []) as any}
+      />
+    );
+  }
+
   // ── Tab: Profil ─────────────────────────────────────────────────────────────
   let profileContent: React.ReactNode = null;
 
@@ -223,6 +260,7 @@ export default async function MePage({
             protein_goal_g: profile?.protein_goal_g ?? null,
             fat_goal_g: profile?.fat_goal_g ?? null,
             carbs_goal_g: profile?.carbs_goal_g ?? null,
+            hide_global_recipes: profile?.hide_global_recipes ?? false,
           }}
         />
       </div>
@@ -238,6 +276,7 @@ export default async function MePage({
       <div>
         {tab === "ubersicht" && dashboardContent}
         {tab === "logbuch" && logContent}
+        {tab === "verbindungen" && verbindungenContent}
         {tab === "profil" && profileContent}
       </div>
     </div>

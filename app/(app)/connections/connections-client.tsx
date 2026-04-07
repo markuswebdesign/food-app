@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +45,10 @@ export function ConnectionsClient({ currentUserId, initialConnections, initialIn
   const router = useRouter();
   const [connections, setConnections] = useState<Connection[]>(initialConnections);
   const [inbox, setInbox] = useState<SharedItem[]>(initialInbox);
+
+  // Sync with fresh server data after router.refresh()
+  useEffect(() => { setConnections(initialConnections); }, [initialConnections]);
+  useEffect(() => { setInbox(initialInbox); }, [initialInbox]);
 
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState<Profile[]>([]);
@@ -103,8 +107,9 @@ export function ConnectionsClient({ currentUserId, initialConnections, initialIn
     });
     if (res.ok) {
       setConnections((prev) =>
-        prev.map((c) => c.id === connectionId ? { ...c, status: "accepted" } : c)
+        prev.map((c) => c.id === connectionId ? { ...c, status: "accepted" as const } : c)
       );
+      router.refresh();
     }
     setLoadingId(null);
   }
@@ -118,6 +123,7 @@ export function ConnectionsClient({ currentUserId, initialConnections, initialIn
     });
     if (res.ok) {
       setConnections((prev) => prev.filter((c) => c.id !== connectionId));
+      router.refresh();
     }
     setLoadingId(null);
   }

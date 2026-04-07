@@ -34,6 +34,7 @@ export type HealthProfile = {
   protein_goal_g: number | null;
   fat_goal_g: number | null;
   carbs_goal_g: number | null;
+  hide_global_recipes: boolean;
 };
 
 const ACTIVITY_LABELS: Record<ActivityLevel, string> = {
@@ -66,6 +67,7 @@ export function ProfileHealthForm({ userId, initial }: Props) {
   const [proteinGoal, setProteinGoal] = useState(initial.protein_goal_g?.toString() ?? "");
   const [fatGoal, setFatGoal] = useState(initial.fat_goal_g?.toString() ?? "");
   const [carbsGoal, setCarbsGoal] = useState(initial.carbs_goal_g?.toString() ?? "");
+  const [hideGlobal, setHideGlobal] = useState(initial.hide_global_recipes);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -114,6 +116,7 @@ export function ProfileHealthForm({ userId, initial }: Props) {
       protein_goal_g: initial.protein_goal_g,
       fat_goal_g: initial.fat_goal_g,
       carbs_goal_g: initial.carbs_goal_g,
+      hide_global_recipes: initial.hide_global_recipes,
     };
 
     // Optimistic update
@@ -129,6 +132,7 @@ export function ProfileHealthForm({ userId, initial }: Props) {
       protein_goal_g: proteinGoal ? parseInt(proteinGoal) : null,
       fat_goal_g: fatGoal ? parseInt(fatGoal) : null,
       carbs_goal_g: carbsGoal ? parseInt(carbsGoal) : null,
+      hide_global_recipes: hideGlobal,
     };
 
     const { error } = await supabase
@@ -393,6 +397,31 @@ export function ProfileHealthForm({ userId, initial }: Props) {
               value={carbsGoal}
               onChange={(e) => setCarbsGoal(e.target.value)}
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Privacy */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Rezept-Einstellungen</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">Globale Rezepte ausblenden</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Globale Rezepte werden nicht in der Rezeptliste angezeigt.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant={hideGlobal ? "default" : "outline"}
+              size="sm"
+              onClick={() => setHideGlobal((v) => !v)}
+            >
+              {hideGlobal ? "Ausgeblendet" : "Eingeblendet"}
+            </Button>
           </div>
         </CardContent>
       </Card>

@@ -9,7 +9,7 @@ export default async function ProfilePage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("weight_kg, height_cm, age, activity_level, goal_type, custom_calorie_goal, username, protein_goal_g, fat_goal_g, carbs_goal_g")
+    .select("weight_kg, height_cm, age, activity_level, goal_type, custom_calorie_goal, username, protein_goal_g, fat_goal_g, carbs_goal_g, hide_global_recipes")
     .eq("id", user.id)
     .single();
 
@@ -33,6 +33,7 @@ export default async function ProfilePage() {
           protein_goal_g: profile?.protein_goal_g ?? null,
           fat_goal_g: profile?.fat_goal_g ?? null,
           carbs_goal_g: profile?.carbs_goal_g ?? null,
+          hide_global_recipes: profile?.hide_global_recipes ?? false,
         }}
       />
     </div>
