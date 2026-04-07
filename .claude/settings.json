@@ -58,7 +58,22 @@
       "Bash(curl -s \"http://localhost:3000/api/nutrition/lookup?q=Mehl\")",
       "Bash(grep -l \"auth\\\\|login\\\\|session\\\\|cookie\" /Users/markuswestenhuber/Documents/food-app/tests/*.spec.ts)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/api/nutrition/lookup?q=test)",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app ls-files src/components/landing/)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app ls-files src/app/page.tsx)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app ls-files)",
+      "Bash(git -C /Users/markuswestenhuber/Documents/food-app ls-files components/landing/)",
+      "Bash(grep -o 'color:[^;\\\\\"]*\\\\|background[^;\\\\\"]*\\\\|#[0-9a-fA-F]\\\\{3,6\\\\}' /Users/markuswestenhuber/Documents/food-app/example/index.html)",
+      "Bash(grep -o '#[0-9a-fA-F]\\\\{3,6\\\\}')",
+      "Bash(grep -oE 'background-color\\\\s*:\\\\s*#[0-9a-fA-F]{3,6}|color\\\\s*:\\\\s*#[0-9a-fA-F]{3,6}' /Users/markuswestenhuber/Documents/food-app/example/index.html)",
+      "Bash(grep -oE '#[0-9a-fA-F]{3,6}')",
+      "Bash(python3 -c \" import sys, re, json, html for line in sys.stdin: m = re.search\\(r'data-settings=\\\\\"\\([^\\\\\"]+\\)\\\\\"', line\\) if m: try: d = json.loads\\(html.unescape\\(m.group\\(1\\)\\)\\) for k,v in d.items\\(\\): if 'color' in k.lower\\(\\) or 'background' in k.lower\\(\\): print\\(f'{k}: {v}'\\) except: pass \")",
+      "Bash(grep -l \"D4A853\\\\|1D2D18\" /Users/markuswestenhuber/Documents/food-app/components/landing/*.tsx)",
+      "Bash(grep -c \"font-display\" /Users/markuswestenhuber/Documents/food-app/components/landing/*.tsx)",
+      "Bash(curl -s -L http://localhost:3000/)",
+      "Bash(curl -sv http://localhost:3000/)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(python3 -c \"import sys; content=sys.stdin.read\\(\\); print\\('OK' if 'Gesünder' in content or 'Kostenlos' in content or 'food' in content.lower\\(\\) else 'STILL 404/ERROR: ' + content[:200]\\)\")"
     ],
     "additionalDirectories": [
       "/Users/markuswestenhuber/Documents/food-app",
