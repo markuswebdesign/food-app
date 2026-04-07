@@ -156,14 +156,22 @@ export default async function RecipeDetailPage({
         </>
       )}
 
-      {recipe.source_url && (
-        <p className="text-sm text-muted-foreground">
-          Quelle:{" "}
-          <a href={recipe.source_url} target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
-            {recipe.source_url}
-          </a>
-        </p>
-      )}
+      {recipe.source_url && (() => {
+          try {
+            const parsed = new URL(recipe.source_url);
+            const domain = parsed.hostname.replace(/^www\./, "");
+            return (
+              <p className="text-sm text-muted-foreground">
+                Quelle:{" "}
+                <a href={recipe.source_url} target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+                  {domain}
+                </a>
+              </p>
+            );
+          } catch {
+            return null;
+          }
+        })()}
     </div>
   );
 }
