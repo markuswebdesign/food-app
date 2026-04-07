@@ -147,10 +147,7 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
     }
   }
 
-  async function handleImageUpload(file: File) {
-    const targetId = recipe?.id;
-    if (!targetId) return null; // image upload only after recipe exists
-
+  async function handleImageUpload(file: File, targetId: string) {
     setImageUploading(true);
     try {
       const formData = new FormData();
@@ -201,7 +198,7 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
 
     // Upload image file if one was selected
     if (imageFile && recipeId) {
-      await handleImageUpload(imageFile);
+      await handleImageUpload(imageFile, recipeId);
     }
 
     // Kategorien
