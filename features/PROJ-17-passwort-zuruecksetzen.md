@@ -1,6 +1,6 @@
 # PROJ-17: Passwort Zurücksetzen
 
-## Status: In Progress
+## Status: In Review
 **Created:** 2026-04-07
 **Last Updated:** 2026-04-07
 
@@ -93,7 +93,62 @@ Der Flow nutzt Supabase Auth's built-in `resetPasswordForEmail` und `updateUser`
 **Keine neuen Packages nötig.**
 
 ## QA Test Results
-_To be added by /qa_
+
+**Datum:** 2026-04-07
+**Playwright:** 10 passed, 3 skipped (Recovery-Session nötig), 0 failed
+**Vitest:** 197/197 passed (keine Regression)
+
+### Acceptance Criteria
+
+| # | Kriterium | Status |
+|---|-----------|--------|
+| AC1 | "Passwort vergessen?"-Link auf Login-Seite vorhanden | ✅ PASS |
+| AC2 | Link führt zu `/forgot-password` | ✅ PASS |
+| AC3 | Seite enthält E-Mail-Eingabefeld | ✅ PASS |
+| AC4 | `resetPasswordForEmail()` wird aufgerufen | ✅ PASS (Code-Review) |
+| AC5 | Erfolgsmeldung nach Absenden | ✅ PASS |
+| AC6 | Fehlermeldung bei API-Fehler | ✅ PASS |
+| AC7 | "Zurück zum Login"-Link vorhanden | ✅ PASS |
+| AC8 | `/update-password` über Reset-Link erreichbar | ⚠️ BUG-1 (High) |
+| AC9 | Zwei Passwortfelder: "Neues Passwort" + "Bestätigen" | ✅ PASS (Code-Review) |
+| AC10 | Passwort-Stärke-Anzeige | ✅ PASS (Code-Review) |
+| AC11 | Passwörter müssen übereinstimmen | ✅ PASS (Code-Review) |
+| AC12 | `updateUser()` wird aufgerufen | ✅ PASS (Code-Review) |
+| AC13 | Erfolgsmeldung + automatischer Redirect nach 3s | ✅ PASS (Code-Review) |
+| AC14 | Manueller "Weiter"-Button | ✅ PASS |
+| AC15 | Fehlermeldung bei abgelaufenem/ungültigem Link | ✅ PASS |
+| AC16 | Eye/EyeOff Toggle auf beiden Feldern | ✅ PASS (Code-Review) |
+| AC17 | Desktop + Mobile | ✅ PASS |
+| AC18 | Im bestehenden Auth-Layout integriert | ✅ PASS |
+
+### Edge Cases
+
+| Szenario | Status |
+|----------|--------|
+| Nicht existierende E-Mail → trotzdem Erfolgsmeldung (Security Best Practice) | ✅ PASS |
+| Abgelaufener Reset-Link → "Link abgelaufen"-State ohne Session | ✅ PASS |
+| Passwörter stimmen nicht überein → Fehlermeldung | ✅ PASS (Code-Review) |
+| Bereits eingeloggter User ruft `/forgot-password` auf → kein Redirect | ⚠️ BUG-2 (Low) |
+
+### Security Audit
+
+| Test | Ergebnis |
+|------|----------|
+| `/update-password` ohne Session zeigt KEIN Formular | ✅ PASS |
+| Auth-Seiten öffentlich zugänglich | ✅ PASS |
+| Nicht-existierende E-Mail gibt keine Fehlermeldung (kein User-Enumeration) | ✅ PASS |
+| `redirectTo` nutzt `window.location.origin` (kein Hardcoding) | ✅ PASS |
+
+### Bugs
+
+| # | Schwere | Beschreibung |
+|---|---------|-------------|
+| BUG-1 | **High** | **`redirectTo` zeigt direkt auf `/update-password` statt `/auth/callback?next=/update-password`** — In Supabase's Standard-PKCE-Flow sendet der Auth-Server den User zum `redirectTo` mit `?code=xxx`. Die `/update-password`-Seite ruft aber nie `exchangeCodeForSession()` auf, weshalb `getSession()` null zurückgibt und der User sofort "Link abgelaufen" sieht. Fix: `redirectTo: window.location.origin + '/auth/callback?next=/update-password'`. Betroffene Datei: `app/(auth)/forgot-password/page.tsx` Zeile 33. |
+| BUG-2 | **Low** | **Eingeloggter User kann `/forgot-password` aufrufen** — Edge Case aus Spec ("Weiterleitung zum Dashboard") ist nicht implementiert. Ist funktional unproblematisch, da der User trotzdem einen Reset-Link anfordern kann. |
+
+### Produktionsbereitschaft
+
+**NOT READY** — BUG-1 (High) kann den kompletten Password-Reset-Flow bei Supabase-PKCE-Konfiguration brechen. Muss gefixt und getestet werden.
 
 ## Deployment
 _To be added by /deploy_
