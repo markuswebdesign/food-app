@@ -16,14 +16,14 @@ type Connection = {
   id: string;
   status: "pending" | "accepted";
   created_at: string;
-  requester: Profile;
-  recipient: Profile;
+  requester: Profile | null;
+  recipient: Profile | null;
 };
 type SharedItem = {
   id: string;
   status: string;
   created_at: string;
-  sender: Profile;
+  sender: Profile | null;
   recipe: {
     id: string;
     title: string;
@@ -32,7 +32,7 @@ type SharedItem = {
     servings: number;
     prep_time_minutes: number | null;
     cook_time_minutes: number | null;
-  };
+  } | null;
 };
 
 interface Props {
@@ -60,7 +60,7 @@ export function ConnectionsClient({ currentUserId, initialConnections, initialIn
     (c) => c.status === "pending" && c.requester?.id === currentUserId
   );
 
-  function otherUser(c: Connection): Profile {
+  function otherUser(c: Connection): Profile | null {
     return c.requester?.id === currentUserId ? c.recipient : c.requester;
   }
 
@@ -75,7 +75,7 @@ export function ConnectionsClient({ currentUserId, initialConnections, initialIn
 
   function connectionStatusWith(userId: string) {
     return connections.find(
-      (c) => c.requester.id === userId || c.recipient.id === userId
+      (c) => c.requester?.id === userId || c.recipient?.id === userId
     );
   }
 
@@ -230,6 +230,7 @@ export function ConnectionsClient({ currentUserId, initialConnections, initialIn
           <div className="rounded-lg border divide-y">
             {pendingReceived.map((c) => {
               const other = otherUser(c);
+              if (!other) return null;
               const loading = loadingId === c.id;
               return (
                 <div key={c.id} className="flex items-center justify-between px-4 py-3">
@@ -272,6 +273,7 @@ export function ConnectionsClient({ currentUserId, initialConnections, initialIn
           <div className="rounded-lg border divide-y">
             {accepted.map((c) => {
               const other = otherUser(c);
+              if (!other) return null;
               const loading = loadingId === c.id;
               return (
                 <div key={c.id} className="flex items-center justify-between px-4 py-3">
@@ -306,6 +308,7 @@ export function ConnectionsClient({ currentUserId, initialConnections, initialIn
             <div className="rounded-lg border divide-y">
               {pendingSent.map((c) => {
                 const other = otherUser(c);
+                if (!other) return null;
                 const loading = loadingId === c.id;
                 return (
                   <div key={c.id} className="flex items-center justify-between px-4 py-3">
@@ -348,6 +351,7 @@ export function ConnectionsClient({ currentUserId, initialConnections, initialIn
             </h2>
             <div className="space-y-3">
               {inbox.map((item) => {
+                if (!item.recipe || !item.sender) return null;
                 const totalTime =
                   (item.recipe.prep_time_minutes ?? 0) + (item.recipe.cook_time_minutes ?? 0);
                 const loading = copyingId === item.id;
