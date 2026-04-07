@@ -33,16 +33,23 @@ export default async function RecipesPage({
     }
   }
 
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  const { data: profilePrefs } = authUser ? await supabase
+    .from("profiles")
+    .select("hide_global_recipes, role")
+    .eq("id", authUser.id)
+    .single() : { data: null };
+
   let query = supabase
     .from("recipes")
     .select(`
       id, title, description, image_url, prep_time_minutes, cook_time_minutes,
-      servings, is_public, created_at, user_id,
+      servings, is_public, is_global, created_at, user_id,
       profiles!recipes_user_id_fkey(username, avatar_url),
       recipe_categories(category_id, categories(id, name, slug, type, icon)),
       recipe_nutrition(calories)
     `)
-    .eq("is_public", true)
+    .or(profilePrefs?.hide_global_recipes ? "is_public.eq.true" : "is_public.eq.true,is_global.eq.true")
     .order("created_at", { ascending: false });
 
   if (searchParams.q) {
@@ -65,13 +72,12 @@ export default async function RecipesPage({
   let favoriteIds = new Set<string>();
   let currentUserId: string | null = null;
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      currentUserId = user.id;
+    if (authUser) {
+      currentUserId = authUser.id;
       const { data: favs } = await supabase
         .from("favorites")
         .select("recipe_id")
-        .eq("user_id", user.id);
+        .eq("user_id", authUser.id);
       favoriteIds = new Set((favs ?? []).map((f: any) => f.recipe_id));
     }
   } catch {}
@@ -110,6 +116,16 @@ export default async function RecipesPage({
       <Suspense fallback={<div className="h-16" />}>
         <RecipeFilters categories={categories ?? []} showMineFilter={!!currentUserId} />
       </Suspense>
+      {currentUserId && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>Globale Rezepte</span>
+          <form action="/api/profile/hide-global" method="POST">
+            <button type="submit" className="text-primary hover:underline text-xs">
+              {profilePrefs?.hide_global_recipes ? "einblenden" : "ausblenden"}
+            </button>
+          </form>
+        </div>
+      )}
 
       {normalized.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">

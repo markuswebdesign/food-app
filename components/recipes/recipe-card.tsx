@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Clock, Users } from "lucide-react";
+import { Clock, Users, Globe } from "lucide-react";
 import type { Recipe } from "@/lib/types";
 import { FavoriteButton } from "./favorite-button";
 
@@ -40,6 +40,11 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
 
           <CardContent className="pb-2">
             <div className="flex flex-wrap gap-1.5">
+              {recipe.is_global && (
+                <Badge variant="outline" className="text-xs text-blue-600 border-blue-200 gap-1">
+                  <Globe className="h-3 w-3" /> Global
+                </Badge>
+              )}
               {recipe.categories?.slice(0, 3).map((cat) => (
                 <Badge key={cat.id} variant="secondary" className="text-xs">
                   {cat.name}

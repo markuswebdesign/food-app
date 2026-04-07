@@ -41,6 +41,7 @@ export type Recipe = {
   image_url: string | null;
   source_url: string | null;
   is_public: boolean;
+  is_global: boolean;
   created_at: string;
   updated_at: string;
   categories?: Category[];
