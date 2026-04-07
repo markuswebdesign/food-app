@@ -136,6 +136,11 @@ export function NavBar({ user, profile }: NavBarProps) {
                 <Link href="/recipes/new" onClick={() => setMobileOpen(false)} className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted">
                   + Neues Rezept
                 </Link>
+                {profile?.role === "admin" && (
+                  <Link href="/admin" onClick={() => setMobileOpen(false)} className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted text-muted-foreground">
+                    Admin
+                  </Link>
+                )}
               </nav>
             </SheetContent>
           </Sheet>

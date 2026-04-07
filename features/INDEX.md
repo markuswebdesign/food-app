@@ -1,6 +1,6 @@
 # Features Index
 
-**Next Available ID:** PROJ-17
+**Next Available ID:** PROJ-23
 
 ## Existing Features (already deployed)
 
@@ -28,3 +28,9 @@
 | PROJ-14 | [Landingpage](PROJ-14-landingpage.md) | Deployed | — |
 | PROJ-15 | [Styling-Überarbeitung](PROJ-15-styling-ueberarbeitung.md) | Planned | PROJ-14 (empfohlen) |
 | PROJ-16 | [Landingpage Redesign (Greenive-Style)](PROJ-16-landingpage-redesign.md) | Deployed | PROJ-14 |
+| PROJ-17 | [Passwort Zurücksetzen](PROJ-17-passwort-zuruecksetzen.md) | In Progress | PROJ-6 |
+| PROJ-18 | [Rollen-System (Admin/User)](PROJ-18-rollen-system.md) | Deployed | — |
+| PROJ-19 | [Admin Panel (Dashboard & User-Verwaltung)](PROJ-19-admin-panel.md) | Planned | PROJ-18 |
+| PROJ-20 | [Globale Rezepte](PROJ-20-globale-rezepte.md) | Planned | PROJ-18 |
+| PROJ-21 | [User-Verbindungen (Freundschaft)](PROJ-21-user-verbindungen.md) | Planned | PROJ-18 |
+| PROJ-22 | [Rezepte teilen](PROJ-22-rezepte-teilen.md) | Planned | PROJ-21 |

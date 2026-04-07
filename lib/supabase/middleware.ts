@@ -31,13 +31,27 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Protect /app/* and /admin/* routes
+  // Unauthenticated users cannot access app or admin routes
   if (!user && (pathname.startsWith("/recipes") || pathname.startsWith("/meal-plan") || pathname.startsWith("/shopping-list") || pathname.startsWith("/profile") || pathname.startsWith("/admin"))) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  // Protect /admin/* — only for admins (checked server-side in layout)
+  // Admin routes: check role server-side
+  if (user && pathname.startsWith("/admin")) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.role !== "admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/me";
+      return NextResponse.redirect(url);
+    }
+  }
+
   return supabaseResponse;
 }
