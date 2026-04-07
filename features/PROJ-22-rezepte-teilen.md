@@ -1,6 +1,6 @@
 # PROJ-22: Rezepte teilen (mit Connections)
 
-## Status: In Review
+## Status: Approved
 **Created:** 2026-04-07
 **Last Updated:** 2026-04-07
 
@@ -50,7 +50,7 @@ _To be added by /architecture_
 
 **Date:** 2026-04-07
 **Tester:** QA Engineer (automated)
-**Result:** ⚠️ NOT READY — 1 High bug
+**Result:** ✅ APPROVED — High bug fixed (BUG-22-01)
 
 ### Acceptance Criteria
 
@@ -58,9 +58,9 @@ _To be added by /architecture_
 |---|-----------|--------|
 | 1 | "Teilen"-Aktion auf Rezeptdetailseite (nur für eigene Rezepte) | ✅ PASS — ShareRecipeButton für `isOwner` sichtbar |
 | 2 | Beim Teilen kann User Verbindungen auswählen | ✅ PASS — Sheet mit Multi-Select Verbindungsliste |
-| 3 | Empfänger sieht geteilte Rezepte in eigenem Bereich | ⚠️ PARTIAL — sichtbar auf /connections, aber nur wenn Rezept public/global ist |
+| 3 | Empfänger sieht geteilte Rezepte in eigenem Bereich | ✅ PASS — sichtbar auf /connections (RLS-Fix applied) |
 | 4 | Geteilte Rezepte zeigen den Absender ("Geteilt von [Name]") | ✅ PASS — "Geteilt von @username" in Inbox-Karte |
-| 5 | Empfänger kann geteiltes Rezept mit einem Klick kopieren | ⚠️ PARTIAL — funktioniert nur bei public/global Quell-Rezepten |
+| 5 | Empfänger kann geteiltes Rezept mit einem Klick kopieren | ✅ PASS — funktioniert für alle Rezepte (RLS-Fix applied) |
 | 6 | Empfänger kann geteiltes Rezept ablehnen/ausblenden | ✅ PASS — X-Button + PATCH /api/shared-recipes/[id] (dismiss) |
 | 7 | Doppelte Einträge werden zusammengeführt (Re-Share) | ✅ PASS — upsert mit onConflict="recipe_id,sender_id,recipient_id" |
 | 8 | User können nur eigene (nicht globale) Rezepte teilen | ✅ PASS — Ownership + !is_global Check in API |
@@ -75,7 +75,7 @@ _To be added by /architecture_
 
 ### Bugs Found
 
-**BUG-22-01** 🔴 **High: Private (nicht-öffentliche) Rezepte können nach dem Teilen nicht vom Empfänger gelesen werden**
+**BUG-22-01** ~~🔴 **High: Private (nicht-öffentliche) Rezepte können nach dem Teilen nicht vom Empfänger gelesen werden**~~ ✅ **FIXED**
 
 **Beschreibung:** Wenn ein User ein privates Rezept (`is_public=false`, `is_global=false`) teilt, kann der Empfänger das Rezept weder in der Inbox sehen (recipe-Felder sind null wegen RLS) noch kopieren (recipe fetch schlägt fehl → 404).
 

@@ -33,4 +33,4 @@
 | PROJ-19 | [Admin Panel (Dashboard & User-Verwaltung)](PROJ-19-admin-panel.md) | Approved | PROJ-18 |
 | PROJ-20 | [Globale Rezepte](PROJ-20-globale-rezepte.md) | In Review | PROJ-18 |
 | PROJ-21 | [User-Verbindungen (Freundschaft)](PROJ-21-user-verbindungen.md) | Approved | PROJ-18 |
-| PROJ-22 | [Rezepte teilen](PROJ-22-rezepte-teilen.md) | In Review | PROJ-21 |
+| PROJ-22 | [Rezepte teilen](PROJ-22-rezepte-teilen.md) | Approved | PROJ-21 |
