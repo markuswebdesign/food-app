@@ -33,7 +33,7 @@ function getPasswordStrength(pw: string): { level: 0 | 1 | 2 | 3; label: string;
 
 export default function RegisterPage() {
   const router = useRouter();
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient()); 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
