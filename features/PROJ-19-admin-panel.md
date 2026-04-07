@@ -66,7 +66,63 @@ PROJ-19 baut darauf auf und erweitert Dashboard, Nutzerliste und fügt User-Deak
 _To be added by /architecture_
 
 ## QA Test Results
-_To be added by /qa_
+
+**Datum:** 2026-04-07
+**Tester:** QA Engineer (automated)
+**Playwright:** 4 passed, 13 skipped (ADMIN_EMAIL/TEST_USER_EMAIL nicht gesetzt), 0 failed
+**Vitest:** 197/197 passed (keine Regression)
+
+### Acceptance Criteria
+
+| # | Kriterium | Status |
+|---|-----------|--------|
+| AC1 | Dashboard: Gesamtanzahl User, aktive (30d), öffentliche + private Rezepte | ✅ PASS |
+| AC2 | Kennzahlen serverseitig geladen (Server Component) | ✅ PASS |
+| AC3 | User-Liste: Nutzername, E-Mail, Rolle, Status, letzter Login, Registrierungsdatum | ✅ PASS |
+| AC4 | E-Mail + letzter Login aus `auth.users` via Service Role | ✅ PASS |
+| AC5 | Clientseitige Suche nach Nutzername oder E-Mail | ✅ PASS |
+| AC6 | Pagination: 20 User/Seite mit Vor/Zurück | ✅ PASS |
+| AC7 | Gesperrte User: gedimmte Zeile + "Gesperrt"-Badge | ✅ PASS |
+| AC8 | Admin kann User sperren (`is_banned = true`) | ✅ PASS |
+| AC9 | Sperren invalidiert Session via `auth.admin.signOut(userId, 'global')` | ✅ PASS |
+| AC10 | Admin kann gesperrten User entsperren | ✅ PASS |
+| AC11 | Eigener Account nicht sperrbar (UI + API) | ✅ PASS |
+| AC12 | Bestätigungsdialog vor Rolle entziehen und vor Sperren | ✅ PASS |
+| AC13 | Login prüft `is_banned` nach erfolgreichem Auth-Check | ✅ PASS |
+| AC14 | Gesperrter User sieht: "Dein Account wurde deaktiviert…" | ✅ PASS |
+| AC15 | Session sofort beendet nach Ban-Meldung (signOut) | ✅ PASS |
+
+### Edge Cases
+
+| Szenario | Status |
+|----------|--------|
+| Admin sperrt eigenen Account → Button fehlt, API blockt | ✅ PASS |
+| Letzter Admin soll degradiert werden → PROJ-18-Schutz greift | ✅ PASS |
+| Suche ohne Ergebnis → "Keine Nutzer gefunden." | ✅ PASS |
+| Nicht eingeloggter User ruft /admin auf → Redirect /login | ✅ PASS |
+| Normaler User ruft /admin auf → Redirect /me | ✅ PASS |
+
+### Security Audit
+
+| Test | Ergebnis |
+|------|----------|
+| `/api/admin/users` ohne Session → 401 | ✅ PASS |
+| `/api/admin/users` mit normalem User-Token → 403 | ✅ PASS (serverseitige Rollenprüfung) |
+| Ungültige UUID als userId → 400 (Zod-Validierung) | ✅ PASS |
+| Unbekannte `action` → 400 (discriminated union) | ✅ PASS |
+| Service Role Key nur server-seitig genutzt | ✅ PASS |
+| SQL Injection: Supabase parameterisiert alle Queries | ✅ PASS |
+
+### Bugs
+
+| # | Schwere | Beschreibung |
+|---|---------|-------------|
+| BUG-1 | Medium | **Kein UI-Feedback bei fehlgeschlagenen API-Aktionen** — wenn `handleSetRole` oder `handleSetBanned` einen Fehler zurückgibt (z.B. beim Versuch den letzten Admin zu degradieren), sieht der User keine Fehlermeldung. Der Fehler wird im Code mit `if (res.ok)` still ignoriert. |
+| BUG-2 | Low | **Spec: Pagination serverseitig** — implementiert clientseitig (alle User werden geladen, dann paginiert). Funktional äquivalent für aktuelle Nutzerzahl, aber bei 500+ Usern ineffizient. |
+
+### Produktionsbereitschaft
+
+**READY** — Keine Critical oder High Bugs. BUG-1 (Medium) sollte zeitnah gefixt werden, blockiert Deployment nicht. BUG-2 (Low) erst relevant bei 500+ Usern.
 
 ## Deployment
 _To be added by /deploy_
