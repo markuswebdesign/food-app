@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -467,11 +468,12 @@ export function ImportForm({ categories }: ImportFormProps) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="description">Kurzbeschreibung</Label>
-          <Input
+          <Textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Kurze Beschreibung"
+            rows={3}
           />
         </div>
         <div className="grid grid-cols-3 gap-4">
