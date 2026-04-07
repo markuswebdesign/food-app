@@ -409,9 +409,9 @@ export function ProfileHealthForm({ userId, initial }: Props) {
         <CardContent>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium">Globale Rezepte ausblenden</p>
+              <p className="text-sm font-medium">Nur eigene Rezepte anzeigen</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Globale Rezepte werden nicht in der Rezeptliste angezeigt.
+                Rezepte anderer Nutzer werden in der Rezeptliste ausgeblendet.
               </p>
             </div>
             <Button

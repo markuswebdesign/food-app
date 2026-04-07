@@ -49,7 +49,11 @@ export default async function RecipesPage({
       recipe_categories(category_id, categories(id, name, slug, type, icon)),
       recipe_nutrition(calories)
     `)
-    .or(profilePrefs?.hide_global_recipes ? "is_public.eq.true" : "is_public.eq.true,is_global.eq.true")
+    .or(
+      authUser && profilePrefs?.hide_global_recipes
+        ? `user_id.eq.${authUser.id}`
+        : "is_public.eq.true,is_global.eq.true"
+    )
     .order("created_at", { ascending: false });
 
   if (searchParams.q) {
