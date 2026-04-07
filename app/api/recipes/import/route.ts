@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import * as cheerio from "cheerio";
 
+export const maxDuration = 60;
+
 // ─── Schema ───────────────────────────────────────────────────────────────────
 
 interface ParsedIngredient {
