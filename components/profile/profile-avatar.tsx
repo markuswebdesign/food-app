@@ -21,14 +21,47 @@ export function ProfileAvatar({ userId: _userId, username, currentAvatarUrl }: P
 
   const initials = username.slice(0, 2).toUpperCase();
 
+  function centerCropToSquare(file: File): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const size = Math.min(img.width, img.height);
+        const x = (img.width - size) / 2;
+        const y = (img.height - size) / 2;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { reject(new Error("Canvas nicht verfügbar")); return; }
+        ctx.drawImage(img, x, y, size, size, 0, 0, size, size);
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error("Konvertierung fehlgeschlagen"));
+        }, "image/webp", 0.9);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Bild konnte nicht geladen werden")); };
+      img.src = url;
+    });
+  }
+
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setError(null);
 
+    let blob: Blob;
+    try {
+      blob = await centerCropToSquare(file);
+    } catch {
+      setError("Bild konnte nicht verarbeitet werden");
+      return;
+    }
+
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", blob, "avatar.webp");
 
     startTransition(async () => {
       const res = await fetch("/api/profile/avatar", {

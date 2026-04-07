@@ -30,6 +30,11 @@ Gesundheitsbewusste Menschen, die ihr Gewicht reduzieren oder halten möchten un
 | P2 | PROJ-14: Landingpage | Planned |
 | P2 | PROJ-15: Styling-Überarbeitung | Planned |
 | P2 | PROJ-16: Landingpage Redesign (Greenive-Style) | Planned |
+| P1 | PROJ-18: Rollen-System (Admin/User) | Planned |
+| P1 | PROJ-19: Admin Panel (Dashboard & User-Verwaltung) | Planned |
+| P1 | PROJ-20: Globale Rezepte | Planned |
+| P2 | PROJ-21: User-Verbindungen (Freundschaft) | Planned |
+| P2 | PROJ-22: Rezepte teilen | Planned |
 
 ## Success Metrics
 - Nutzer sehen täglich ihr Kaloriendefizit auf einen Blick
@@ -42,5 +47,5 @@ Gesundheitsbewusste Menschen, die ihr Gewicht reduzieren oder halten möchten un
 
 ## Non-Goals
 - Keine Barcode-Scanner-Integration (vorerst)
-- Kein sozialer Feed / Community-Features
+- Kein öffentlicher sozialer Feed (nur private Verbindungen zwischen bekannten Usern)
 - Kein Fitness-/Sport-Tracking

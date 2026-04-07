@@ -39,7 +39,7 @@ function LoginForm() {
     setError(null);
     setEmailUnconfirmed(false);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       if (error.message.toLowerCase().includes("email not confirmed")) {
@@ -48,10 +48,27 @@ function LoginForm() {
         setError("E-Mail oder Passwort falsch.");
       }
       setLoading(false);
-    } else {
-      router.push("/recipes");
-      router.refresh();
+      return;
     }
+
+    // Check if account is banned
+    if (signInData.user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_banned")
+        .eq("id", signInData.user.id)
+        .single();
+
+      if (profile?.is_banned) {
+        await supabase.auth.signOut();
+        setError("Dein Account wurde deaktiviert. Bitte kontaktiere den Support.");
+        setLoading(false);
+        return;
+      }
+    }
+
+    router.push("/recipes");
+    router.refresh();
   }
 
   async function handleResend() {
@@ -134,12 +151,17 @@ function LoginForm() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Anmelden..." : "Anmelden"}
           </Button>
-          <p className="text-sm text-muted-foreground text-center">
-            Noch kein Konto?{" "}
-            <Link href="/register" className="text-primary hover:underline">
-              Registrieren
+          <div className="flex flex-col gap-2">
+            <Link href="/forgot-password" className="text-sm text-primary hover:underline text-center self-center">
+              Passwort vergessen?
             </Link>
-          </p>
+            <p className="text-sm text-muted-foreground text-center">
+              Noch kein Konto?{" "}
+              <Link href="/register" className="text-primary hover:underline">
+                Registrieren
+              </Link>
+            </p>
+          </div>
         </CardFooter>
       </form>
     </Card>

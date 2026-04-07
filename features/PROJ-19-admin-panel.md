@@ -1,6 +1,6 @@
 # PROJ-19: Admin Panel (Dashboard & User-Verwaltung)
 
-## Status: Planned
+## Status: In Progress
 **Created:** 2026-04-07
 **Last Updated:** 2026-04-07
 
