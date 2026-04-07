@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-import { Trash2, Plus, Loader2, ArrowLeft, Camera, X } from "lucide-react";
+import { Trash2, Plus, Loader2, ArrowLeft, Camera, X, Upload, Image as ImageIcon, Link as LinkIcon } from "lucide-react";
 import type { Category } from "@/lib/types";
 
 interface IngredientRow {
@@ -59,6 +59,9 @@ export function ImportForm({ categories }: ImportFormProps) {
   const [description, setDescription] = useState("");
   const [instructions, setInstructions] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [imageFileLocal, setImageFileLocal] = useState<File | null>(null);
+  const [imagePreviewLocal, setImagePreviewLocal] = useState<string | null>(null);
+  const [sourceUrl, setSourceUrl] = useState("");
   const [servings, setServings] = useState("2");
   const [workTime, setWorkTime] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -285,13 +288,24 @@ export function ImportForm({ categories }: ImportFormProps) {
         prep_time_minutes: null,
         cook_time_minutes: workTime ? parseInt(workTime) : null,
         image_url: imageUrl || null,
-        source_url: url || null,
+        source_url: sourceUrl || url || null,
         is_public: true,
       })
       .select("id")
       .single();
 
     if (recipeError) { setError(recipeError.message); setSaving(false); return; }
+
+    // Upload image file if selected
+    if (imageFileLocal) {
+      const formData = new FormData();
+      formData.append("image", imageFileLocal);
+      const imgRes = await fetch(`/api/recipes/${recipe.id}/image`, { method: "POST", body: formData });
+      const imgData = await imgRes.json();
+      if (imgRes.ok) {
+        await supabase.from("recipes").update({ image_url: imgData.image_url }).eq("id", recipe.id);
+      }
+    }
 
     if (selectedCategories.length > 0) {
       await supabase.from("recipe_categories").insert(
@@ -499,15 +513,72 @@ export function ImportForm({ categories }: ImportFormProps) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="imageUrl">Bild-URL</Label>
+            <Label htmlFor="imageUrl">Titelbild</Label>
             <Input
               id="imageUrl"
               type="url"
               value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
+              onChange={(e) => { setImageUrl(e.target.value); }}
               placeholder="https://..."
             />
+            {imagePreviewLocal && (
+              <div className="relative mb-2">
+                <img src={imagePreviewLocal} alt="Vorschau" className="w-full max-h-32 object-cover rounded-lg" />
+                <button
+                  type="button"
+                  onClick={() => { setImageFileLocal(null); setImagePreviewLocal(null); setImageUrl(""); }}
+                  className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer">
+              <Upload className="h-3.5 w-3.5" />
+              Bild hochladen
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="sr-only"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setImageFileLocal(file);
+                    const reader = new FileReader();
+                    reader.onload = (ev) => setImagePreviewLocal(ev.target?.result as string);
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+            </label>
           </div>
+        </div>
+
+        {/* Source URL with domain extraction */}
+        <div className="space-y-2">
+          <Label htmlFor="sourceUrl">Quelle</Label>
+          <Input
+            id="sourceUrl"
+            type="url"
+            value={sourceUrl}
+            onChange={(e) => setSourceUrl(e.target.value)}
+            placeholder="https://www.chefkoch.de/rezept/..."
+          />
+          {sourceUrl && (() => {
+            try {
+              const parsed = new URL(sourceUrl);
+              const domain = parsed.hostname.replace(/^www\./, "");
+              return (
+                <p className="text-xs text-muted-foreground">
+                  <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+                    {domain}
+                  </a>
+                </p>
+              );
+            } catch {
+              return null;
+            }
+          })()}
         </div>
       </div>
 

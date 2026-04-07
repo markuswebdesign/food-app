@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Trash2, Plus, Loader2, CheckCircle2, Pencil, X } from "lucide-react";
+import { Trash2, Plus, Loader2, CheckCircle2, Pencil, X, Upload, Image as ImageIcon, Link as LinkIcon } from "lucide-react";
 import { calculateRecipeNutrition } from "@/lib/utils/nutrition";
 import type { Category, Recipe } from "@/lib/types";
 
@@ -54,6 +54,9 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
     String((recipe?.prep_time_minutes ?? 0) + (recipe?.cook_time_minutes ?? 0)) || ""
   );
   const [imageUrl, setImageUrl] = useState(recipe?.image_url ?? "");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(recipe?.image_url ? `${recipe.image_url}?t=${Date.now()}` : null);
+  const [imageUploading, setImageUploading] = useState(false);
   const [sourceUrl, setSourceUrl] = useState(recipe?.source_url ?? "");
   const [isPublic, setIsPublic] = useState(recipe?.is_public ?? true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
@@ -144,6 +147,26 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
     }
   }
 
+  async function handleImageUpload(file: File) {
+    const targetId = recipe?.id;
+    if (!targetId) return null; // image upload only after recipe exists
+
+    setImageUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await fetch(`/api/recipes/${targetId}/image`, { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Upload fehlgeschlagen");
+      setImageUrl(data.image_url);
+      setImagePreview(data.image_url);
+      await supabase.from("recipes").update({ image_url: data.image_url }).eq("id", targetId);
+      return data.image_url;
+    } finally {
+      setImageUploading(false);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -174,6 +197,11 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
       const { data, error } = await supabase.from("recipes").insert(recipeData).select("id").single();
       if (error) { setError(error.message); setLoading(false); return; }
       recipeId = data.id;
+    }
+
+    // Upload image file if one was selected
+    if (imageFile && recipeId) {
+      await handleImageUpload(imageFile);
     }
 
     // Kategorien
@@ -491,13 +519,64 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
 
       {/* Optional */}
       <div className="space-y-4">
+        {/* Image */}
         <div className="space-y-2">
-          <Label htmlFor="imageUrl">Bild-URL</Label>
-          <Input id="imageUrl" type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." />
+          <Label htmlFor="imageUrl">Titelbild</Label>
+          {imagePreview && (
+            <div className="relative mb-2">
+              <img src={imagePreview} alt="Vorschau" className="w-full max-h-48 object-cover rounded-lg" />
+              <button
+                type="button"
+                onClick={() => { setImageFile(null); setImagePreview(null); setImageUrl(""); }}
+                className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+          <Input id="imageUrl" type="url" value={imageUrl} onChange={(e) => { setImageUrl(e.target.value); setImagePreview(e.target.value); }} placeholder="https://..." />
+          <div className="flex items-center gap-2 mt-2">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground cursor-pointer">
+              <Upload className="h-4 w-4" />
+              Bild hochladen
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="sr-only"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setImageFile(file);
+                    const reader = new FileReader();
+                    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+            </label>
+            {imageUploading && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+          </div>
         </div>
+
+        {/* Source URL */}
         <div className="space-y-2">
-          <Label htmlFor="sourceUrl">Quell-URL (Instagram, Website etc.)</Label>
-          <Input id="sourceUrl" type="url" value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} placeholder="https://..." />
+          <Label htmlFor="sourceUrl">Quelle</Label>
+          <Input id="sourceUrl" type="url" value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} placeholder="https://www.chefkoch.de/rezept/..." />
+          {sourceUrl && (() => {
+            try {
+              const parsed = new URL(sourceUrl);
+              const domain = parsed.hostname.replace(/^www\./, "");
+              return (
+                <p className="text-xs text-muted-foreground">
+                  <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+                    {domain}
+                  </a>
+                </p>
+              );
+            } catch {
+              return null;
+            }
+          })()}
         </div>
         <div className="flex items-center gap-2">
           <input
