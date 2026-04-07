@@ -52,16 +52,16 @@ export function ConnectionsClient({ currentUserId, initialConnections, initialIn
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [copyingId, setCopyingId] = useState<string | null>(null);
 
-  const accepted = connections.filter((c) => c.status === "accepted");
+  const accepted = connections.filter((c) => c.status === "accepted" && c.requester && c.recipient);
   const pendingReceived = connections.filter(
-    (c) => c.status === "pending" && c.recipient.id === currentUserId
+    (c) => c.status === "pending" && c.recipient?.id === currentUserId
   );
   const pendingSent = connections.filter(
-    (c) => c.status === "pending" && c.requester.id === currentUserId
+    (c) => c.status === "pending" && c.requester?.id === currentUserId
   );
 
   function otherUser(c: Connection): Profile {
-    return c.requester.id === currentUserId ? c.recipient : c.requester;
+    return c.requester?.id === currentUserId ? c.recipient : c.requester;
   }
 
   async function handleSearch() {
