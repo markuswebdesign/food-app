@@ -31,6 +31,6 @@
 | PROJ-17 | [Passwort Zurücksetzen](PROJ-17-passwort-zuruecksetzen.md) | Approved | PROJ-6 |
 | PROJ-18 | [Rollen-System (Admin/User)](PROJ-18-rollen-system.md) | Deployed | — |
 | PROJ-19 | [Admin Panel (Dashboard & User-Verwaltung)](PROJ-19-admin-panel.md) | Approved | PROJ-18 |
-| PROJ-20 | [Globale Rezepte](PROJ-20-globale-rezepte.md) | Planned | PROJ-18 |
-| PROJ-21 | [User-Verbindungen (Freundschaft)](PROJ-21-user-verbindungen.md) | Planned | PROJ-18 |
-| PROJ-22 | [Rezepte teilen](PROJ-22-rezepte-teilen.md) | Planned | PROJ-21 |
+| PROJ-20 | [Globale Rezepte](PROJ-20-globale-rezepte.md) | In Review | PROJ-18 |
+| PROJ-21 | [User-Verbindungen (Freundschaft)](PROJ-21-user-verbindungen.md) | In Review | PROJ-18 |
+| PROJ-22 | [Rezepte teilen](PROJ-22-rezepte-teilen.md) | In Review | PROJ-21 |

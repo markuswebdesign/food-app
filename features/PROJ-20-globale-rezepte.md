@@ -1,6 +1,6 @@
 # PROJ-20: Globale Rezepte
 
-## Status: Planned
+## Status: In Review
 **Created:** 2026-04-07
 **Last Updated:** 2026-04-07
 
@@ -39,6 +39,15 @@
 - Globale Rezepte erscheinen in Queries aller User (außer wenn `hide_global_recipes = true`)
 
 ---
+
+## Implementation Notes
+- DB: `is_global` on `recipes`, `hide_global_recipes` on `profiles` (migration already applied)
+- RLS: only admins can set `is_global` via Supabase policy; non-admins blocked server-side and via separate admin API route
+- Toggle API: `POST /api/profile/hide-global` — flips `hide_global_recipes` and redirects to `/recipes`
+- Admin recipes page: `/admin/recipes` with filterable table and per-row global toggle via `PATCH /api/admin/recipes/[id]/global`
+- Recipe detail: Global badge shown; "Kopieren" button (`CopyRecipeButton`) visible for non-owners via `POST /api/recipes/[id]/copy`
+- Recipe list: inline toggle link to show/hide global recipes
+- RecipeCard: "Global" badge with Globe icon
 
 ## Tech Design (Solution Architect)
 _To be added by /architecture_

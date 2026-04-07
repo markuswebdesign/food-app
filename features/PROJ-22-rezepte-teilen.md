@@ -1,6 +1,6 @@
 # PROJ-22: Rezepte teilen (mit Connections)
 
-## Status: Planned
+## Status: In Review
 **Created:** 2026-04-07
 **Last Updated:** 2026-04-07
 
@@ -35,6 +35,13 @@
 - Beim "Kopieren" wird ein neuer Rezept-Eintrag mit `user_id` des Empfängers erstellt
 
 ---
+
+## Implementation Notes
+- DB: `shared_recipes` table with `recipe_id`, `sender_id`, `recipient_id`, `status` (pending|accepted|dismissed) — migration applied
+- API: `GET /api/shared-recipes` (inbox), `POST /api/shared-recipes` (share with connection list, validates ownership + connection), `PATCH /api/shared-recipes/[id]` (dismiss), `POST /api/shared-recipes/[id]` (copy to own collection — full recipe+ingredients+nutrition+categories copy)
+- Share button: `ShareRecipeButton` (Sheet-based, loads connections on open, multi-select) visible on recipe detail for owners only
+- Inbox: visible on `/connections` page in "Geteilte Rezepte" section with copy and dismiss actions
+- Copy from inbox routes to the newly created recipe detail
 
 ## Tech Design (Solution Architect)
 _To be added by /architecture_

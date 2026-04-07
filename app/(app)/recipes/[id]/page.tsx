@@ -7,8 +7,10 @@ import { Separator } from "@/components/ui/separator";
 import { NutritionCard } from "@/components/recipes/nutrition-card";
 import { DeleteRecipeButton } from "@/components/recipes/delete-recipe-button";
 import { FavoriteButton } from "@/components/recipes/favorite-button";
-import { Clock, Users } from "lucide-react";
+import { Clock, Users, Globe } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ShareRecipeButton } from "@/components/recipes/share-recipe-button";
+import { CopyRecipeButton } from "@/components/recipes/copy-recipe-button";
 
 export default async function RecipeDetailPage({
   params,
@@ -34,6 +36,8 @@ export default async function RecipeDetailPage({
 
   const categories = recipe.recipe_categories?.map((rc: any) => rc.categories) ?? [];
   const isOwner = user?.id === recipe.user_id;
+  const isGlobal = recipe.is_global ?? false;
+  const canCopy = user && !isOwner; // non-owners can copy (global or shared)
   const totalTime = (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);
 
   const { data: favoriteRow } = user
@@ -66,17 +70,21 @@ export default async function RecipeDetailPage({
 
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-3xl font-bold">{recipe.title}</h1>
-          <div className="flex gap-2 shrink-0">
+          <div className="flex gap-2 shrink-0 flex-wrap justify-end">
             {user && (
               <FavoriteButton recipeId={recipe.id} initialFavorited={isFavorited} />
             )}
             {isOwner && (
               <>
+                <ShareRecipeButton recipeId={recipe.id} currentUserId={user!.id} />
                 <Button variant="outline" size="sm" asChild>
                   <Link href={`/recipes/${recipe.id}/edit`}>Bearbeiten</Link>
                 </Button>
                 <DeleteRecipeButton recipeId={recipe.id} />
               </>
+            )}
+            {canCopy && (
+              <CopyRecipeButton recipeId={recipe.id} />
             )}
           </div>
         </div>
@@ -86,6 +94,11 @@ export default async function RecipeDetailPage({
         )}
 
         <div className="flex flex-wrap gap-2">
+          {isGlobal && (
+            <Badge variant="outline" className="text-blue-600 border-blue-200 gap-1">
+              <Globe className="h-3 w-3" /> Global
+            </Badge>
+          )}
           {categories.map((cat: any) => (
             <Badge key={cat.id} variant="secondary">
               {cat.name}

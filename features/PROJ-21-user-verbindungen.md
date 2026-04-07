@@ -1,6 +1,6 @@
 # PROJ-21: User-Verbindungen (Freundschaft)
 
-## Status: Planned
+## Status: In Review
 **Created:** 2026-04-07
 **Last Updated:** 2026-04-07
 
@@ -38,6 +38,12 @@
 - Unique-Constraint: keine Duplikat-Anfragen zwischen zwei Usern
 
 ---
+
+## Implementation Notes
+- DB: `connections` table with `requester_id`, `recipient_id`, `status` (pending|accepted|declined) — migration applied
+- API: `GET /api/connections` (list + user search via `?search=`), `POST /api/connections` (send request, auto-accepts mutual requests), `PATCH /api/connections/[id]` (accept|decline), `DELETE /api/connections/[id]` (remove/withdraw)
+- Page: `/connections` — user search, incoming requests with accept/decline, accepted connections list with remove, sent pending requests with withdraw
+- NavBar: "Verbindungen" link added
 
 ## Tech Design (Solution Architect)
 _To be added by /architecture_
