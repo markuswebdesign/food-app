@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { lookupLocalIngredient } from "@/lib/nutrition/local-ingredients";
 
 export const maxDuration = 60;
 
@@ -125,28 +126,44 @@ function groupRows(rows: CsvRow[]): RecipeGroup[] {
   return Array.from(map.values());
 }
 
-// ─── OpenFoodFacts lookup ─────────────────────────────────────────────────────
+// ─── Nutrition lookup (local DB → OpenFoodFacts DE) ──────────────────────────
 
 async function lookupNutrition(name: string) {
+  // Layer 1: local ingredient database
+  const local = lookupLocalIngredient(name);
+  if (local) return local;
+
+  // Layer 2: OpenFoodFacts with German locale
   try {
-    const res = await fetch(
-      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(name)}&json=1&page_size=1&fields=nutriments`,
-      { signal: AbortSignal.timeout(4000) }
-    );
+    const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(name)}&json=1&page_size=5&fields=product_name,nutriments&lc=de`;
+    const res = await fetch(url, {
+      headers: { "User-Agent": "food-app/1.0 (nutrition lookup)" },
+      signal: AbortSignal.timeout(5000),
+    });
     if (!res.ok) return null;
+
     const data = await res.json();
-    const n = data.products?.[0]?.nutriments;
-    if (!n) return null;
-    return {
-      calories_per_100g: n["energy-kcal_100g"] ?? null,
-      protein_per_100g: n["proteins_100g"] ?? null,
-      fat_per_100g: n["fat_100g"] ?? null,
-      carbs_per_100g: n["carbohydrates_100g"] ?? null,
-      fiber_per_100g: n["fiber_100g"] ?? null,
-    };
+    for (const product of data?.products ?? []) {
+      const n = product?.nutriments;
+      if (!n) continue;
+      const calories = n["energy-kcal_100g"] ?? n["energy-kcal"] ?? null;
+      const protein  = n["proteins_100g"]    ?? n["proteins"]     ?? null;
+      const fat      = n["fat_100g"]          ?? n["fat"]          ?? null;
+      const carbs    = n["carbohydrates_100g"] ?? n["carbohydrates"] ?? null;
+      const fiber    = n["fiber_100g"]         ?? n["fiber"]        ?? 0;
+      if (calories == null || protein == null || fat == null || carbs == null) continue;
+      return {
+        calories_per_100g: Math.round(calories),
+        protein_per_100g:  Math.round(protein * 10) / 10,
+        fat_per_100g:      Math.round(fat * 10) / 10,
+        carbs_per_100g:    Math.round(carbs * 10) / 10,
+        fiber_per_100g:    Math.round(fiber * 10) / 10,
+      };
+    }
   } catch {
-    return null;
+    // ignore timeout / network errors
   }
+  return null;
 }
 
 // ─── Save one recipe to DB ────────────────────────────────────────────────────
