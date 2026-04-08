@@ -1,6 +1,6 @@
 # PROJ-23: RezeptFit Landingpage
 
-## Status: Approved
+## Status: Deployed
 **Created:** 2026-04-08
 **Last Updated:** 2026-04-08
 
@@ -234,4 +234,11 @@ Da es sich um eine rein statische HTML-Datei ohne Formulare, User-Input oder Ser
 Keine Critical oder High Bugs. Alle 22 Acceptance Criteria bestanden. Die 5 gefundenen Low-Bugs sind kosmetischer Natur und blockieren die Auslieferung nicht.
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-04-08
+**Commit:** 4d48754
+**Dateien:**
+- `example/bootstrap/rezeptfit.html` — Hauptseite
+- `example/bootstrap/impressum.html` — Impressum
+**Build:** ✅ `npm run build` erfolgreich
+**Lint:** ✅ Keine Errors (nur vorhandene Warnings)

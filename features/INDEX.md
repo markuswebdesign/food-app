@@ -34,4 +34,4 @@
 | PROJ-20 | [Globale Rezepte](PROJ-20-globale-rezepte.md) | Deployed | PROJ-18 |
 | PROJ-21 | [User-Verbindungen (Freundschaft)](PROJ-21-user-verbindungen.md) | Deployed | PROJ-18 |
 | PROJ-22 | [Rezepte teilen](PROJ-22-rezepte-teilen.md) | Deployed | PROJ-21 |
-| PROJ-23 | [RezeptFit Landingpage](PROJ-23-rezeptfit-landingpage.md) | Approved | — |
+| PROJ-23 | [RezeptFit Landingpage](PROJ-23-rezeptfit-landingpage.md) | Deployed | — |
