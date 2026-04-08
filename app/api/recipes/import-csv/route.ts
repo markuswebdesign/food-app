@@ -157,7 +157,6 @@ async function saveRecipe(
   recipe: RecipeGroup
 ): Promise<{ title: string; ok: boolean; error?: string }> {
   try {
-    // Enrich ingredients with OpenFoodFacts (parallel, capped)
     const enriched = await Promise.all(
       recipe.ingredients.map(async (ing) => {
         const nutrition = await lookupNutrition(ing.name);
@@ -165,7 +164,6 @@ async function saveRecipe(
       })
     );
 
-    // Insert recipe
     const { data: saved, error: recipeErr } = await supabase
       .from("recipes")
       .insert({
@@ -185,7 +183,6 @@ async function saveRecipe(
 
     if (recipeErr || !saved) return { title: recipe.title, ok: false, error: recipeErr?.message };
 
-    // Insert ingredients
     if (enriched.length > 0) {
       await supabase.from("ingredients").insert(
         enriched.map((i) => ({
@@ -200,7 +197,6 @@ async function saveRecipe(
         }))
       );
 
-      // Calculate and insert recipe_nutrition
       const hasNutrition = enriched.some((i) => i.calories_per_100g != null);
       if (hasNutrition) {
         let calories = 0, protein = 0, fat = 0, carbs = 0, fiber = 0;
@@ -230,7 +226,7 @@ async function saveRecipe(
   }
 }
 
-// ─── API Route ────────────────────────────────────────────────────────────────
+// ─── API Route (streaming SSE) ────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
   const supabase = createClient();
@@ -248,14 +244,32 @@ export async function POST(request: NextRequest) {
   }
 
   const recipes = groupRows(rows);
+  const total = recipes.length;
+  const encoder = new TextEncoder();
 
-  // Process recipes sequentially to avoid hammering OpenFoodFacts
-  const results: { title: string; ok: boolean; error?: string }[] = [];
-  for (const recipe of recipes) {
-    const result = await saveRecipe(supabase, user.id, recipe);
-    results.push(result);
-  }
+  const stream = new ReadableStream({
+    async start(controller) {
+      const send = (data: object) => {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+      };
 
-  const succeeded = results.filter((r) => r.ok).length;
-  return NextResponse.json({ results, succeeded, total: recipes.length });
+      send({ type: "total", total });
+
+      for (let i = 0; i < recipes.length; i++) {
+        const result = await saveRecipe(supabase, user.id, recipes[i]);
+        send({ type: "progress", index: i + 1, total, result });
+      }
+
+      send({ type: "done", total });
+      controller.close();
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "X-Accel-Buffering": "no",
+    },
+  });
 }

@@ -4,7 +4,8 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload, FileText, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Upload, FileText, CheckCircle2, XCircle } from "lucide-react";
 
 interface ImportResult {
   title: string;
@@ -16,7 +17,10 @@ export function CsvImportForm() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [progressTotal, setProgressTotal] = useState(0);
+  const [currentTitle, setCurrentTitle] = useState<string | null>(null);
   const [results, setResults] = useState<ImportResult[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,9 +43,12 @@ export function CsvImportForm() {
 
   async function handleImport() {
     if (!file) return;
-    setLoading(true);
+    setImporting(true);
     setError(null);
     setResults(null);
+    setProgress(0);
+    setProgressTotal(0);
+    setCurrentTitle(null);
 
     const formData = new FormData();
     formData.append("file", file);
@@ -51,26 +58,65 @@ export function CsvImportForm() {
         method: "POST",
         body: formData,
       });
-      const data = await res.json();
+
       if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
         setError(data.error ?? "Import fehlgeschlagen");
-      } else {
-        setResults(data.results);
+        setImporting(false);
+        return;
+      }
+
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      const collected: ImportResult[] = [];
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          try {
+            const event = JSON.parse(line.slice(6));
+            if (event.type === "total") {
+              setProgressTotal(event.total);
+            } else if (event.type === "progress") {
+              setProgress(event.index);
+              setCurrentTitle(event.result.title);
+              collected.push(event.result);
+            } else if (event.type === "done") {
+              setResults(collected);
+            }
+          } catch {
+            // ignore malformed event
+          }
+        }
+      }
+
+      if (collected.length > 0 && !results) {
+        setResults(collected);
       }
     } catch {
       setError("Netzwerkfehler. Bitte versuche es erneut.");
     } finally {
-      setLoading(false);
+      setImporting(false);
+      setCurrentTitle(null);
     }
   }
 
   const succeeded = results?.filter((r) => r.ok).length ?? 0;
   const failed = results?.filter((r) => !r.ok).length ?? 0;
+  const progressPercent = progressTotal > 0 ? Math.round((progress / progressTotal) * 100) : 0;
 
   return (
     <div className="space-y-4">
       {/* Drop Zone */}
-      {!results && (
+      {!results && !importing && (
         <div
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
@@ -108,20 +154,29 @@ export function CsvImportForm() {
       )}
 
       {/* Import Button */}
-      {file && !results && (
-        <Button onClick={handleImport} disabled={loading} className="w-full">
-          {loading ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Rezepte werden importiert…
-            </>
-          ) : (
-            <>
-              <Upload className="h-4 w-4 mr-2" />
-              Importieren
-            </>
-          )}
+      {file && !results && !importing && (
+        <Button onClick={handleImport} className="w-full">
+          <Upload className="h-4 w-4 mr-2" />
+          Importieren
         </Button>
+      )}
+
+      {/* Progress */}
+      {importing && (
+        <div className="space-y-3 p-4 border rounded-lg bg-muted/20">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-medium">Importiere Rezepte…</span>
+            <span className="text-muted-foreground tabular-nums">
+              {progress} / {progressTotal}
+            </span>
+          </div>
+          <Progress value={progressPercent} className="h-2" />
+          {currentTitle && (
+            <p className="text-xs text-muted-foreground truncate">
+              ✓ {currentTitle}
+            </p>
+          )}
+        </div>
       )}
 
       {/* Results */}
@@ -166,7 +221,7 @@ export function CsvImportForm() {
             )}
             <Button
               variant="outline"
-              onClick={() => { setResults(null); setFile(null); setError(null); }}
+              onClick={() => { setResults(null); setFile(null); setError(null); setProgress(0); }}
               className="flex-1"
             >
               Neue Datei importieren
@@ -176,11 +231,11 @@ export function CsvImportForm() {
       )}
 
       {/* Format hint */}
-      {!results && (
+      {!results && !importing && (
         <p className="text-xs text-muted-foreground">
-          Pflichtspalt: <code className="bg-muted px-1 rounded">recipe_title</code>,{" "}
-          <code className="bg-muted px-1 rounded">ingredient_name</code>. Optional: description, servings,
-          prep_time_minutes, cook_time_minutes, category, instructions, source_url, image_url, amount, unit.
+          Pflichtspalte: <code className="bg-muted px-1 rounded">recipe_title</code>. Optional:{" "}
+          description, servings, prep_time_minutes, cook_time_minutes, category, instructions,
+          source_url, image_url, <code className="bg-muted px-1 rounded">ingredient_name</code>, amount, unit.
           Eine Zeile pro Zutat.
         </p>
       )}
