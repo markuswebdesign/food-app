@@ -6,7 +6,8 @@ import type { AdminRecipe } from "./page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Globe, Lock } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Globe, Lock, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 const PAGE_SIZE = 25;
@@ -17,6 +18,8 @@ export function AdminRecipesTable({ recipes }: { recipes: AdminRecipe[] }) {
   const [page, setPage] = useState(1);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [localRecipes, setLocalRecipes] = useState<AdminRecipe[]>(recipes);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
   const router = useRouter();
 
   const filtered = useMemo(() => {
@@ -31,6 +34,10 @@ export function AdminRecipesTable({ recipes }: { recipes: AdminRecipe[] }) {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
+  const allPageIds = paginated.map((r) => r.id);
+  const allPageSelected = allPageIds.length > 0 && allPageIds.every((id) => selected.has(id));
+  const somePageSelected = allPageIds.some((id) => selected.has(id));
+
   function handleSearch(value: string) {
     setSearch(value);
     setPage(1);
@@ -39,6 +46,42 @@ export function AdminRecipesTable({ recipes }: { recipes: AdminRecipe[] }) {
   function handleFilter(value: "all" | "global" | "private") {
     setFilter(value);
     setPage(1);
+  }
+
+  function toggleSelectAll() {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allPageSelected) {
+        allPageIds.forEach((id) => next.delete(id));
+      } else {
+        allPageIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
+  }
+
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  async function deleteSelected() {
+    if (!confirm(`${selected.size} Rezept${selected.size !== 1 ? "e" : ""} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`)) return;
+    setDeleting(true);
+    const res = await fetch("/api/admin/recipes/bulk-delete", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: Array.from(selected) }),
+    });
+    if (res.ok) {
+      setLocalRecipes((prev) => prev.filter((r) => !selected.has(r.id)));
+      setSelected(new Set());
+      router.refresh();
+    }
+    setDeleting(false);
   }
 
   async function toggleGlobal(recipe: AdminRecipe) {
@@ -82,6 +125,18 @@ export function AdminRecipesTable({ recipes }: { recipes: AdminRecipe[] }) {
             </Button>
           ))}
         </div>
+        {selected.size > 0 && (
+          <Button
+            variant="destructive"
+            size="sm"
+            className="ml-auto gap-1.5"
+            onClick={deleteSelected}
+            disabled={deleting}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            {deleting ? "Löschen…" : `${selected.size} löschen`}
+          </Button>
+        )}
       </div>
 
       <div className="rounded-lg border overflow-hidden">
@@ -89,6 +144,14 @@ export function AdminRecipesTable({ recipes }: { recipes: AdminRecipe[] }) {
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr>
+                <th className="px-4 py-3 w-10">
+                  <Checkbox
+                    checked={allPageSelected}
+                    data-state={somePageSelected && !allPageSelected ? "indeterminate" : undefined}
+                    onCheckedChange={toggleSelectAll}
+                    aria-label="Alle auswählen"
+                  />
+                </th>
                 <th className="px-4 py-3 text-left font-medium">Titel</th>
                 <th className="px-4 py-3 text-left font-medium hidden sm:table-cell">Nutzer</th>
                 <th className="px-4 py-3 text-left font-medium hidden md:table-cell">Erstellt</th>
@@ -99,13 +162,20 @@ export function AdminRecipesTable({ recipes }: { recipes: AdminRecipe[] }) {
             <tbody className="divide-y">
               {paginated.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
                     Keine Rezepte gefunden.
                   </td>
                 </tr>
               )}
               {paginated.map((r) => (
-                <tr key={r.id} className="hover:bg-muted/20 transition-colors">
+                <tr key={r.id} className={`hover:bg-muted/20 transition-colors ${selected.has(r.id) ? "bg-muted/30" : ""}`}>
+                  <td className="px-4 py-3">
+                    <Checkbox
+                      checked={selected.has(r.id)}
+                      onCheckedChange={() => toggleSelect(r.id)}
+                      aria-label={`${r.title} auswählen`}
+                    />
+                  </td>
                   <td className="px-4 py-3 font-medium">
                     <Link href={`/recipes/${r.id}`} className="hover:underline" target="_blank">
                       {r.title}
