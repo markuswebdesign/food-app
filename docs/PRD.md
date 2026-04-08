@@ -35,6 +35,7 @@ Gesundheitsbewusste Menschen, die ihr Gewicht reduzieren oder halten möchten un
 | P1 | PROJ-20: Globale Rezepte | Planned |
 | P2 | PROJ-21: User-Verbindungen (Freundschaft) | Planned |
 | P2 | PROJ-22: Rezepte teilen | Planned |
+| P2 | PROJ-23: RezeptFit Landingpage | Planned |
 
 ## Success Metrics
 - Nutzer sehen täglich ihr Kaloriendefizit auf einen Blick

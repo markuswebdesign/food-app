@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RezeptFit – Deine Ernährung. Dein Plan. Dein Leben.</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Ovo&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome 6 -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+  <style>
+    /* ─── Design Tokens ──────────────────────────────── */
+    :root {
+      --green:       #4a7c59;
+      --green-dark:  #3a6347;
+      --green-deep:  #1a2b1f;
+      --green-light: #e8f3ec;
+      --green-soft:  #f4f9f6;
+      --gold:        #c9a84c;
+      --text:        #1f2a23;
+      --muted:       #6b7f72;
+      --radius:      .875rem;
+      --navbar-h:    72px;
+    }
+
+    /* ─── Base ───────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: var(--navbar-h); }
+    body {
+      font-family: 'Manrope', sans-serif;
+      color: var(--text);
+      background: #fff;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3, h4, h5 { font-family: 'Ovo', serif; font-weight: 400; }
+    a { text-decoration: none; }
+
+    /* ─── Utility classes ────────────────────────────── */
+    .btn-green {
+      background: var(--green);
+      color: #fff !important;
+      border: 2px solid var(--green);
+      border-radius: 50px;
+      padding: .65rem 1.9rem;
+      font-weight: 700;
+      font-size: .95rem;
+      transition: background .22s, transform .15s;
+    }
+    .btn-green:hover { background: var(--green-dark); border-color: var(--green-dark); transform: translateY(-1px); }
+
+    .btn-outline-green {
+      background: transparent;
+      color: var(--green) !important;
+      border: 2px solid var(--green);
+      border-radius: 50px;
+      padding: .65rem 1.9rem;
+      font-weight: 700;
+      font-size: .95rem;
+      transition: background .22s, color .22s, transform .15s;
+    }
+    .btn-outline-green:hover { background: var(--green); color: #fff !important; transform: translateY(-1px); }
+
+    .section-label {
+      color: var(--green);
+      font-size: .8rem;
+      font-weight: 800;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+    .section-title { font-size: clamp(1.8rem, 3.5vw, 2.7rem); line-height: 1.2; }
+    .divider-green { width: 48px; height: 3px; background: var(--green); border-radius: 2px; }
+    .bg-soft { background: var(--green-soft); }
+    .text-green { color: var(--green) !important; }
+    .text-muted-green { color: var(--muted); }
+
+    /* ─── Scroll fade-up ─────────────────────────────── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity .55s ease, transform .55s ease;
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+    .fade-up.delay-1 { transition-delay: .1s; }
+    .fade-up.delay-2 { transition-delay: .2s; }
+    .fade-up.delay-3 { transition-delay: .3s; }
+    .fade-up.delay-4 { transition-delay: .4s; }
+
+    /* ═══════════════════════════════════════════════════
+       NAVBAR
+    ═══════════════════════════════════════════════════ */
+    #mainNav {
+      height: var(--navbar-h);
+      background: rgba(255,255,255,.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: box-shadow .3s;
+    }
+    #mainNav.scrolled { box-shadow: 0 2px 24px rgba(0,0,0,.08); }
+
+    .navbar-brand {
+      font-family: 'Ovo', serif;
+      font-size: 1.55rem;
+      color: var(--green) !important;
+    }
+    .brand-dot { color: var(--gold); }
+
+    .nav-link {
+      color: var(--text) !important;
+      font-weight: 600;
+      font-size: .9rem;
+      padding: .4rem .9rem !important;
+      transition: color .2s;
+    }
+    .nav-link:hover { color: var(--green) !important; }
+
+    /* ═══════════════════════════════════════════════════
+       HERO
+    ═══════════════════════════════════════════════════ */
+    #hero {
+      padding-top: calc(var(--navbar-h) + 64px);
+      padding-bottom: 80px;
+      background: linear-gradient(150deg, var(--green-soft) 0%, #fff 55%);
+      overflow: hidden;
+    }
+
+    .hero-tagline-en {
+      font-size: .8rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--green);
+      opacity: .7;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: #fff;
+      border: 1px solid var(--green-light);
+      border-radius: 50px;
+      padding: .38rem 1rem;
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--text);
+      box-shadow: 0 2px 12px rgba(74,124,89,.1);
+    }
+
+    .hero-visual {
+      position: relative;
+    }
+    .hero-mockup {
+      background: linear-gradient(145deg, #c2dfc9 0%, #e2f2e6 100%);
+      border-radius: 1.25rem;
+      height: 460px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 20px 60px rgba(74,124,89,.18);
+    }
+    .mockup-inner {
+      background: #fff;
+      border-radius: .875rem;
+      width: calc(100% - 48px);
+      height: calc(100% - 48px);
+      padding: 1.25rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,.06);
+      overflow: hidden;
+    }
+    .mockup-topbar {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      margin-bottom: 1rem;
+    }
+    .mockup-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+    }
+    .mockup-nav-pill {
+      background: var(--green-soft);
+      border-radius: 6px;
+      padding: .25rem .6rem;
+      font-size: .7rem;
+      font-weight: 600;
+      color: var(--green);
+    }
+    .mockup-nav-pill.active { background: var(--green); color: #fff; }
+    .mockup-card {
+      background: var(--green-soft);
+      border-radius: .5rem;
+      padding: .75rem;
+      margin-bottom: .5rem;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+    .mockup-card-icon {
+      width: 36px; height: 36px; border-radius: .4rem;
+      background: var(--green);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: .9rem; flex-shrink: 0;
+    }
+    .mockup-bar {
+      height: 8px; border-radius: 4px;
+      background: var(--green-light);
+      margin-bottom: .3rem;
+    }
+    .mockup-bar.filled { background: var(--green); }
+    .mockup-stat {
+      background: #fff;
+      border-radius: .5rem;
+      padding: .6rem .8rem;
+      flex: 1;
+      border: 1px solid var(--green-light);
+      text-align: center;
+    }
+
+    /* Floating accent cards */
+    .float-card {
+      position: absolute;
+      background: #fff;
+      border-radius: var(--radius);
+      padding: .75rem 1.1rem;
+      box-shadow: 0 6px 28px rgba(0,0,0,.12);
+      font-size: .82rem;
+    }
+    .float-card-tl { top: 20px; left: -24px; }
+    .float-card-br { bottom: 30px; right: -20px; }
+    .float-icon {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .feature-chip {
+      display: inline-flex; align-items: center; gap: .45rem;
+      background: #fff; border: 1px solid var(--green-light);
+      border-radius: 50px; padding: .4rem .95rem;
+      font-size: .8rem; font-weight: 600; color: var(--text);
+    }
+    .chip-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+    /* ═══════════════════════════════════════════════════
+       FEATURES
+    ═══════════════════════════════════════════════════ */
+    #features { padding: 100px 0; }
+
+    .feature-card {
+      background: var(--green-soft);
+      border-radius: var(--radius);
+      padding: 2rem 1.75rem;
+      height: 100%;
+      transition: transform .22s, box-shadow .22s;
+      border: 1px solid transparent;
+    }
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 36px rgba(74,124,89,.13);
+      border-color: var(--green-light);
+    }
+    .feature-icon {
+      width: 56px; height: 56px; border-radius: .75rem;
+      background: var(--green);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 1.3rem;
+      margin-bottom: 1.3rem;
+    }
+    .feature-card h5 { font-size: 1.05rem; margin-bottom: .6rem; }
+    .feature-card p { font-size: .88rem; line-height: 1.75; color: var(--muted); margin: 0; }
+
+    /* ═══════════════════════════════════════════════════
+       APP PREVIEW
+    ═══════════════════════════════════════════════════ */
+    #preview { padding: 100px 0; background: var(--green-soft); }
+
+    .browser-frame {
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 20px 60px rgba(74,124,89,.15);
+      overflow: hidden;
+    }
+    .browser-bar {
+      background: #f0f4f1;
+      padding: .65rem 1rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .b-dot { width: 11px; height: 11px; border-radius: 50%; }
+    .b-dot-r { background: #ff6058; }
+    .b-dot-y { background: #ffbd2e; }
+    .b-dot-g { background: #28c840; }
+    .url-bar {
+      flex: 1; background: #fff; border-radius: 6px;
+      padding: .3rem .75rem; font-size: .75rem; color: var(--muted);
+      border: 1px solid #e0e8e2; margin: 0 .5rem;
+    }
+    .browser-content {
+      padding: 1.5rem;
+      background: var(--green-soft);
+      min-height: 340px;
+    }
+    .app-nav-mock {
+      background: #fff;
+      border-radius: .6rem;
+      padding: .6rem 1rem;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+    .app-nav-mock span { font-family: 'Ovo', serif; color: var(--green); font-size: 1rem; }
+    .app-nav-links { display: flex; gap: .75rem; }
+    .app-nav-link {
+      font-size: .72rem; font-weight: 600; padding: .25rem .65rem;
+      border-radius: 50px; color: var(--muted);
+    }
+    .app-nav-link.active { background: var(--green); color: #fff; }
+    .app-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem; }
+    .app-widget {
+      background: #fff;
+      border-radius: .6rem;
+      padding: .85rem 1rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,.05);
+    }
+    .app-widget-title { font-size: .7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: .4rem; }
+    .app-widget-value { font-family: 'Ovo', serif; font-size: 1.4rem; color: var(--green); }
+    .app-widget-sub { font-size: .68rem; color: var(--muted); }
+    .app-prog { height: 6px; background: var(--green-light); border-radius: 3px; overflow: hidden; margin-top: .4rem; }
+    .app-prog-fill { height: 100%; background: var(--green); border-radius: 3px; }
+    .app-recipe-row {
+      background: #fff;
+      border-radius: .6rem;
+      padding: .7rem 1rem;
+      display: flex; align-items: center; gap: .75rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,.04);
+    }
+    .app-recipe-emoji { font-size: 1.4rem; }
+    .app-recipe-kcal {
+      margin-left: auto;
+      font-size: .72rem; font-weight: 700;
+      color: var(--green);
+      background: var(--green-light);
+      padding: .2rem .6rem; border-radius: 50px;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       STATS
+    ═══════════════════════════════════════════════════ */
+    #stats { padding: 80px 0; background: var(--green); color: #fff; }
+    .stat-num {
+      font-family: 'Ovo', serif;
+      font-size: clamp(2.2rem, 4.5vw, 3rem);
+      line-height: 1;
+    }
+    .stat-label { font-size: .88rem; opacity: .82; margin-top: .4rem; line-height: 1.5; }
+
+    /* ═══════════════════════════════════════════════════
+       PRICING
+    ═══════════════════════════════════════════════════ */
+    #pricing { padding: 100px 0; }
+
+    /* Toggle */
+    .pricing-toggle-wrap {
+      display: inline-flex;
+      background: var(--green-soft);
+      border-radius: 50px;
+      padding: .3rem;
+      gap: .2rem;
+    }
+    .pricing-toggle-wrap .toggle-btn {
+      border: none;
+      background: transparent;
+      border-radius: 50px;
+      padding: .45rem 1.4rem;
+      font-size: .88rem;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background .2s, color .2s;
+    }
+    .pricing-toggle-wrap .toggle-btn.active {
+      background: var(--green);
+      color: #fff;
+    }
+    .save-badge {
+      display: inline-block;
+      background: #fff3cd;
+      color: #7a5c00;
+      border-radius: 50px;
+      font-size: .72rem;
+      font-weight: 800;
+      padding: .15rem .65rem;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+
+    /* Price cards */
+    .price-card {
+      border: 2px solid #e0eae2;
+      border-radius: var(--radius);
+      padding: 2.5rem 2rem;
+      height: 100%;
+      transition: border-color .25s, box-shadow .25s, transform .25s;
+    }
+    .price-card:hover { border-color: var(--green); box-shadow: 0 10px 40px rgba(74,124,89,.13); }
+    .price-card.featured {
+      border-color: var(--green);
+      background: var(--green-soft);
+      box-shadow: 0 10px 40px rgba(74,124,89,.13);
+      transform: translateY(-6px);
+    }
+    .price-plan-badge {
+      display: inline-block;
+      border-radius: 50px;
+      font-size: .72rem;
+      font-weight: 800;
+      padding: .22rem .85rem;
+      margin-bottom: 1rem;
+    }
+    .badge-free { background: #e8f3ec; color: var(--green); }
+    .badge-pro  { background: var(--green); color: #fff; }
+
+    .price-amount {
+      font-family: 'Ovo', serif;
+      font-size: 3rem;
+      color: var(--text);
+      line-height: 1;
+    }
+    .price-amount small { font-family: 'Manrope', sans-serif; font-size: 1rem; color: var(--muted); }
+    .price-period { font-size: .85rem; color: var(--muted); margin-top: .25rem; margin-bottom: 1.5rem; }
+
+    hr.price-hr { border: none; border-top: 1px solid #d5e6d9; margin: 1.4rem 0; }
+
+    .price-feature {
+      display: flex; align-items: flex-start; gap: .55rem;
+      font-size: .88rem; padding: .3rem 0; color: var(--text);
+    }
+    .price-feature i { color: var(--green); flex-shrink: 0; margin-top: 2px; }
+    .price-feature.muted-feature { color: #aac0ae; }
+    .price-feature.muted-feature i { color: #c8d8cc; }
+    .price-best-for {
+      font-size: .8rem; color: var(--muted);
+      background: #fff;
+      border-radius: .5rem;
+      padding: .65rem .85rem;
+      margin-top: 1rem;
+      margin-bottom: 1.4rem;
+      line-height: 1.6;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       FAQ
+    ═══════════════════════════════════════════════════ */
+    #faq { padding: 100px 0; background: var(--green-soft); }
+    #faq .accordion-item {
+      border: none;
+      border-radius: var(--radius) !important;
+      margin-bottom: .75rem;
+      overflow: hidden;
+    }
+    #faq .accordion-button {
+      background: #fff;
+      font-weight: 700;
+      font-size: .95rem;
+      color: var(--text);
+      border-radius: var(--radius) !important;
+    }
+    #faq .accordion-button:not(.collapsed) {
+      background: #fff;
+      color: var(--green);
+      box-shadow: none;
+    }
+    #faq .accordion-button::after { filter: none; }
+    #faq .accordion-body {
+      background: #fff;
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.8;
+      border-top: 1px solid var(--green-light);
+      padding-top: 1rem;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       CTA BANNER
+    ═══════════════════════════════════════════════════ */
+    #cta-banner {
+      padding: 80px 0;
+      background: var(--green);
+      color: #fff;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════════════════ */
+    footer {
+      background: var(--green-deep);
+      color: #a8bfac;
+      padding: 68px 0 0;
+    }
+    .footer-brand {
+      font-family: 'Ovo', serif;
+      font-size: 1.7rem;
+      color: #fff;
+    }
+    footer h6 {
+      color: #fff;
+      font-family: 'Manrope', sans-serif;
+      font-weight: 800;
+      font-size: .8rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 1.1rem;
+    }
+    footer a {
+      color: #8fa893;
+      font-size: .88rem;
+      display: block;
+      margin-bottom: .45rem;
+      transition: color .18s;
+    }
+    footer a:hover { color: #fff; }
+    .footer-contact-item {
+      display: flex; align-items: flex-start; gap: .7rem;
+      font-size: .88rem; margin-bottom: .85rem; color: #8fa893;
+    }
+    .footer-contact-item i { color: var(--green); margin-top: 3px; flex-shrink: 0; }
+    .social-btn {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: #2d4d38;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: #8fa893 !important; font-size: .9rem;
+      transition: background .2s, color .2s;
+      margin-right: .4rem; margin-bottom: .3rem;
+    }
+    .social-btn:hover { background: var(--green); color: #fff !important; }
+    .footer-bottom {
+      border-top: 1px solid #2d4d38;
+      padding: 1.3rem 0;
+      margin-top: 3rem;
+      font-size: .82rem;
+    }
+
+    /* ─── Responsive ─────────────────────────────────── */
+    @media (max-width: 991px) {
+      .float-card { display: none; }
+    }
+    @media (max-width: 767px) {
+      #hero { padding-bottom: 56px; }
+      .hero-mockup { height: 320px; }
+      .app-grid { grid-template-columns: 1fr 1fr; }
+      .price-card.featured { transform: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     NAVBAR
+═══════════════════════════════════════════════════════════ -->
+<nav class="navbar navbar-expand-lg fixed-top" id="mainNav">
+  <div class="container">
+    <a class="navbar-brand" href="/rezeptfit.html">RezeptFit<span class="brand-dot">.</span></a>
+
+    <button class="navbar-toggler border-0" type="button"
+            data-bs-toggle="collapse" data-bs-target="#navMenu"
+            aria-label="Navigation öffnen">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav mx-auto gap-1">
+        <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+        <li class="nav-item"><a class="nav-link" href="#preview">App-Vorschau</a></li>
+        <li class="nav-item"><a class="nav-link" href="#pricing">Preise</a></li>
+        <li class="nav-item"><a class="nav-link" href="#faq">FAQ</a></li>
+      </ul>
+      <div class="d-flex gap-2 mt-3 mt-lg-0">
+        <a href="/login" class="btn btn-outline-green btn-sm">Anmelden</a>
+        <a href="/register" class="btn btn-green btn-sm">Kostenlos registrieren</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════════════════ -->
+<section id="hero">
+  <div class="container">
+    <div class="row align-items-center gy-5">
+
+      <!-- Left: Text -->
+      <div class="col-lg-6">
+        <p class="hero-tagline-en mb-3">Your food. Your plan. Your life.</p>
+
+        <div class="hero-badge mb-4">
+          <i class="fa-solid fa-star" style="color:var(--gold);"></i>
+          4.8/5.0 Nutzerbewertung
+          <span style="color:var(--muted);font-weight:500;"> · 500+ aktive Nutzer</span>
+        </div>
+
+        <h1 class="section-title mb-4">
+          Deine Ernährung.<br>
+          <span class="text-green">Dein Plan.</span><br>
+          Dein Leben.
+        </h1>
+
+        <p class="text-muted-green mb-5" style="font-size:1.05rem;line-height:1.85;max-width:480px;">
+          RezeptFit hilft dir, gesünder zu essen — mit smarter Rezeptverwaltung, automatischen Wochenplänen und klarem Kalorie-Tracking.
+        </p>
+
+        <!-- Feature chips -->
+        <div class="d-flex flex-wrap gap-2 mb-5">
+          <span class="feature-chip"><span class="chip-dot"></span>Rezeptverwaltung</span>
+          <span class="feature-chip"><span class="chip-dot"></span>Wochenplan</span>
+          <span class="feature-chip"><span class="chip-dot"></span>Kalorien-Tracking</span>
+          <span class="feature-chip"><span class="chip-dot"></span>Einkaufsliste</span>
+          <span class="feature-chip"><span class="chip-dot"></span>Community</span>
+        </div>
+
+        <div class="d-flex flex-wrap gap-3">
+          <a href="/register" class="btn btn-green btn-lg">
+            <i class="fa-solid fa-user-plus me-2"></i>Kostenlos registrieren
+          </a>
+          <a href="#features" class="btn btn-outline-green btn-lg">
+            Mehr erfahren <i class="fa-solid fa-arrow-down ms-1"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: Mockup -->
+      <div class="col-lg-6">
+        <div class="hero-visual">
+          <div class="hero-mockup">
+            <div class="mockup-inner">
+              <!-- Mockup top bar -->
+              <div class="mockup-topbar">
+                <div class="mockup-dot" style="background:#ff6058;"></div>
+                <div class="mockup-dot" style="background:#ffbd2e;"></div>
+                <div class="mockup-dot" style="background:#28c840;"></div>
+                <div style="flex:1;"></div>
+                <span class="mockup-nav-pill active">Dashboard</span>
+                <span class="mockup-nav-pill">Rezepte</span>
+                <span class="mockup-nav-pill">Wochenplan</span>
+              </div>
+
+              <!-- Stat row -->
+              <div class="d-flex gap-2 mb-3">
+                <div class="mockup-stat">
+                  <div style="font-size:.65rem;color:var(--muted);font-weight:700;">KALORIEN HEUTE</div>
+                  <div style="font-family:'Ovo',serif;font-size:1.3rem;color:var(--green);">1 420</div>
+                  <div class="app-prog mt-1"><div class="app-prog-fill" style="width:62%;"></div></div>
+                </div>
+                <div class="mockup-stat">
+                  <div style="font-size:.65rem;color:var(--muted);font-weight:700;">DEFIZIT</div>
+                  <div style="font-family:'Ovo',serif;font-size:1.3rem;color:#4caf7d;">−380</div>
+                  <div class="app-prog mt-1"><div class="app-prog-fill" style="width:38%;background:#4caf7d;"></div></div>
+                </div>
+                <div class="mockup-stat">
+                  <div style="font-size:.65rem;color:var(--muted);font-weight:700;">STREAK</div>
+                  <div style="font-family:'Ovo',serif;font-size:1.3rem;color:var(--gold);">🔥 7</div>
+                  <div style="font-size:.6rem;color:var(--muted);">Tage</div>
+                </div>
+              </div>
+
+              <!-- Recipe cards -->
+              <div style="font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem;">Heute geplant</div>
+              <div class="d-flex flex-column gap-2">
+                <div class="app-recipe-row">
+                  <div class="app-recipe-emoji">🥣</div>
+                  <div>
+                    <div style="font-size:.82rem;font-weight:700;">Haferflocken mit Beeren</div>
+                    <div style="font-size:.68rem;color:var(--muted);">Frühstück</div>
+                  </div>
+                  <div class="app-recipe-kcal">380 kcal</div>
+                </div>
+                <div class="app-recipe-row">
+                  <div class="app-recipe-emoji">🥗</div>
+                  <div>
+                    <div style="font-size:.82rem;font-weight:700;">Quinoa-Salat mit Avocado</div>
+                    <div style="font-size:.68rem;color:var(--muted);">Mittagessen</div>
+                  </div>
+                  <div class="app-recipe-kcal">520 kcal</div>
+                </div>
+                <div class="app-recipe-row">
+                  <div class="app-recipe-emoji">🍝</div>
+                  <div>
+                    <div style="font-size:.82rem;font-weight:700;">Pasta mit Gemüsesauce</div>
+                    <div style="font-size:.68rem;color:var(--muted);">Abendessen</div>
+                  </div>
+                  <div class="app-recipe-kcal">520 kcal</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Floating accent cards -->
+          <div class="float-card float-card-tl">
+            <div class="d-flex align-items-center gap-2">
+              <div class="float-icon" style="background:#e8f3ec;">
+                <i class="fa-solid fa-fire-flame-curved" style="color:var(--gold);"></i>
+              </div>
+              <div>
+                <div style="font-size:.66rem;color:var(--muted);">Wöchentliches Defizit</div>
+                <div style="font-weight:800;color:var(--green);">−2 660 kcal</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="float-card float-card-br">
+            <div class="d-flex align-items-center gap-2">
+              <div class="float-icon" style="background:#fff3cd;">
+                <i class="fa-solid fa-check-circle" style="color:var(--gold);"></i>
+              </div>
+              <div>
+                <div style="font-size:.66rem;color:var(--muted);">Ziel erreicht</div>
+                <div style="font-weight:800;">98% Nutzer</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     FEATURES
+═══════════════════════════════════════════════════════════ -->
+<section id="features">
+  <div class="container">
+    <div class="text-center mb-5 fade-up">
+      <div class="section-label mb-2">Features</div>
+      <div class="divider-green mx-auto mb-4"></div>
+      <h2 class="section-title">Alles, was du für eine gesunde Ernährung brauchst</h2>
+      <p class="text-muted-green mt-3 mx-auto" style="max-width:520px;">
+        Von der Rezeptidee bis zur Einkaufsliste — RezeptFit begleitet dich durch deinen ganzen Ernährungsalltag.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <!-- Rezeptverwaltung -->
+      <div class="col-md-6 col-lg-4 fade-up delay-1">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-book-open"></i></div>
+          <h5>Rezeptverwaltung</h5>
+          <p>Erstelle, importiere und verwalte deine Rezepte mit automatischer Nährwertberechnung. Per URL-Import in Sekunden.</p>
+        </div>
+      </div>
+
+      <!-- Wochenplanung -->
+      <div class="col-md-6 col-lg-4 fade-up delay-2">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-calendar-week"></i></div>
+          <h5>Wochenplanung</h5>
+          <p>Plane deine Mahlzeiten für die ganze Woche auf einen Blick. Drag-and-drop und vorausgefüllte Vorschläge inklusive.</p>
+        </div>
+      </div>
+
+      <!-- Kalorie-Tracking -->
+      <div class="col-md-6 col-lg-4 fade-up delay-3">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-chart-line"></i></div>
+          <h5>Kalorie-Tracking</h5>
+          <p>Behalte dein Kaloriendefizit im Blick — mit TDEE-Rechner, Mahlzeiten-Logbuch und täglich aktualisiertem Dashboard.</p>
+        </div>
+      </div>
+
+      <!-- Einkaufsliste -->
+      <div class="col-md-6 col-lg-4 fade-up delay-1">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+          <h5>Einkaufsliste</h5>
+          <p>Generiere automatisch eine sortierte Einkaufsliste aus deinem Wochenplan. Nach Kategorien organisiert, abhakbar und teilbar.</p>
+        </div>
+      </div>
+
+      <!-- Community -->
+      <div class="col-md-6 col-lg-4 fade-up delay-2">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-users"></i></div>
+          <h5>Community & Teilen</h5>
+          <p>Entdecke globale Rezepte anderer Nutzer und teile deine Lieblingsgerichte mit Freunden. Kochen ist besser zu zweit.</p>
+        </div>
+      </div>
+
+      <!-- CTA card -->
+      <div class="col-md-6 col-lg-4 fade-up delay-3">
+        <div class="feature-card d-flex flex-column justify-content-center align-items-center text-center"
+             style="background:var(--green);color:#fff;min-height:220px;">
+          <div style="font-size:2.5rem;margin-bottom:1rem;">🚀</div>
+          <h5 style="color:#fff;margin-bottom:.75rem;">Jetzt starten</h5>
+          <p style="color:rgba(255,255,255,.8);font-size:.85rem;margin-bottom:1.2rem;">Kostenlos registrieren und sofort alle Basis-Features nutzen.</p>
+          <a href="/register" class="btn btn-outline-green" style="border-color:#fff;color:#fff !important;">
+            Kostenlos registrieren
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     APP PREVIEW
+═══════════════════════════════════════════════════════════ -->
+<section id="preview">
+  <div class="container">
+    <div class="row align-items-center gy-5">
+      <!-- Text -->
+      <div class="col-lg-5 fade-up">
+        <div class="section-label mb-2">App-Vorschau</div>
+        <div class="divider-green mb-4"></div>
+        <h2 class="section-title mb-4">Alles auf einen Blick</h2>
+        <p class="text-muted-green mb-5" style="line-height:1.85;">
+          Dein persönliches Ernährungs-Dashboard zeigt dir täglich, wie viel du gegessen hast, wie groß dein Kaloriendefizit ist und welche Mahlzeiten geplant sind.
+        </p>
+        <div class="d-flex flex-column gap-3">
+          <div class="d-flex gap-3 align-items-start">
+            <div style="width:40px;height:40px;border-radius:.5rem;background:var(--green);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;">
+              <i class="fa-solid fa-gauge-high"></i>
+            </div>
+            <div>
+              <div style="font-weight:700;font-size:.95rem;margin-bottom:.2rem;">Live-Dashboard</div>
+              <div class="text-muted-green" style="font-size:.86rem;line-height:1.7;">Kalorienziel, Defizit und Makros — alles in Echtzeit aktualisiert.</div>
+            </div>
+          </div>
+          <div class="d-flex gap-3 align-items-start">
+            <div style="width:40px;height:40px;border-radius:.5rem;background:var(--green);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;">
+              <i class="fa-solid fa-fire-flame-curved"></i>
+            </div>
+            <div>
+              <div style="font-weight:700;font-size:.95rem;margin-bottom:.2rem;">Streak-Motivation</div>
+              <div class="text-muted-green" style="font-size:.86rem;line-height:1.7;">Bleib am Ball — dein täglicher Streak hält dich motiviert.</div>
+            </div>
+          </div>
+          <div class="d-flex gap-3 align-items-start">
+            <div style="width:40px;height:40px;border-radius:.5rem;background:var(--green);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;">
+              <i class="fa-solid fa-mobile-screen"></i>
+            </div>
+            <div>
+              <div style="font-weight:700;font-size:.95rem;margin-bottom:.2rem;">Mobile-optimiert</div>
+              <div class="text-muted-green" style="font-size:.86rem;line-height:1.7;">Funktioniert perfekt im Browser — auf dem Handy genauso wie am Desktop.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Browser mockup -->
+      <div class="col-lg-7 fade-up">
+        <div class="browser-frame">
+          <div class="browser-bar">
+            <div class="b-dot b-dot-r"></div>
+            <div class="b-dot b-dot-y"></div>
+            <div class="b-dot b-dot-g"></div>
+            <div class="url-bar">rezeptfit.app/dashboard</div>
+          </div>
+          <div class="browser-content">
+            <div class="app-nav-mock">
+              <span>RezeptFit.</span>
+              <div class="app-nav-links">
+                <span class="app-nav-link active">Dashboard</span>
+                <span class="app-nav-link">Rezepte</span>
+                <span class="app-nav-link">Wochenplan</span>
+                <span class="app-nav-link">Einkaufsliste</span>
+              </div>
+            </div>
+            <div class="app-grid mb-3">
+              <div class="app-widget">
+                <div class="app-widget-title">Kalorien</div>
+                <div class="app-widget-value">1 420</div>
+                <div class="app-widget-sub">von 1 800 kcal</div>
+                <div class="app-prog"><div class="app-prog-fill" style="width:79%;"></div></div>
+              </div>
+              <div class="app-widget">
+                <div class="app-widget-title">Defizit</div>
+                <div class="app-widget-value" style="color:#4caf7d;">−380</div>
+                <div class="app-widget-sub">kcal heute</div>
+                <div class="app-prog"><div class="app-prog-fill" style="width:50%;background:#4caf7d;"></div></div>
+              </div>
+              <div class="app-widget">
+                <div class="app-widget-title">Streak</div>
+                <div class="app-widget-value" style="color:var(--gold);">🔥 7</div>
+                <div class="app-widget-sub">Tage in Folge</div>
+              </div>
+            </div>
+            <div class="d-flex flex-column gap-2">
+              <div class="app-recipe-row">
+                <div class="app-recipe-emoji">🥣</div>
+                <div><div style="font-size:.82rem;font-weight:700;">Haferflocken mit Beeren</div><div style="font-size:.68rem;color:var(--muted);">Frühstück · 08:00</div></div>
+                <div class="app-recipe-kcal">380 kcal</div>
+              </div>
+              <div class="app-recipe-row">
+                <div class="app-recipe-emoji">🥗</div>
+                <div><div style="font-size:.82rem;font-weight:700;">Quinoa-Salat mit Avocado</div><div style="font-size:.68rem;color:var(--muted);">Mittagessen · 12:30</div></div>
+                <div class="app-recipe-kcal">520 kcal</div>
+              </div>
+              <div class="app-recipe-row">
+                <div class="app-recipe-emoji">🍝</div>
+                <div><div style="font-size:.82rem;font-weight:700;">Pasta mit Gemüsesauce</div><div style="font-size:.68rem;color:var(--muted);">Abendessen · 18:30</div></div>
+                <div class="app-recipe-kcal">520 kcal</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     STATS
+═══════════════════════════════════════════════════════════ -->
+<section id="stats">
+  <div class="container">
+    <div class="text-center mb-5 fade-up">
+      <h2 class="section-title text-white">Echte Ergebnisse. Echte Menschen.</h2>
+    </div>
+    <div class="row g-4 text-center">
+      <div class="col-6 col-lg-3 fade-up delay-1">
+        <div class="stat-num" data-target="500" data-suffix="+">0</div>
+        <div class="stat-label">Aktive Nutzer die täglich ihre Ernährung tracken</div>
+      </div>
+      <div class="col-6 col-lg-3 fade-up delay-2">
+        <div class="stat-num" data-target="12000" data-suffix="+">0</div>
+        <div class="stat-label">Rezepte in der Datenbank — und täglich mehr</div>
+      </div>
+      <div class="col-6 col-lg-3 fade-up delay-3">
+        <div class="stat-num" data-target="98" data-suffix="%">0</div>
+        <div class="stat-label">Nutzer berichten von verbessertem Essverhalten</div>
+      </div>
+      <div class="col-6 col-lg-3 fade-up delay-4">
+        <div class="stat-num" data-target="4" data-decimal=".8" data-suffix="/5">0</div>
+        <div class="stat-label">Durchschnittliche Nutzerbewertung</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PRICING
+═══════════════════════════════════════════════════════════ -->
+<section id="pricing">
+  <div class="container">
+    <div class="text-center mb-5 fade-up">
+      <div class="section-label mb-2">Preise</div>
+      <div class="divider-green mx-auto mb-4"></div>
+      <h2 class="section-title">Transparent. Fair. Flexibel.</h2>
+      <p class="text-muted-green mt-3 mx-auto" style="max-width:480px;">
+        Starte kostenlos und upgrade, wenn du bereit bist — ohne versteckte Kosten.
+      </p>
+
+      <!-- Toggle -->
+      <div class="mt-4">
+        <div class="pricing-toggle-wrap" id="pricingToggle">
+          <button class="toggle-btn" data-period="monthly" onclick="switchPeriod('monthly')">Monatlich</button>
+          <button class="toggle-btn active" data-period="yearly" onclick="switchPeriod('yearly')">
+            Jährlich
+            <span class="save-badge" id="saveBadge">Spare 48%</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+
+      <!-- FREE -->
+      <div class="col-lg-5 col-md-8 fade-up delay-1">
+        <div class="price-card">
+          <span class="price-plan-badge badge-free">Free</span>
+          <h4 class="mb-1">Kostenlos starten</h4>
+          <p class="text-muted-green mb-4" style="font-size:.88rem;">
+            Alle wichtigen Basis-Features — dauerhaft kostenlos, kein Kreditkarte nötig.
+          </p>
+
+          <div class="price-amount">
+            0 <small>€</small>
+          </div>
+          <div class="price-period">für immer kostenlos</div>
+
+          <hr class="price-hr" />
+
+          <div class="price-feature"><i class="fa-solid fa-check"></i> Rezepte verwalten (unbegrenzt)</div>
+          <div class="price-feature"><i class="fa-solid fa-check"></i> Wochenplan erstellen</div>
+          <div class="price-feature"><i class="fa-solid fa-check"></i> Einkaufsliste generieren</div>
+          <div class="price-feature"><i class="fa-solid fa-check"></i> Rezepte importieren (URL)</div>
+          <div class="price-feature muted-feature"><i class="fa-solid fa-xmark"></i> Kalorie-Tracking & Dashboard</div>
+          <div class="price-feature muted-feature"><i class="fa-solid fa-xmark"></i> Community & globale Rezepte</div>
+          <div class="price-feature muted-feature"><i class="fa-solid fa-xmark"></i> Prioritäts-Support</div>
+
+          <div class="price-best-for">
+            <strong>Perfekt für:</strong> Alle, die ihre Rezepte und Wochenpläne smart verwalten wollen — ohne Kosten.
+          </div>
+
+          <a href="/register" class="btn btn-outline-green w-100">Kostenlos starten</a>
+        </div>
+      </div>
+
+      <!-- PRO -->
+      <div class="col-lg-5 col-md-8 fade-up delay-2">
+        <div class="price-card featured">
+          <span class="price-plan-badge badge-pro">Pro</span>
+          <h4 class="mb-1">Vollständige Kontrolle</h4>
+          <p class="text-muted-green mb-4" style="font-size:.88rem;">
+            Kalorie-Tracking, Community-Features und prioritärer Support für deine Ernährungsziele.
+          </p>
+
+          <div class="price-amount" id="proPrice">
+            12 <small>€</small>
+          </div>
+          <div class="price-period" id="proPeriod">
+            pro Jahr
+            <span class="save-badge" id="annualSaveBadge">Spare 48%</span>
+          </div>
+
+          <hr class="price-hr" />
+
+          <div class="price-feature"><i class="fa-solid fa-check"></i> Alles aus Free</div>
+          <div class="price-feature"><i class="fa-solid fa-check"></i> Kalorie-Tracking & Defizit-Dashboard</div>
+          <div class="price-feature"><i class="fa-solid fa-check"></i> TDEE-Rechner & Gesundheitsprofil</div>
+          <div class="price-feature"><i class="fa-solid fa-check"></i> Mahlzeiten-Logbuch</div>
+          <div class="price-feature"><i class="fa-solid fa-check"></i> Globale Community-Rezepte</div>
+          <div class="price-feature"><i class="fa-solid fa-check"></i> Rezepte mit Freunden teilen</div>
+          <div class="price-feature"><i class="fa-solid fa-check"></i> Prioritäts-Support</div>
+
+          <div class="price-best-for">
+            <strong>Perfekt für:</strong> Alle, die ihr Gewicht aktiv steuern und die Community nutzen wollen.
+          </div>
+
+          <a href="/register" class="btn btn-green w-100">Pro holen</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Trust line -->
+    <p class="text-center text-muted-green mt-4" style="font-size:.82rem;">
+      <i class="fa-solid fa-lock me-1"></i>Kein Abo, kein Risiko — jederzeit kündbar. Kein Zugriff auf deine Zahlungsdaten ohne Upgrade.
+    </p>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     FAQ
+═══════════════════════════════════════════════════════════ -->
+<section id="faq">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="text-center mb-5 fade-up">
+          <div class="section-label mb-2">FAQ</div>
+          <div class="divider-green mx-auto mb-4"></div>
+          <h2 class="section-title">Häufig gestellte Fragen</h2>
+        </div>
+
+        <div class="accordion fade-up" id="faqAccordion">
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#faq1">
+                Ist RezeptFit kostenlos nutzbar?
+              </button>
+            </h2>
+            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Ja! Der Free-Plan ist dauerhaft kostenlos und enthält alle wichtigen Basis-Features: Rezeptverwaltung, Wochenplan und Einkaufsliste. Du brauchst keine Kreditkarte, um dich zu registrieren.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#faq2">
+                Was ist im Pro-Plan enthalten?
+              </button>
+            </h2>
+            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Der Pro-Plan schaltet das vollständige Kalorie-Tracking-System frei: TDEE-Rechner, Gesundheitsprofil, tägliches Defizit-Dashboard und Mahlzeiten-Logbuch. Zusätzlich erhältst du Zugang zur Community (globale Rezepte, Teilen mit Freunden) und Prioritäts-Support. Pro kostet 5 €/Monat oder 12 €/Jahr — das entspricht einer Ersparnis von 48 %.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#faq3">
+                Kann ich mein Abo jederzeit kündigen?
+              </button>
+            </h2>
+            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Ja, du kannst dein Pro-Abo jederzeit in deinen Account-Einstellungen kündigen. Nach der Kündigung bleibst du bis zum Ende der bezahlten Periode Pro-Nutzer und wechselst anschließend automatisch zum kostenlosen Free-Plan. Deine Daten gehen dabei nicht verloren.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#faq4">
+                Wie werden meine Nährwerte berechnet?
+              </button>
+            </h2>
+            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Für importierte Rezepte werden die Nährwerte automatisch über die Open Food Facts Datenbank ermittelt. Für selbst erstellte Rezepte kannst du die Zutaten manuell mit Mengenangaben eingeben — RezeptFit berechnet Kalorien, Protein, Kohlenhydrate und Fett pro Portion automatisch.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#faq5">
+                Gibt es eine native mobile App?
+              </button>
+            </h2>
+            <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Derzeit gibt es keine native iOS- oder Android-App. RezeptFit ist als Progressive Web App (PWA) vollständig für mobile Browser optimiert — du kannst die Seite auf dem Homescreen deines Smartphones speichern und sie verhält sich wie eine native App. Eine native App ist für die Zukunft geplant.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     CTA BANNER
+═══════════════════════════════════════════════════════════ -->
+<section id="cta-banner">
+  <div class="container text-center">
+    <div class="fade-up">
+      <p style="font-size:.8rem;font-weight:800;letter-spacing:.15em;text-transform:uppercase;opacity:.65;margin-bottom:.75rem;">
+        Your food. Your plan. Your life.
+      </p>
+      <h2 class="section-title text-white mb-4">
+        Starte noch heute — kostenlos.
+      </h2>
+      <p style="opacity:.82;max-width:440px;margin:auto auto 2rem;line-height:1.8;">
+        Über 500 Nutzer tracken bereits ihre Ernährung mit RezeptFit. Jetzt bist du dran.
+      </p>
+      <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a href="/register" class="btn btn-lg" style="background:#fff;color:var(--green);border-radius:50px;font-weight:700;padding:.75rem 2rem;">
+          <i class="fa-solid fa-user-plus me-2"></i>Kostenlos registrieren
+        </a>
+        <a href="#pricing" class="btn btn-outline-green btn-lg" style="border-color:#fff;color:#fff !important;">
+          Pläne ansehen
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <div class="row g-5">
+
+      <!-- Brand -->
+      <div class="col-lg-4">
+        <div class="footer-brand mb-2">RezeptFit<span style="color:var(--gold);">.</span></div>
+        <p style="font-size:.85rem;color:#8fa893;line-height:1.8;max-width:260px;">
+          Deine Ernährung. Dein Plan. Dein Leben. — Gesünder essen, smarter planen.
+        </p>
+        <div class="mt-4">
+          <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-tiktok"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-github"></i></a>
+        </div>
+      </div>
+
+      <!-- Produkt -->
+      <div class="col-6 col-lg-2">
+        <h6>Produkt</h6>
+        <a href="#features">Features</a>
+        <a href="#preview">App-Vorschau</a>
+        <a href="#pricing">Preise</a>
+        <a href="#faq">FAQ</a>
+      </div>
+
+      <!-- Features -->
+      <div class="col-6 col-lg-3">
+        <h6>Features</h6>
+        <a href="#features">Rezeptverwaltung</a>
+        <a href="#features">Wochenplanung</a>
+        <a href="#features">Kalorie-Tracking</a>
+        <a href="#features">Einkaufsliste</a>
+        <a href="#features">Community</a>
+      </div>
+
+      <!-- Kontakt -->
+      <div class="col-lg-3">
+        <h6>Kontakt</h6>
+        <div class="footer-contact-item">
+          <i class="fa-solid fa-envelope"></i>
+          <span>hallo@rezeptfit.app</span>
+        </div>
+        <div class="footer-contact-item">
+          <i class="fa-brands fa-instagram"></i>
+          <span>@rezeptfit</span>
+        </div>
+        <div class="mt-3">
+          <a href="/register" class="btn btn-green btn-sm">
+            <i class="fa-solid fa-user-plus me-1"></i>Jetzt registrieren
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom d-flex flex-wrap justify-content-between align-items-center">
+      <span>Copyright &copy; 2025 RezeptFit. Alle Rechte vorbehalten.</span>
+      <span>
+        <a href="#" class="me-3" style="display:inline;">Datenschutz</a>
+        <a href="impressum.html" style="display:inline;">Impressum</a>
+      </span>
+    </div>
+  </div>
+</footer>
+
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  /* ── Navbar scroll shadow ────────────────────────── */
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  /* ── Fade-up on scroll ───────────────────────────── */
+  const fadeObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-up').forEach(el => fadeObserver.observe(el));
+
+  /* ── Counter animation ───────────────────────────── */
+  function animateCounters() {
+    document.querySelectorAll('[data-target]').forEach(el => {
+      const target   = +el.dataset.target;
+      const decimal  = el.dataset.decimal || '';
+      const suffix   = el.dataset.suffix  || '';
+      let current = 0;
+      const duration = 1400; // ms
+      const steps    = 60;
+      const step     = target / steps;
+      const interval = duration / steps;
+
+      const timer = setInterval(() => {
+        current += step;
+        if (current >= target) {
+          current = target;
+          clearInterval(timer);
+        }
+        el.textContent = Math.floor(current).toLocaleString('de-DE') + decimal + suffix;
+      }, interval);
+    });
+  }
+
+  const statsObserver = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) {
+      animateCounters();
+      statsObserver.disconnect();
+    }
+  }, { threshold: 0.3 });
+  statsObserver.observe(document.getElementById('stats'));
+
+  /* ── Pricing toggle ──────────────────────────────── */
+  function switchPeriod(period) {
+    const btns        = document.querySelectorAll('.toggle-btn');
+    const priceEl     = document.getElementById('proPrice');
+    const periodEl    = document.getElementById('proPeriod');
+    const saveBadge   = document.getElementById('annualSaveBadge');
+
+    btns.forEach(b => b.classList.toggle('active', b.dataset.period === period));
+
+    if (period === 'yearly') {
+      priceEl.innerHTML  = '12 <small>€</small>';
+      periodEl.innerHTML = 'pro Jahr <span class="save-badge" id="annualSaveBadge">Spare 48%</span>';
+    } else {
+      priceEl.innerHTML  = '5 <small>€</small>';
+      periodEl.innerHTML = 'pro Monat';
+    }
+  }
+  // Default: yearly already active in HTML
+
+  /* ── Smooth scroll (navbar offset) ──────────────── */
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const href = a.getAttribute('href');
+      if (href === '#') return;
+      const target = document.querySelector(href);
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // close mobile nav
+      const menu = document.getElementById('navMenu');
+      if (menu.classList.contains('show')) {
+        bootstrap.Collapse.getInstance(menu)?.hide();
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

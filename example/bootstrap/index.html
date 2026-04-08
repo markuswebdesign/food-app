@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Greenive – Holistic Nutrition</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Ovo&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome 6 -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+  <style>
+    /* ─── Variables ─────────────────────────────────────── */
+    :root {
+      --green:       #4a7c59;
+      --green-dark:  #3a6347;
+      --green-light: #e8f3ec;
+      --green-soft:  #f4f9f6;
+      --gold:        #c9a84c;
+      --text:        #1f2a23;
+      --muted:       #6b7f72;
+      --radius:      .75rem;
+    }
+
+    /* ─── Base ──────────────────────────────────────────── */
+    body {
+      font-family: 'Manrope', sans-serif;
+      color: var(--text);
+      background: #fff;
+    }
+    h1, h2, h3, h4, h5 {
+      font-family: 'Ovo', serif;
+    }
+    a { text-decoration: none; }
+
+    /* ─── Utilities ─────────────────────────────────────── */
+    .btn-green {
+      background: var(--green);
+      color: #fff;
+      border: 2px solid var(--green);
+      border-radius: 50px;
+      padding: .6rem 1.8rem;
+      font-weight: 600;
+      transition: background .25s, color .25s;
+    }
+    .btn-green:hover {
+      background: var(--green-dark);
+      border-color: var(--green-dark);
+      color: #fff;
+    }
+    .btn-outline-green {
+      background: transparent;
+      color: var(--green);
+      border: 2px solid var(--green);
+      border-radius: 50px;
+      padding: .6rem 1.8rem;
+      font-weight: 600;
+      transition: background .25s, color .25s;
+    }
+    .btn-outline-green:hover {
+      background: var(--green);
+      color: #fff;
+    }
+    .section-label {
+      color: var(--green);
+      font-size: .85rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .section-title {
+      font-size: clamp(1.9rem, 4vw, 2.8rem);
+      line-height: 1.2;
+    }
+    .divider-green {
+      width: 48px;
+      height: 3px;
+      background: var(--green);
+      border-radius: 2px;
+    }
+    .bg-soft { background: var(--green-soft); }
+    .bg-light-green { background: var(--green-light); }
+    .text-green { color: var(--green); }
+    .text-muted-green { color: var(--muted); }
+
+    /* ─── Navbar ────────────────────────────────────────── */
+    .navbar {
+      padding: 1rem 0;
+      transition: box-shadow .3s;
+    }
+    .navbar.scrolled {
+      box-shadow: 0 2px 20px rgba(0,0,0,.08);
+    }
+    .navbar-brand {
+      font-family: 'Ovo', serif;
+      font-size: 1.6rem;
+      color: var(--green) !important;
+      font-weight: 400;
+    }
+    .nav-link {
+      color: var(--text) !important;
+      font-weight: 500;
+      padding: .4rem 1rem !important;
+      transition: color .2s;
+    }
+    .nav-link:hover { color: var(--green) !important; }
+
+    /* ─── Hero ──────────────────────────────────────────── */
+    #hero {
+      padding: 120px 0 80px;
+      background: linear-gradient(135deg, var(--green-soft) 0%, #fff 60%);
+      overflow: hidden;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: #fff;
+      border: 1px solid var(--green-light);
+      border-radius: 50px;
+      padding: .4rem 1.1rem;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--green);
+      box-shadow: 0 2px 12px rgba(74,124,89,.1);
+    }
+    .hero-img-wrap {
+      position: relative;
+    }
+    .hero-img-wrap img {
+      border-radius: var(--radius);
+      object-fit: cover;
+    }
+    .hero-float-card {
+      position: absolute;
+      background: #fff;
+      border-radius: var(--radius);
+      padding: .8rem 1.2rem;
+      box-shadow: 0 4px 24px rgba(0,0,0,.12);
+      font-size: .82rem;
+      font-weight: 600;
+    }
+    .hero-float-card.card-top {
+      top: 16px;
+      right: -20px;
+    }
+    .hero-float-card.card-bottom {
+      bottom: 24px;
+      left: -20px;
+    }
+    .feature-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: #fff;
+      border: 1px solid var(--green-light);
+      border-radius: 50px;
+      padding: .45rem 1rem;
+      font-size: .82rem;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .feature-chip .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      flex-shrink: 0;
+    }
+
+    /* ─── Trusted logos strip ────────────────────────────── */
+    #logos {
+      padding: 40px 0;
+      border-top: 1px solid #eee;
+      border-bottom: 1px solid #eee;
+    }
+    .logo-item {
+      opacity: .45;
+      font-family: 'Ovo', serif;
+      font-size: 1.1rem;
+      letter-spacing: .04em;
+      filter: grayscale(1);
+      transition: opacity .2s, filter .2s;
+    }
+    .logo-item:hover { opacity: .9; filter: none; }
+
+    /* ─── About ─────────────────────────────────────────── */
+    #about { padding: 100px 0; }
+    .about-img {
+      border-radius: var(--radius);
+      width: 100%;
+      height: 480px;
+      object-fit: cover;
+    }
+    .about-stat-box {
+      background: var(--green-soft);
+      border-radius: var(--radius);
+      padding: 1.4rem 1.8rem;
+      text-align: center;
+    }
+    .about-stat-box .num {
+      font-family: 'Ovo', serif;
+      font-size: 2rem;
+      color: var(--green);
+      font-weight: 400;
+    }
+
+    /* ─── Programs ──────────────────────────────────────── */
+    #programs { padding: 100px 0; background: var(--green-soft); }
+    .program-accordion .accordion-item {
+      border: none;
+      border-radius: var(--radius) !important;
+      margin-bottom: 1rem;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,.05);
+    }
+    .program-accordion .accordion-button {
+      background: #fff;
+      font-family: 'Ovo', serif;
+      font-size: 1.1rem;
+      color: var(--text);
+      border-radius: var(--radius) !important;
+    }
+    .program-accordion .accordion-button:not(.collapsed) {
+      background: var(--green);
+      color: #fff;
+      box-shadow: none;
+    }
+    .program-accordion .accordion-button::after {
+      filter: none;
+    }
+    .program-accordion .accordion-button:not(.collapsed)::after {
+      filter: brightness(10);
+    }
+    .program-accordion .accordion-body {
+      background: #fff;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+    .program-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--green-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green);
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    /* ─── Mission ───────────────────────────────────────── */
+    #mission { padding: 100px 0; }
+    .philosophy-card {
+      background: var(--green-soft);
+      border-radius: var(--radius);
+      padding: 2rem;
+      height: 100%;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .philosophy-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(74,124,89,.12);
+    }
+    .philosophy-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.3rem;
+      margin-bottom: 1.2rem;
+    }
+
+    /* ─── Testimonials ──────────────────────────────────── */
+    #testimonials { padding: 100px 0; background: var(--green-soft); }
+    .testi-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 2rem;
+      height: 100%;
+      box-shadow: 0 2px 16px rgba(0,0,0,.05);
+      transition: transform .2s;
+    }
+    .testi-card:hover { transform: translateY(-4px); }
+    .testi-stars { color: var(--gold); }
+    .testi-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--green-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: var(--green);
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    /* ─── Stats ─────────────────────────────────────────── */
+    #stats { padding: 80px 0; background: var(--green); color: #fff; }
+    .stat-num {
+      font-family: 'Ovo', serif;
+      font-size: clamp(2.4rem, 5vw, 3.2rem);
+    }
+    .stat-label { font-size: .9rem; opacity: .85; }
+
+    /* ─── Pricing ───────────────────────────────────────── */
+    #pricing { padding: 100px 0; }
+    .price-card {
+      border: 2px solid #e8eee9;
+      border-radius: var(--radius);
+      padding: 2.4rem 2rem;
+      height: 100%;
+      transition: border-color .25s, box-shadow .25s, transform .25s;
+    }
+    .price-card:hover,
+    .price-card.featured {
+      border-color: var(--green);
+      box-shadow: 0 8px 40px rgba(74,124,89,.15);
+      transform: translateY(-6px);
+    }
+    .price-card.featured { background: var(--green-soft); }
+    .price-badge {
+      display: inline-block;
+      background: var(--green);
+      color: #fff;
+      border-radius: 50px;
+      font-size: .75rem;
+      font-weight: 700;
+      padding: .2rem .9rem;
+      margin-bottom: 1rem;
+    }
+    .price-amount {
+      font-family: 'Ovo', serif;
+      font-size: 2.8rem;
+      color: var(--text);
+    }
+    .price-period {
+      font-size: .9rem;
+      color: var(--muted);
+    }
+    .price-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: .6rem;
+      font-size: .9rem;
+      padding: .35rem 0;
+      color: var(--text);
+    }
+    .price-feature i {
+      color: var(--green);
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .price-divider {
+      border: none;
+      border-top: 1px solid #dee8e1;
+      margin: 1.4rem 0;
+    }
+
+    /* ─── FAQ ───────────────────────────────────────────── */
+    #faq { padding: 100px 0; background: var(--green-soft); }
+    #faq .accordion-item {
+      border: none;
+      border-radius: var(--radius) !important;
+      margin-bottom: .75rem;
+      overflow: hidden;
+    }
+    #faq .accordion-button {
+      background: #fff;
+      font-weight: 600;
+      color: var(--text);
+      border-radius: var(--radius) !important;
+    }
+    #faq .accordion-button:not(.collapsed) {
+      background: #fff;
+      color: var(--green);
+      box-shadow: none;
+    }
+    #faq .accordion-body {
+      background: #fff;
+      color: var(--muted);
+      line-height: 1.75;
+      border-top: 1px solid var(--green-light);
+    }
+
+    /* ─── Blog ──────────────────────────────────────────── */
+    #blog { padding: 100px 0; }
+    .blog-card {
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 2px 16px rgba(0,0,0,.06);
+      height: 100%;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .blog-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(0,0,0,.1);
+    }
+    .blog-card-img {
+      height: 200px;
+      background: var(--green-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: var(--green);
+    }
+    .blog-card-body { padding: 1.5rem; background: #fff; }
+    .blog-tag {
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    /* ─── Newsletter ────────────────────────────────────── */
+    #newsletter {
+      padding: 80px 0;
+      background: var(--green);
+      color: #fff;
+    }
+    #newsletter .form-control {
+      border-radius: 50px 0 0 50px;
+      border: none;
+      padding: .75rem 1.4rem;
+      font-size: .95rem;
+    }
+    #newsletter .btn {
+      border-radius: 0 50px 50px 0;
+      padding: .75rem 1.8rem;
+      background: var(--green-dark);
+      color: #fff;
+      font-weight: 600;
+      border: none;
+    }
+    #newsletter .btn:hover { background: #2d4d38; }
+
+    /* ─── Footer ────────────────────────────────────────── */
+    footer {
+      background: #1a2b1f;
+      color: #c8d8cc;
+      padding: 70px 0 0;
+    }
+    footer .footer-brand {
+      font-family: 'Ovo', serif;
+      font-size: 1.8rem;
+      color: #fff;
+    }
+    footer h6 {
+      color: #fff;
+      font-family: 'Manrope', sans-serif;
+      font-weight: 700;
+      font-size: .9rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+    }
+    footer a {
+      color: #a8bfac;
+      font-size: .9rem;
+      transition: color .2s;
+      display: block;
+      margin-bottom: .5rem;
+    }
+    footer a:hover { color: #fff; }
+    .footer-contact-item {
+      display: flex;
+      align-items: flex-start;
+      gap: .75rem;
+      font-size: .9rem;
+      margin-bottom: .9rem;
+    }
+    .footer-contact-item i {
+      color: var(--green);
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .social-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #2d4d38;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #a8bfac !important;
+      font-size: .95rem;
+      transition: background .2s, color .2s;
+      margin-right: .4rem;
+      margin-bottom: .4rem;
+    }
+    .social-icon:hover {
+      background: var(--green);
+      color: #fff !important;
+    }
+    .footer-bottom {
+      border-top: 1px solid #2d4d38;
+      padding: 1.4rem 0;
+      margin-top: 3rem;
+      font-size: .85rem;
+    }
+
+    /* ─── Scroll animations ─────────────────────────────── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── Responsive tweaks ─────────────────────────────── */
+    @media (max-width: 768px) {
+      #hero { padding: 90px 0 60px; }
+      .hero-float-card { display: none; }
+      .about-img { height: 320px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     NAVBAR
+═══════════════════════════════════════════════════════════ -->
+<nav class="navbar navbar-expand-lg bg-white fixed-top" id="mainNav">
+  <div class="container">
+    <a class="navbar-brand" href="#">Greenive</a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav mx-auto gap-1">
+        <li class="nav-item"><a class="nav-link" href="#hero">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#programs" role="button" data-bs-toggle="dropdown">Programs</a>
+          <ul class="dropdown-menu border-0 shadow-sm">
+            <li><a class="dropdown-item" href="#programs">Gut Health Reset</a></li>
+            <li><a class="dropdown-item" href="#programs">Holistic Nutrition</a></li>
+            <li><a class="dropdown-item" href="#programs">Energy & Detox</a></li>
+            <li><a class="dropdown-item" href="#programs">Mindful Eating</a></li>
+          </ul>
+        </li>
+        <li class="nav-item"><a class="nav-link" href="#pricing">Pricing</a></li>
+        <li class="nav-item"><a class="nav-link" href="#blog">Blog</a></li>
+      </ul>
+      <a href="#pricing" class="btn btn-green ms-2">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════════════════ -->
+<section id="hero">
+  <div class="container">
+    <div class="row align-items-center gy-5">
+      <!-- Text col -->
+      <div class="col-lg-6">
+        <div class="hero-badge mb-4">
+          <i class="fa-solid fa-star text-warning"></i>
+          4.8/5.0 satisfaction rating
+        </div>
+        <h1 class="section-title mb-4">
+          Holistic Nutrition for a <span class="text-green">Healthier You</span>
+        </h1>
+        <p class="lead text-muted-green mb-5" style="line-height:1.8;">
+          At Greenive, we guide you toward a healthier gut, a clearer mind, and a naturally energized body.
+        </p>
+
+        <!-- Feature chips -->
+        <div class="d-flex flex-wrap gap-2 mb-5">
+          <span class="feature-chip"><span class="dot"></span> Personalized Gut Health</span>
+          <span class="feature-chip"><span class="dot"></span> Holistic Meal Plans</span>
+          <span class="feature-chip"><span class="dot"></span> Digestion & Energy</span>
+          <span class="feature-chip"><span class="dot"></span> Natural Methods</span>
+        </div>
+
+        <div class="d-flex flex-wrap gap-3">
+          <a href="#programs" class="btn btn-green btn-lg">Book a Consultation</a>
+          <a href="#about" class="btn btn-outline-green btn-lg">Learn More</a>
+        </div>
+      </div>
+
+      <!-- Image col -->
+      <div class="col-lg-6">
+        <div class="hero-img-wrap">
+          <!-- Placeholder visual using a gradient card -->
+          <div style="background:linear-gradient(135deg,#c8e6d0 0%,#e8f5ec 100%);border-radius:1rem;height:460px;display:flex;align-items:center;justify-content:center;font-size:5rem;">
+            🌿
+          </div>
+
+          <!-- Floating cards -->
+          <div class="hero-float-card card-top">
+            <div class="d-flex align-items-center gap-2">
+              <div style="width:32px;height:32px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;">
+                <i class="fa-solid fa-heart-pulse text-green fa-sm"></i>
+              </div>
+              <div>
+                <div style="font-size:.7rem;color:var(--muted);">Clients guided</div>
+                <div style="font-size:1rem;font-weight:700;color:var(--green);">820+</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-float-card card-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <div style="width:32px;height:32px;border-radius:50%;background:#fff3e0;display:flex;align-items:center;justify-content:center;">
+                <i class="fa-solid fa-star" style="color:var(--gold);font-size:.9rem;"></i>
+              </div>
+              <div>
+                <div style="font-size:.7rem;color:var(--muted);">Satisfaction</div>
+                <div style="font-size:1rem;font-weight:700;">4.8 / 5.0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     TRUSTED LOGOS
+═══════════════════════════════════════════════════════════ -->
+<section id="logos">
+  <div class="container">
+    <p class="text-center text-muted-green mb-4" style="font-size:.85rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;">
+      Trusted by wellness brands worldwide
+    </p>
+    <div class="row justify-content-center align-items-center gy-3 gx-5 text-center">
+      <div class="col-auto"><span class="logo-item">NutriLab</span></div>
+      <div class="col-auto"><span class="logo-item">WellNest</span></div>
+      <div class="col-auto"><span class="logo-item">PureRoots</span></div>
+      <div class="col-auto"><span class="logo-item">VitaCore</span></div>
+      <div class="col-auto"><span class="logo-item">EcoHealth</span></div>
+      <div class="col-auto"><span class="logo-item">HarvestMD</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     ABOUT
+═══════════════════════════════════════════════════════════ -->
+<section id="about">
+  <div class="container">
+    <div class="row align-items-center gy-5">
+      <!-- Image -->
+      <div class="col-lg-5 fade-up">
+        <div style="background:linear-gradient(145deg,#b8dfc4 0%,#daf0e1 100%);border-radius:1rem;height:480px;display:flex;align-items:center;justify-content:center;font-size:6rem;position:relative;">
+          🥗
+          <div style="position:absolute;bottom:24px;right:24px;background:#fff;border-radius:.75rem;padding:.9rem 1.2rem;box-shadow:0 4px 20px rgba(0,0,0,.1);">
+            <div style="font-size:.75rem;color:var(--muted);">Client success</div>
+            <div style="font-size:1.4rem;font-family:'Ovo',serif;color:var(--green);">98%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Text -->
+      <div class="col-lg-7 fade-up ps-lg-5">
+        <div class="section-label mb-2">About Greenive</div>
+        <div class="divider-green mb-4"></div>
+        <h2 class="section-title mb-4">
+          A holistic approach to gut health &amp; nourished living.
+        </h2>
+        <p class="text-muted-green mb-4" style="line-height:1.85;">
+          At Greenive, we believe that true wellness begins with understanding the deep connection between your gut, your mind, and your daily habits. Our personalized nutrition strategies are crafted to help you feel your best — naturally and sustainably.
+        </p>
+
+        <!-- Mini stats -->
+        <div class="row g-3 mb-5">
+          <div class="col-4">
+            <div class="about-stat-box">
+              <div class="num">820+</div>
+              <div style="font-size:.78rem;color:var(--muted);">Clients guided</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="about-stat-box">
+              <div class="num">100+</div>
+              <div style="font-size:.78rem;color:var(--muted);">Custom programs</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="about-stat-box">
+              <div class="num">98%</div>
+              <div style="font-size:.78rem;color:var(--muted);">Success rate</div>
+            </div>
+          </div>
+        </div>
+
+        <a href="#programs" class="btn btn-green">Learn More</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PROGRAMS
+═══════════════════════════════════════════════════════════ -->
+<section id="programs">
+  <div class="container">
+    <div class="text-center mb-5 fade-up">
+      <div class="section-label mb-2">Our Programs</div>
+      <div class="divider-green mx-auto mb-4"></div>
+      <h2 class="section-title">What We Offer</h2>
+      <p class="text-muted-green mx-auto mt-3" style="max-width:540px;">
+        Science-backed, nature-inspired programs tailored to your unique body and lifestyle.
+      </p>
+    </div>
+
+    <div class="row align-items-start gy-4">
+      <!-- Accordion -->
+      <div class="col-lg-7 fade-up">
+        <div class="accordion program-accordion" id="programAccordion">
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#prog1">
+                <div class="program-icon me-3"><i class="fa-solid fa-seedling"></i></div>
+                Gut Health Reset Program
+              </button>
+            </h2>
+            <div id="prog1" class="accordion-collapse collapse show" data-bs-parent="#programAccordion">
+              <div class="accordion-body">
+                This program focuses on identifying root causes of bloating, inflammation, and digestive discomfort. Through mindful nutrition, gentle lifestyle adjustments, and digestive support strategies, you'll begin to heal your gut naturally.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#prog2">
+                <div class="program-icon me-3"><i class="fa-solid fa-hand-holding-heart"></i></div>
+                Holistic Nutrition Coaching
+              </button>
+            </h2>
+            <div id="prog2" class="accordion-collapse collapse" data-bs-parent="#programAccordion">
+              <div class="accordion-body">
+                Together, we explore your habits, food patterns, energy levels, and emotional connections with food. You'll receive ongoing support, tailored strategies, and clarity to help you build a nourishing relationship with your body.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#prog3">
+                <div class="program-icon me-3"><i class="fa-solid fa-bolt"></i></div>
+                Energy Boost &amp; Detox Program
+              </button>
+            </h2>
+            <div id="prog3" class="accordion-collapse collapse" data-bs-parent="#programAccordion">
+              <div class="accordion-body">
+                This program helps eliminate toxins, reduce fatigue, and support liver and digestive health using natural whole foods and hydration practices — no harsh detoxes or extreme diets.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#prog4">
+                <div class="program-icon me-3"><i class="fa-solid fa-brain"></i></div>
+                Mindful Eating Workshop
+              </button>
+            </h2>
+            <div id="prog4" class="accordion-collapse collapse" data-bs-parent="#programAccordion">
+              <div class="accordion-body">
+                This workshop teaches you to tune into your body's cues, reduce emotional eating, and create a calmer, more intuitive approach to meals.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="mt-5">
+          <p class="text-muted-green mb-3" style="font-size:.95rem;">
+            Book a discovery session and find the program that fits your goals.
+          </p>
+          <a href="#pricing" class="btn btn-green">Begin Your Wellness Journey</a>
+        </div>
+      </div>
+
+      <!-- Side card -->
+      <div class="col-lg-5 fade-up">
+        <div style="background:#fff;border-radius:var(--radius);padding:2rem;box-shadow:0 4px 24px rgba(0,0,0,.07);">
+          <div style="background:linear-gradient(135deg,#c8e6d0,#e8f5ec);border-radius:.75rem;height:220px;display:flex;align-items:center;justify-content:center;font-size:4rem;margin-bottom:1.5rem;">
+            🌱
+          </div>
+          <h5 class="mb-3">Why Choose Greenive?</h5>
+          <div class="d-flex flex-column gap-3">
+            <div class="d-flex gap-2 align-items-start">
+              <i class="fa-solid fa-circle-check text-green mt-1"></i>
+              <span class="text-muted-green" style="font-size:.9rem;">Personalized plans designed for your unique body</span>
+            </div>
+            <div class="d-flex gap-2 align-items-start">
+              <i class="fa-solid fa-circle-check text-green mt-1"></i>
+              <span class="text-muted-green" style="font-size:.9rem;">Gentle, sustainable methods — no extreme diets</span>
+            </div>
+            <div class="d-flex gap-2 align-items-start">
+              <i class="fa-solid fa-circle-check text-green mt-1"></i>
+              <span class="text-muted-green" style="font-size:.9rem;">Ongoing support and accountability coaching</span>
+            </div>
+            <div class="d-flex gap-2 align-items-start">
+              <i class="fa-solid fa-circle-check text-green mt-1"></i>
+              <span class="text-muted-green" style="font-size:.9rem;">Proven results: 98% client satisfaction rate</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     MISSION & PHILOSOPHY
+═══════════════════════════════════════════════════════════ -->
+<section id="mission">
+  <div class="container">
+    <!-- Mission statement -->
+    <div class="row justify-content-center mb-5 fade-up">
+      <div class="col-lg-8 text-center">
+        <div class="section-label mb-2">Our Mission</div>
+        <div class="divider-green mx-auto mb-4"></div>
+        <p class="lead text-muted-green" style="line-height:1.9;font-size:1.05rem;">
+          "To guide individuals toward wholesome, sustainable wellness by nurturing digestive health, encouraging mindful nourishment, and fostering a deeper connection with their body and daily choices."
+        </p>
+      </div>
+    </div>
+
+    <!-- Philosophy -->
+    <div class="text-center mb-5 fade-up">
+      <h2 class="section-title">Naturally Elegant Nutrition</h2>
+      <p class="text-muted-green mt-3" style="max-width:520px;margin:auto;">
+        Nourish your body, calm your mind, and live in harmony with your natural rhythm.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4 fade-up">
+        <div class="philosophy-card">
+          <div class="philosophy-icon"><i class="fa-solid fa-leaf"></i></div>
+          <h5 class="mb-3">Holistic Healing From Within</h5>
+          <p class="text-muted-green mb-0" style="font-size:.9rem;line-height:1.8;">
+            We believe true wellness begins from the inside out. Rather than chasing quick fixes, we focus on understanding your body's unique needs and building lasting foundations.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4 fade-up">
+        <div class="philosophy-card">
+          <div class="philosophy-icon"><i class="fa-solid fa-gem"></i></div>
+          <h5 class="mb-3">Abundance Over Restriction</h5>
+          <p class="text-muted-green mb-0" style="font-size:.9rem;line-height:1.8;">
+            Our approach celebrates nourishing foods rather than eliminating them. We help you discover a rich world of whole foods that energize and delight your palate.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4 fade-up">
+        <div class="philosophy-card">
+          <div class="philosophy-icon"><i class="fa-solid fa-seedling"></i></div>
+          <h5 class="mb-3">Sustainable Change</h5>
+          <p class="text-muted-green mb-0" style="font-size:.9rem;line-height:1.8;">
+            We build habits that last a lifetime — not just for the next few weeks. Real transformation is gradual, compassionate, and rooted in self-awareness.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     TESTIMONIALS
+═══════════════════════════════════════════════════════════ -->
+<section id="testimonials">
+  <div class="container">
+    <div class="text-center mb-5 fade-up">
+      <div class="section-label mb-2">Testimonials</div>
+      <div class="divider-green mx-auto mb-4"></div>
+      <h2 class="section-title">What Clients Are Saying</h2>
+      <p class="text-muted-green mt-3" style="max-width:500px;margin:auto;">
+        Real stories from individuals who transformed their wellness from the inside out.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <!-- T1 -->
+      <div class="col-md-6 col-lg-3 fade-up">
+        <div class="testi-card">
+          <div class="testi-stars mb-3">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star-half-stroke"></i>
+          </div>
+          <p class="text-muted-green mb-4" style="font-size:.9rem;line-height:1.8;">
+            "Greenive's guidance helped me understand what my body truly needed. After just a few weeks, my digestion improved, my energy stabilized, and I felt lighter — both physically and mentally."
+          </p>
+          <div class="d-flex align-items-center gap-3">
+            <div class="testi-avatar">SM</div>
+            <div>
+              <div style="font-weight:700;font-size:.9rem;">Sarah M.</div>
+              <div style="font-size:.78rem;color:var(--muted);">Customer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- T2 -->
+      <div class="col-md-6 col-lg-3 fade-up">
+        <div class="testi-card">
+          <div class="testi-stars mb-3">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star-half-stroke"></i>
+          </div>
+          <p class="text-muted-green mb-4" style="font-size:.9rem;line-height:1.8;">
+            "I've tried so many diets, but nothing felt sustainable. Greenive created a tailored approach that fit my lifestyle perfectly. For the first time, healthy habits feel natural to me."
+          </p>
+          <div class="d-flex align-items-center gap-3">
+            <div class="testi-avatar">AR</div>
+            <div>
+              <div style="font-weight:700;font-size:.9rem;">Amanda R.</div>
+              <div style="font-size:.78rem;color:var(--muted);">Customer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- T3 -->
+      <div class="col-md-6 col-lg-3 fade-up">
+        <div class="testi-card">
+          <div class="testi-stars mb-3">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star-half-stroke"></i>
+          </div>
+          <p class="text-muted-green mb-4" style="font-size:.9rem;line-height:1.8;">
+            "Every session felt encouraging, calm, and deeply insightful. Greenive helped me build a healthier relationship with food and taught me how to nourish myself with intention."
+          </p>
+          <div class="d-flex align-items-center gap-3">
+            <div class="testi-avatar">KJ</div>
+            <div>
+              <div style="font-weight:700;font-size:.9rem;">Kimberly J.</div>
+              <div style="font-size:.78rem;color:var(--muted);">Customer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- T4 -->
+      <div class="col-md-6 col-lg-3 fade-up">
+        <div class="testi-card">
+          <div class="testi-stars mb-3">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star-half-stroke"></i>
+          </div>
+          <p class="text-muted-green mb-4" style="font-size:.9rem;line-height:1.8;">
+            "After years of bloating and discomfort, I'm finally feeling relief. The holistic strategies and food recommendations made a huge difference in my daily life."
+          </p>
+          <div class="d-flex align-items-center gap-3">
+            <div class="testi-avatar">LP</div>
+            <div>
+              <div style="font-weight:700;font-size:.9rem;">Laura P.</div>
+              <div style="font-size:.78rem;color:var(--muted);">Customer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     STATS
+═══════════════════════════════════════════════════════════ -->
+<section id="stats">
+  <div class="container">
+    <div class="text-center mb-5 fade-up">
+      <h2 class="section-title text-white">Nurturing Wellness Through Real Results &amp; Impact</h2>
+    </div>
+    <div class="row g-4 text-center">
+      <div class="col-6 col-lg-3 fade-up">
+        <div class="stat-num" data-target="820">0</div>
+        <div class="stat-label mt-2">Individuals guided toward healthier, more balanced lifestyles</div>
+      </div>
+      <div class="col-6 col-lg-3 fade-up">
+        <div class="stat-num" data-target="100">0</div>
+        <div class="stat-label mt-2">Custom programs to support digestive health &amp; habits</div>
+      </div>
+      <div class="col-6 col-lg-3 fade-up">
+        <div class="stat-num" data-target="50">0</div>
+        <div class="stat-label mt-2">Live sessions empowering mindful nutrition &amp; holistic living</div>
+      </div>
+      <div class="col-6 col-lg-3 fade-up">
+        <div class="stat-num" data-target="98" data-suffix="%">0</div>
+        <div class="stat-label mt-2">Clients report improved digestion, energy &amp; well-being</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PRICING
+═══════════════════════════════════════════════════════════ -->
+<section id="pricing">
+  <div class="container">
+    <div class="text-center mb-5 fade-up">
+      <div class="section-label mb-2">Pricing Plan</div>
+      <div class="divider-green mx-auto mb-4"></div>
+      <h2 class="section-title">Choose Your Wellness Path</h2>
+      <p class="text-muted-green mt-3" style="max-width:500px;margin:auto;">
+        Flexible plans designed to meet you wherever you are on your wellness journey.
+      </p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+
+      <!-- Plan 1 -->
+      <div class="col-lg-4 col-md-6 fade-up">
+        <div class="price-card">
+          <div class="price-badge">Starter</div>
+          <h5 class="mb-1">Starter Balance</h5>
+          <p class="text-muted-green mb-4" style="font-size:.88rem;">
+            Perfect for beginners looking to ease into mindful eating and digestion-friendly habits.
+          </p>
+          <div class="d-flex align-items-end gap-1 mb-1">
+            <span class="price-amount">$59</span>
+          </div>
+          <div class="price-period mb-4">per session</div>
+          <hr class="price-divider" />
+          <div class="mb-4">
+            <div class="price-feature"><i class="fa-solid fa-check"></i> 1× One-on-one consultation (60 min)</div>
+            <div class="price-feature"><i class="fa-solid fa-check"></i> Initial wellness & gut health assessment</div>
+            <div class="price-feature"><i class="fa-solid fa-check"></i> Personalized nutrition guidance</div>
+            <div class="price-feature"><i class="fa-solid fa-check"></i> Simple weekly meal suggestions</div>
+            <div class="price-feature"><i class="fa-solid fa-check"></i> Lifestyle & hydration recommendations</div>
+            <div class="price-feature"><i class="fa-solid fa-check"></i> Email support for 3 days</div>
+          </div>
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:1.2rem;">
+            <strong>Best for:</strong> Individuals wanting a light introduction to holistic nutrition.
+          </p>
+          <a href="#" class="btn btn-outline-green w-100">Get Started</a>
+        </div>
+      </div>
+
+      <!-- Plan 2 – Featured -->
+      <div class="col-lg-4 col-md-6 fade-up">
+        <div class="price-card featured">
+          <div class="price-badge">Most Popular</div>
+          <h5 class="mb-1">Holistic Reset</h5>
+          <p class="text-muted-green mb-4" style="font-size:.88rem;">
+            A structured program to rebalance your gut, boost energy, and build healthier routines.
+          </p>
+          <div class="d-flex align-items-end gap-1 mb-1">
+            <span class="price-amount">$199</span>
+          </div>
+          <div class="price-period mb-4">per month</div>
+          <hr class="price-divider" />
+          <div class="mb-4">
+            <div class="price-feature"><i class="fa-solid fa-check"></i> 2× Coaching sessions/month (45 min each)</div>
+            <div class="price-feature"><i class="fa-solid fa-check"></i> Personalized nutrition & habit-reset plan</div>
+            <div class="price-feature"><i class="fa-solid fa-check"></i> Weekly check-ins & progress tracking</div>
+            <div class="price-feature"><i class="fa-solid fa-check"></i> Custom grocery list + portion suggestions</div>
+            <div class="price-feature"><i class="fa-solid fa-check"></i> Stress & digestion support techniques</div>
+            <div class="price-feature"><i class="fa-solid fa-check"></i> Priority email support for 2 weeks</div>
+          </div>
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:1.2rem;">
+            <strong>Best for:</strong> Those ready for consistent guidance and noticeable improvements.
+          </p>
+          <a href="#" class="btn btn-green w-100">Get Started</a>
+        </div>
+      </div>
+
+      <!-- Plan 3 -->
+      <div class="col-lg-4 col-md-6 fade-up">
+        <div class="price-card">
+          <div class="price-badge">Premium</div>
+          <h5 class="mb-1">Complete Wellness</h5>
+          <p class="text-muted-green mb-4" style="font-size:.88rem;">
+            Deep, long-term coaching for total lifestyle change and full-body wellness alignment.
+          </p>
+          <div class="d-flex align-items-end gap-1 mb-1">
+            <span class="price-amount">$399</span>
+          </div>
+          <div class="price-period mb-4">per month</div>
+          <hr class="price-divider" />
+          <div class="mb-4">
+            <div class="price-feature"><i class="fa-solid fa-check"></i> 4× Coaching sessions/month (45 min each)</div>
+            <div class="price-feature"><i class="fa-solid fa-check"></i> Full gut health & lifestyle evaluation</div>
+            <div class="price-feature"><i class="fa-solid fa-check"></i> Fully customized nutrition framework</div>
+            <div class="price-feature"><i class="fa-solid fa-check"></i> Personalized meal planning support</div>
+            <div class="price-feature"><i class="fa-solid fa-check"></i> Habit-building system with monthly updates</div>
+            <div class="price-feature"><i class="fa-solid fa-check"></i> Ongoing priority support</div>
+          </div>
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:1.2rem;">
+            <strong>Best for:</strong> Clients seeking full transformation with ongoing tailored support.
+          </p>
+          <a href="#" class="btn btn-outline-green w-100">Get Started</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     FAQ
+═══════════════════════════════════════════════════════════ -->
+<section id="faq">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="text-center mb-5 fade-up">
+          <div class="section-label mb-2">FAQ</div>
+          <div class="divider-green mx-auto mb-4"></div>
+          <h2 class="section-title">Frequently Asked Questions</h2>
+        </div>
+
+        <div class="accordion fade-up" id="faqAccordion">
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                How do I contact Greenive for an appointment?
+              </button>
+            </h2>
+            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                You can reach us via email at greenive.info@mail.com or call +1 (234) 567 890 00. We recommend booking through our website to secure your preferred time slot. We typically respond within 24 hours.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                Are the sessions held in person or online?
+              </button>
+            </h2>
+            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                We offer both in-person and virtual sessions to fit your lifestyle. Online sessions are conducted via video call and are just as effective as in-person consultations — many clients prefer the flexibility of remote coaching.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                Which program is right for me?
+              </button>
+            </h2>
+            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                We recommend starting with a free discovery call so we can understand your goals, lifestyle, and current health challenges. Based on that conversation, we'll suggest the program that best fits your needs. There's no one-size-fits-all approach at Greenive.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                How long before I start seeing results?
+              </button>
+            </h2>
+            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Most clients notice improvements in energy and digestion within 2–4 weeks. Deeper, lasting changes — like reduced inflammation or sustainable weight management — typically take 2–3 months of consistent practice and guidance.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                Can I switch plans if my needs change?
+              </button>
+            </h2>
+            <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Absolutely. Your wellness journey evolves, and so do our plans. You can upgrade or adjust your program at any time. We'll work with you to ensure a smooth transition that keeps your progress on track.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     BLOG
+═══════════════════════════════════════════════════════════ -->
+<section id="blog">
+  <div class="container">
+    <div class="text-center mb-5 fade-up">
+      <div class="section-label mb-2">Blog &amp; News</div>
+      <div class="divider-green mx-auto mb-4"></div>
+      <h2 class="section-title">Latest Wellness Insights</h2>
+      <p class="text-muted-green mt-3" style="max-width:480px;margin:auto;">
+        Tips, recipes, and science-backed articles to support your holistic health journey.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4 fade-up">
+        <div class="blog-card">
+          <div class="blog-card-img">🥦</div>
+          <div class="blog-card-body">
+            <span class="blog-tag">Gut Health</span>
+            <h5 class="mt-2 mb-2" style="font-size:1rem;line-height:1.4;">5 Foods That Naturally Heal Your Gut Lining</h5>
+            <p class="text-muted-green mb-3" style="font-size:.86rem;line-height:1.7;">
+              Discover the power of fermented foods, bone broth, and polyphenol-rich vegetables in restoring a healthy digestive system.
+            </p>
+            <a href="#" class="text-green fw-600" style="font-size:.88rem;font-weight:600;">
+              Read More <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 fade-up">
+        <div class="blog-card">
+          <div class="blog-card-img">🧘</div>
+          <div class="blog-card-body">
+            <span class="blog-tag">Mindful Eating</span>
+            <h5 class="mt-2 mb-2" style="font-size:1rem;line-height:1.4;">How to Break the Cycle of Emotional Eating</h5>
+            <p class="text-muted-green mb-3" style="font-size:.86rem;line-height:1.7;">
+              Learn evidence-based strategies to reconnect with your hunger cues and build a more compassionate relationship with food.
+            </p>
+            <a href="#" class="text-green fw-600" style="font-size:.88rem;font-weight:600;">
+              Read More <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 fade-up">
+        <div class="blog-card">
+          <div class="blog-card-img">⚡</div>
+          <div class="blog-card-body">
+            <span class="blog-tag">Energy & Detox</span>
+            <h5 class="mt-2 mb-2" style="font-size:1rem;line-height:1.4;">Natural Ways to Boost Energy Without Caffeine</h5>
+            <p class="text-muted-green mb-3" style="font-size:.86rem;line-height:1.7;">
+              From morning hydration rituals to adaptogenic herbs — explore sustainable energy strategies that actually work.
+            </p>
+            <a href="#" class="text-green fw-600" style="font-size:.88rem;font-weight:600;">
+              Read More <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     NEWSLETTER
+═══════════════════════════════════════════════════════════ -->
+<section id="newsletter">
+  <div class="container">
+    <div class="row justify-content-center text-center">
+      <div class="col-lg-7 fade-up">
+        <h2 class="section-title text-white mb-3">Subscribe to our newsletter</h2>
+        <p class="mb-5" style="opacity:.85;">
+          Personalized holistic nutrition guidance to restore gut health and natural energy.
+        </p>
+        <div class="input-group mb-3" style="max-width:480px;margin:auto;">
+          <input type="email" class="form-control" placeholder="Your email address" />
+          <button class="btn" type="button">Subscribe</button>
+        </div>
+        <p style="font-size:.78rem;opacity:.65;">
+          * We never share your information with third parties.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <div class="row g-5">
+
+      <!-- Brand col -->
+      <div class="col-lg-4">
+        <div class="footer-brand mb-2">Greenive</div>
+        <p style="font-size:.85rem;color:#8fa893;line-height:1.8;max-width:280px;">
+          Harmonizing Health and Happiness. Holistic nutrition coaching for a balanced, energized life.
+        </p>
+        <div class="mt-4">
+          <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+          <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+
+      <!-- Explore -->
+      <div class="col-6 col-lg-2">
+        <h6>Explore</h6>
+        <a href="#hero">Home</a>
+        <a href="#about">About</a>
+        <a href="#blog">Blog</a>
+        <a href="#faq">FAQs</a>
+        <a href="#newsletter">Contact</a>
+      </div>
+
+      <!-- Programs -->
+      <div class="col-6 col-lg-3">
+        <h6>Programs</h6>
+        <a href="#programs">Gut Health Reset</a>
+        <a href="#programs">Holistic Nutrition</a>
+        <a href="#programs">Energy & Detox</a>
+        <a href="#programs">Mindful Eating</a>
+        <a href="#programs">Wellness Programs</a>
+      </div>
+
+      <!-- Contact -->
+      <div class="col-lg-3">
+        <h6>Contact</h6>
+        <div class="footer-contact-item">
+          <i class="fa-solid fa-location-dot"></i>
+          <span>205 Brook Fork, Maryland 18165</span>
+        </div>
+        <div class="footer-contact-item">
+          <i class="fa-solid fa-phone"></i>
+          <span>+1 (234) 567 890 00</span>
+        </div>
+        <div class="footer-contact-item">
+          <i class="fa-solid fa-envelope"></i>
+          <span>greenive.info@mail.com</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom d-flex flex-wrap justify-content-between align-items-center">
+      <span>Copyright &copy; 2025 Greenive. All rights reserved.</span>
+      <span>
+        <a href="#" class="me-3">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </span>
+    </div>
+  </div>
+</footer>
+
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // ── Navbar scroll shadow ──────────────────────────────
+  window.addEventListener('scroll', () => {
+    document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  // ── Fade-up on scroll ──────────────────────────────────
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // ── Counter animation ──────────────────────────────────
+  function animateCounters() {
+    document.querySelectorAll('.stat-num').forEach(el => {
+      const target = +el.dataset.target;
+      const suffix = el.dataset.suffix || '+';
+      let current = 0;
+      const step = Math.ceil(target / 60);
+      const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = current + suffix;
+        if (current >= target) clearInterval(timer);
+      }, 25);
+    });
+  }
+
+  const statsSection = document.getElementById('stats');
+  const statsObserver = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) {
+      animateCounters();
+      statsObserver.disconnect();
+    }
+  }, { threshold: 0.3 });
+  statsObserver.observe(statsSection);
+
+  // ── Smooth scroll for anchor links ────────────────────
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // close mobile nav
+        const navCollapse = document.getElementById('navMenu');
+        if (navCollapse.classList.contains('show')) {
+          new bootstrap.Collapse(navCollapse).hide();
+        }
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
