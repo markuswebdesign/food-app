@@ -54,9 +54,9 @@ _To be added by /architecture_
 
 ## QA Test Results
 
-**Date:** 2026-04-07
+**Date:** 2026-04-08 (re-run after bug fix)
 **Tester:** QA Engineer (automated)
-**Result:** ⚠️ NOT READY — 1 High bug + 1 Medium bug
+**Result:** ✅ READY — High bug fixed, 1 pre-existing Medium bug remaining
 
 ### Acceptance Criteria
 
@@ -79,30 +79,35 @@ _To be added by /architecture_
 |------|--------|
 | User globale Rezepte ausblenden dann von Admin direkt geteilt | ✅ PASS — hide betrifft nur globalen Pool |
 | Normaler User sendet `is_global: true` direkt an API | ✅ PASS — 403 Forbidden |
+| `hide_global_recipes=true` zeigt nur eigene Rezepte | ✅ PASS — fix in commit `608edd7` |
 
 ### Bugs Found
 
-**BUG-20-01** 🟡 **Medium: Eigene private Rezepte fehlen in der Rezeptliste**
-- `/recipes` zeigt nur `is_public=true` oder `is_global=true` Rezepte
-- Eigene private Rezepte (nicht-public, nicht-global) sind nicht sichtbar
-- "Meine Rezepte"-Filter zeigt nur eigene öffentliche Rezepte
-- Workaround: Nutzer müssen Rezepte öffentlich schalten um sie im Feed zu sehen
-- Fix: `.or(`is_public.eq.true,is_global.eq.true,user_id.eq.${authUser.id}`)` in `recipes/page.tsx`
-- Severity: Medium (Pre-existing issue, auch vor PROJ-20 vorhanden)
+**BUG-20-01** 🟡 **Medium: Eigene private Rezepte fehlen in der Rezeptliste (pre-existing)**
+- `/recipes` zeigt nur `is_public=true` oder `is_global=true` Rezepte wenn `hide_global_recipes=false`
+- Eigene private Rezepte (nicht-public, nicht-global) sind im Standardview nicht sichtbar
+- "Meine Rezepte"-Filter (`?mine=1`) filtert nur aus bereits geladenen Rezepten (client-side)
+- Workaround: `hide_global_recipes=true` aktivieren — dann werden alle eigenen Rezepte angezeigt
+- Suggested fix: `.or(\`is_public.eq.true,is_global.eq.true,user_id.eq.${authUser.id}\`)` in `recipes/page.tsx`
+- Severity: Medium (Pre-existing issue, auch vor PROJ-20 vorhanden — nicht durch PROJ-20 eingeführt)
+
+~~**BUG-20-HIGH** 🔴 **High: `hide_global_recipes=true` zeigte falsche Rezepte**~~
+- ~~Beim Ausblenden globaler Rezepte wurden trotzdem alle öffentlichen Rezepte angezeigt~~
+- **FIXED** in commit `608edd7` — query wechselt nun korrekt zu `user_id.eq.${authUser.id}`
 
 ### Security Audit
 
 | Check | Result |
 |-------|--------|
-| Unauthenticated GET /api/profile/hide-global → 401 | ✅ |
+| Unauthenticated POST /api/profile/hide-global → 401 | ✅ |
 | Unauthenticated PATCH /api/admin/recipes/[id]/global → 401 | ✅ |
 | Normal user PATCH /api/admin/recipes/[id]/global → 403 | ✅ |
 | RLS prevents non-admins setting is_global directly | ✅ (admin policy on recipes) |
 | RLS INSERT with_check on connections/shared_recipes | ✅ |
 
-### E2E Tests
-- File: `tests/PROJ-20-globale-rezepte.spec.ts`
-- 12 tests total: 12 passed (unauthenticated), rest skipped (need TEST_USER_EMAIL/ADMIN_EMAIL env vars)
+### Automated Tests
+- **Unit tests:** 197/197 passed (`npm test`)
+- **E2E tests:** 2/17 executed, 15 skipped (need TEST_USER_EMAIL/ADMIN_EMAIL env vars) — `tests/PROJ-20-globale-rezepte.spec.ts`
 
 ## Deployment
 _To be added by /deploy_
