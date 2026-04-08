@@ -21,13 +21,19 @@ function VerifyEmailForm() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") ?? "";
   const supabase = createClient();
-  const [resendStatus, setResendStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
+  const [resendStatus, setResendStatus] = useState<"idle" | "loading" | "sent" | "error" | "ratelimit">("idle");
 
   async function handleResend() {
     if (!email) return;
     setResendStatus("loading");
     const { error } = await supabase.auth.resend({ type: "signup", email });
-    setResendStatus(error ? "error" : "sent");
+    if (!error) {
+      setResendStatus("sent");
+    } else if (error.message.includes("rate limit") || error.message.includes("rate_limit")) {
+      setResendStatus("ratelimit");
+    } else {
+      setResendStatus("error");
+    }
   }
 
   return (
@@ -58,6 +64,11 @@ function VerifyEmailForm() {
             E-Mail wurde erneut gesendet. Bitte prüfe deinen Posteingang.
           </p>
         )}
+        {resendStatus === "ratelimit" && (
+          <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 p-3 rounded-md">
+            Zu viele Versuche. Bitte warte einige Minuten und versuche es dann erneut.
+          </p>
+        )}
         {resendStatus === "error" && (
           <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
             Fehler beim Senden. Bitte versuche es später erneut.
@@ -69,7 +80,7 @@ function VerifyEmailForm() {
           variant="outline"
           className="w-full"
           onClick={handleResend}
-          disabled={resendStatus === "loading" || resendStatus === "sent" || !email}
+          disabled={resendStatus === "loading" || resendStatus === "sent" || resendStatus === "ratelimit" || !email}
         >
           {resendStatus === "loading" ? "Wird gesendet..." : "E-Mail erneut senden"}
         </Button>

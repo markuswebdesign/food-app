@@ -65,6 +65,20 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
     router.refresh();
   }
 
+  async function handleDelete(userId: string) {
+    setLoadingId(userId + "_delete");
+    const res = await fetch("/api/admin/users", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId }),
+    });
+    if (res.ok) {
+      setLocalUsers((prev) => prev.filter((u) => u.id !== userId));
+    }
+    setLoadingId(null);
+    router.refresh();
+  }
+
   async function handleSetBanned(userId: string, banned: boolean) {
     setLoadingId(userId + "_ban");
     const res = await fetch("/api/admin/users", {
@@ -119,6 +133,7 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
                 const isMe = u.id === currentUserId;
                 const roleLoading = loadingId === u.id + "_role";
                 const banLoading = loadingId === u.id + "_ban";
+                const deleteLoading = loadingId === u.id + "_delete";
 
                 return (
                   <tr
@@ -217,6 +232,40 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
                                   className={!u.is_banned ? "bg-destructive hover:bg-destructive/90" : ""}
                                 >
                                   {u.is_banned ? "Entsperren" : "Sperren"}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+
+                        {/* Delete */}
+                        {!isMe && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-xs h-7 text-destructive hover:text-destructive"
+                                disabled={roleLoading || banLoading || deleteLoading}
+                              >
+                                {deleteLoading ? "…" : "Löschen"}
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Account löschen</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Soll <strong>{u.username}</strong> dauerhaft gelöscht werden? Alle Daten
+                                  (Rezepte, Mahlzeitenpläne, etc.) werden unwiderruflich entfernt.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDelete(u.id)}
+                                  className="bg-destructive hover:bg-destructive/90"
+                                >
+                                  Dauerhaft löschen
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>

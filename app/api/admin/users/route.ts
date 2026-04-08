@@ -92,6 +92,38 @@ export async function PATCH(request: Request) {
   return NextResponse.json({ error: "Unknown action" }, { status: 400 });
 }
 
+export async function DELETE(request: Request) {
+  const { user: callerUser, error: authError } = await requireAdmin();
+  if (authError) return authError;
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const parsed = z.object({ userId: z.string().uuid() }).safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+  }
+
+  const { userId } = parsed.data;
+
+  if (userId === callerUser!.id) {
+    return NextResponse.json(
+      { error: "Du kannst deinen eigenen Account nicht löschen." },
+      { status: 400 }
+    );
+  }
+
+  const adminClient = await getAdminClient();
+  const { error } = await adminClient.auth.admin.deleteUser(userId);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json({ success: true });
+}
+
 export async function GET() {
   const { error: authError } = await requireAdmin();
   if (authError) return authError;

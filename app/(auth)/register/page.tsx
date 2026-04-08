@@ -43,10 +43,40 @@ export default function RegisterPage() {
 
   const strength = getPasswordStrength(password);
 
+  function translateError(message: string): string {
+    if (message.includes("rate limit") || message.includes("email rate limit")) {
+      return "Zu viele Versuche. Bitte warte einige Minuten und versuche es erneut.";
+    }
+    if (message.includes("already registered") || message.includes("User already registered")) {
+      return "Diese E-Mail-Adresse ist bereits registriert. Bitte melde dich an.";
+    }
+    if (message.includes("Password should be at least") || message.includes("weak password")) {
+      return "Das Passwort ist zu schwach. Bitte wähle ein sichereres Passwort.";
+    }
+    if (message.includes("invalid email") || message.includes("Invalid email")) {
+      return "Bitte gib eine gültige E-Mail-Adresse ein.";
+    }
+    if (message.includes("signup_disabled")) {
+      return "Registrierungen sind derzeit deaktiviert.";
+    }
+    return "Ein Fehler ist aufgetreten. Bitte versuche es später erneut.";
+  }
+
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    if (password.length < 8) {
+      setError("Das Passwort muss mindestens 8 Zeichen lang sein.");
+      setLoading(false);
+      return;
+    }
+    if (password.length > 72) {
+      setError("Das Passwort darf maximal 72 Zeichen lang sein.");
+      setLoading(false);
+      return;
+    }
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -55,7 +85,7 @@ export default function RegisterPage() {
     });
 
     if (error) {
-      setError(error.message);
+      setError(translateError(error.message));
       setLoading(false);
     } else {
       router.push(`/verify-email?email=${encodeURIComponent(email)}`);
@@ -80,6 +110,8 @@ export default function RegisterPage() {
             <Input
               id="username"
               type="text"
+              name="username"
+              autoComplete="username"
               placeholder="max_mustermann"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -91,6 +123,8 @@ export default function RegisterPage() {
             <Input
               id="email"
               type="email"
+              name="email"
+              autoComplete="email"
               placeholder="name@beispiel.de"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -103,11 +137,13 @@ export default function RegisterPage() {
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Mindestens 6 Zeichen"
+                name="password"
+                autoComplete="new-password"
+                placeholder="Mindestens 8 Zeichen"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={8}
                 className="pr-10"
               />
               <button
