@@ -1,6 +1,6 @@
 # PROJ-22: Rezepte teilen (mit Connections)
 
-## Status: Approved
+## Status: Deployed
 **Created:** 2026-04-07
 **Last Updated:** 2026-04-07
 
@@ -123,4 +123,6 @@ Kein Policy für "Empfänger eines shared_recipe kann das Rezept lesen."
 - 12 passed (unauthenticated security checks), rest skipped (need TEST_USER_EMAIL env var)
 
 ## Deployment
-_To be added by /deploy_
+- **Production URL:** https://food-app-one-sage.vercel.app
+- **Deployed:** 2026-04-08
+- **Git tag:** v1.22.0-PROJ-22

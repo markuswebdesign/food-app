@@ -1,6 +1,6 @@
 # PROJ-21: User-Verbindungen (Freundschaft)
 
-## Status: In Review
+## Status: Deployed
 **Created:** 2026-04-07
 **Last Updated:** 2026-04-07
 
@@ -102,4 +102,6 @@ _To be added by /architecture_
 - 12 passed (unauthenticated), rest skipped (need TEST_USER_EMAIL env var)
 
 ## Deployment
-_To be added by /deploy_
+- **Production URL:** https://food-app-one-sage.vercel.app
+- **Deployed:** 2026-04-08
+- **Git tag:** v1.21.0-PROJ-21

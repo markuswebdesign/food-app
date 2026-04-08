@@ -1,6 +1,6 @@
 # PROJ-20: Globale Rezepte
 
-## Status: In Review
+## Status: Deployed
 **Created:** 2026-04-07
 **Last Updated:** 2026-04-07
 
@@ -110,4 +110,6 @@ _To be added by /architecture_
 - **E2E tests:** 2/17 executed, 15 skipped (need TEST_USER_EMAIL/ADMIN_EMAIL env vars) — `tests/PROJ-20-globale-rezepte.spec.ts`
 
 ## Deployment
-_To be added by /deploy_
+- **Production URL:** https://food-app-one-sage.vercel.app
+- **Deployed:** 2026-04-08
+- **Git tag:** v1.20.0-PROJ-20
