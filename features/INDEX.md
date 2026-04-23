@@ -26,7 +26,6 @@
 | PROJ-11 | [Genaue Nährwert-Berechnung](PROJ-11-naehrwert-berechnung-verbessern.md) | Deployed | — |
 | PROJ-12 | [Nutzerprofil Erweiterung (Profilbild + Rezept-Autor)](PROJ-12-nutzerprofil-erweiterung.md) | Deployed | PROJ-1 |
 | PROJ-14 | [Landingpage](PROJ-14-landingpage.md) | Deployed | — |
-| PROJ-15 | [Styling-Überarbeitung](PROJ-15-styling-ueberarbeitung.md) | Planned | PROJ-14 (empfohlen) |
 | PROJ-16 | [Landingpage Redesign (Greenive-Style)](PROJ-16-landingpage-redesign.md) | Deployed | PROJ-14 |
 | PROJ-17 | [Passwort Zurücksetzen](PROJ-17-passwort-zuruecksetzen.md) | Deployed | PROJ-6 |
 | PROJ-18 | [Rollen-System (Admin/User)](PROJ-18-rollen-system.md) | Deployed | — |
