@@ -1,6 +1,6 @@
 # PROJ-4: Makro-Tracking
 
-## Status: Architected
+## Status: Deployed
 **Created:** 2026-04-01
 **Last Updated:** 2026-04-23
 
@@ -135,4 +135,6 @@ app/(app)/me/page.tsx — Übersicht-Tab-Block anpassen:
 **READY** — Keine Critical oder High Bugs. Beide offenen Bugs (BUG-1, BUG-2) sind Low-Severity und können in einem separaten Folge-Sprint behoben werden.
 
 ## Deployment
-_To be added by /deploy_
+- **Production URL:** https://food-app-one-sage.vercel.app
+- **Deployed:** 2026-04-23
+- **Git tag:** v1.4.0-PROJ-4

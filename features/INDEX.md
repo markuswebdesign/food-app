@@ -18,7 +18,7 @@
 | PROJ-1 | [Gesundheitsprofil + TDEE-Rechner](PROJ-1-gesundheitsprofil-tdee.md) | Deployed | — |
 | PROJ-2 | [Mahlzeiten-Logbuch](PROJ-2-mahlzeiten-logbuch.md) | Deployed | PROJ-1 |
 | PROJ-3 | [Kalorie-Defizit Dashboard](PROJ-3-kalorie-defizit-dashboard.md) | Deployed | PROJ-1, PROJ-2 |
-| PROJ-4 | [Makro-Tracking](PROJ-4-makro-tracking.md) | Approved | PROJ-1, PROJ-2, PROJ-3 |
+| PROJ-4 | [Makro-Tracking](PROJ-4-makro-tracking.md) | Deployed | PROJ-1, PROJ-2, PROJ-3 |
 | PROJ-5 | [Streak & Motivation](PROJ-5-streak-motivation.md) | Deployed | PROJ-3 |
 | PROJ-6 | [E-Mail Bestätigung bei Registrierung](PROJ-6-email-bestaetigung.md) | Deployed | — |
 | PROJ-7 | [UX Quick Wins (Passwort anzeigen + Mobile Sidebar)](PROJ-7-ux-quick-wins.md) | Deployed | — |
