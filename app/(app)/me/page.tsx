@@ -7,6 +7,7 @@ import { buildWeekData, calcWeekBalance, getWeekStart, getWeekEnd, toLocalDateSt
 import { calcStreak } from "@/lib/utils/streak";
 import { MeTabs } from "@/components/me/me-tabs";
 import { CalorieTodayCard } from "@/components/dashboard/calorie-today-card";
+import { MacroProgress, sumMacros, effectiveMacroGoals } from "@/components/log/macro-progress";
 import { StreakWidget } from "@/components/dashboard/streak-widget";
 import { WeekChart } from "@/components/dashboard/week-chart";
 import { WeekSummary } from "@/components/dashboard/week-summary";
@@ -128,7 +129,7 @@ export default async function MePage({
     const weekEnd = toLocalDateString(getWeekEnd(today));
 
     const [{ data: todayEntries }, { data: weekEntries }] = await Promise.all([
-      supabase.from("food_log_entries").select("calories").eq("user_id", user.id).eq("date", todayStr),
+      supabase.from("food_log_entries").select("calories, protein_g, fat_g, carbs_g").eq("user_id", user.id).eq("date", todayStr),
       supabase.from("food_log_entries").select("date, calories").eq("user_id", user.id).gte("date", weekStart).lte("date", weekEnd),
     ]);
 
@@ -140,12 +141,21 @@ export default async function MePage({
     const weekDays = hasCalorieGoal ? buildWeekData(today, logByDate, calorieGoal!) : [];
     const weekBalance = hasCalorieGoal ? calcWeekBalance(weekDays) : 0;
 
+    const macroTotals = sumMacros(todayEntries ?? []);
+    const macroGoalsManual = {
+      protein_goal_g: profile?.protein_goal_g ?? null,
+      fat_goal_g: profile?.fat_goal_g ?? null,
+      carbs_goal_g: profile?.carbs_goal_g ?? null,
+    };
+    const effectiveGoals = effectiveMacroGoals(macroGoalsManual, calorieGoal);
+
     dashboardContent = !hasCalorieGoal ? (
       <ProfileCTA />
     ) : (
       <div className="space-y-6">
         {streakData && <StreakWidget streak={streakData} />}
         <CalorieTodayCard consumed={consumedToday} goal={calorieGoal!} goalType={goalType} />
+        {effectiveGoals && <MacroProgress totals={macroTotals} goals={effectiveGoals} />}
         <div className="space-y-3">
           <WeekChart days={weekDays} />
           <WeekSummary balance={weekBalance} goalType={goalType} />
