@@ -1,8 +1,8 @@
 # PROJ-19: Admin Panel (Dashboard & User-Verwaltung)
 
-## Status: In Progress
+## Status: Deployed
 **Created:** 2026-04-07
-**Last Updated:** 2026-04-07
+**Last Updated:** 2026-04-23
 
 ## Dependencies
 - Requires: PROJ-18 (Rollen-System) — Deployed
@@ -125,4 +125,6 @@ _To be added by /architecture_
 **READY** — Keine Critical oder High Bugs. BUG-1 (Medium) sollte zeitnah gefixt werden, blockiert Deployment nicht. BUG-2 (Low) erst relevant bei 500+ Usern.
 
 ## Deployment
-_To be added by /deploy_
+- **Production URL:** https://food-app-one-sage.vercel.app
+- **Deployed:** 2026-04-23
+- **Git tag:** v1.19.0-PROJ-19

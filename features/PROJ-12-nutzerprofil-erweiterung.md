@@ -1,8 +1,8 @@
 # PROJ-12: Nutzerprofil Erweiterung (Profilbild + Rezept-Autor)
 
-## Status: Approved
+## Status: Deployed
 **Created:** 2026-04-01
-**Last Updated:** 2026-04-01
+**Last Updated:** 2026-04-23
 
 ## Dependencies
 - Authentifizierung (deployed)
@@ -248,4 +248,6 @@ Siehe Architecture-Session 2026-04-02.
 **Verdict:** No Critical or High bugs found. Feature can be marked **Approved** with the recommendation to address Medium-severity items (especially BUG-03 "Unbekannt" fallback and BUG-05 content type mismatch) before or shortly after deployment.
 
 ## Deployment
-_To be added by /deploy_
+- **Production URL:** https://food-app-one-sage.vercel.app
+- **Deployed:** 2026-04-23
+- **Git tag:** v1.12.0-PROJ-12

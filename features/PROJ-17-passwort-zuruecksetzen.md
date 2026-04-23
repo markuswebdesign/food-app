@@ -1,8 +1,8 @@
 # PROJ-17: Passwort Zurücksetzen
 
-## Status: Approved
+## Status: Deployed
 **Created:** 2026-04-07
-**Last Updated:** 2026-04-07
+**Last Updated:** 2026-04-23
 
 ## Dependencies
 - PROJ-6: E-Mail Bestätigung bei Registrierung (E-Mail-Versand muss konfiguriert sein)
@@ -151,4 +151,6 @@ Der Flow nutzt Supabase Auth's built-in `resetPasswordForEmail` und `updateUser`
 **READY** — BUG-1 (High) gefixt. Offener Low-Bug (BUG-2: kein Redirect für eingeloggte User auf /forgot-password) blockiert Deployment nicht.
 
 ## Deployment
-_To be added by /deploy_
+- **Production URL:** https://food-app-one-sage.vercel.app
+- **Deployed:** 2026-04-23
+- **Git tag:** v1.17.0-PROJ-17
