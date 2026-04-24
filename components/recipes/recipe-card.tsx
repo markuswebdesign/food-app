@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -9,6 +12,7 @@ import { AddToMealPlanPopover } from "./add-to-meal-plan-popover";
 
 export function RecipeCard({ recipe }: { recipe: Recipe }) {
   const totalTime = (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);
+  const [inMealPlan, setInMealPlan] = useState(recipe.in_meal_plan ?? false);
 
   return (
     <div className="relative">
@@ -87,6 +91,9 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
         <AddToMealPlanPopover
           recipeId={recipe.id}
           categorySlugs={recipe.categories?.map((c) => c.slug) ?? []}
+          onAdded={() => setInMealPlan(true)}
+          onRemoved={() => setInMealPlan(false)}
+          inMealPlan={inMealPlan}
         />
         <FavoriteButton
           recipeId={recipe.id}

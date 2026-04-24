@@ -24,7 +24,6 @@ const CATEGORY_TO_MEAL: Record<string, MealTime> = {
   breakfast: "breakfast",
   lunch: "lunch",
   dinner: "dinner",
-  snack: "snack",
 };
 
 function getMonday(date: Date): Date {
@@ -47,9 +46,12 @@ function dateForDay(weekStart: Date, dayIndex: number): string {
 interface AddToMealPlanPopoverProps {
   recipeId: string;
   categorySlugs?: string[];
+  onAdded?: () => void;
+  onRemoved?: () => void;
+  inMealPlan?: boolean;
 }
 
-export function AddToMealPlanPopover({ recipeId, categorySlugs = [] }: AddToMealPlanPopoverProps) {
+export function AddToMealPlanPopover({ recipeId, categorySlugs = [], onAdded, onRemoved, inMealPlan = false }: AddToMealPlanPopoverProps) {
   const supabase = createClient();
   const [open, setOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(0);
@@ -60,6 +62,7 @@ export function AddToMealPlanPopover({ recipeId, categorySlugs = [] }: AddToMeal
     return "lunch";
   });
   const [saving, setSaving] = useState(false);
+  const [removing, setRemoving] = useState(false);
   const [success, setSuccess] = useState(false);
 
   async function handleAdd() {
@@ -112,21 +115,61 @@ export function AddToMealPlanPopover({ recipeId, categorySlugs = [] }: AddToMeal
 
     setSaving(false);
     setSuccess(true);
+    onAdded?.();
     setTimeout(() => { setSuccess(false); setOpen(false); }, 1500);
+  }
+
+  async function handleRemove() {
+    setRemoving(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setRemoving(false); return; }
+
+    const today = new Date();
+    const sixDaysAgo = new Date(today);
+    sixDaysAgo.setDate(today.getDate() - 6);
+
+    const { data: plan } = await supabase
+      .from("meal_plans")
+      .select("id")
+      .eq("user_id", user.id)
+      .gte("week_start", sixDaysAgo.toISOString().split("T")[0])
+      .lte("week_start", today.toISOString().split("T")[0])
+      .order("week_start", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (!plan) { setRemoving(false); return; }
+
+    const { data: entries } = await supabase
+      .from("meal_plan_entries")
+      .select("id, food_log_entry_id")
+      .eq("meal_plan_id", plan.id)
+      .eq("recipe_id", recipeId);
+
+    for (const entry of entries ?? []) {
+      if (entry.food_log_entry_id) {
+        await supabase.from("food_log_entries").delete().eq("id", entry.food_log_entry_id);
+      }
+      await supabase.from("meal_plan_entries").delete().eq("id", entry.id);
+    }
+
+    setRemoving(false);
+    onRemoved?.();
+    setOpen(false);
   }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         onClick={(e) => { e.preventDefault(); setOpen((v) => !v); }}
-        className="h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm border flex items-center justify-center hover:bg-background transition-colors"
-        aria-label="Zum Wochenplan hinzufügen"
-        title="Zum Wochenplan hinzufügen"
+        className={`h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors ${inMealPlan ? "border-2 border-green-600" : "border"}`}
+        aria-label={inMealPlan ? "Diese Woche im Wochenplan" : "Zum Wochenplan hinzufügen"}
+        title={inMealPlan ? "Diese Woche im Wochenplan" : "Zum Wochenplan hinzufügen"}
         render={
           <button type="button" />
         }
       >
-        <CalendarPlus className="h-4 w-4" />
+        <CalendarPlus className={`h-4 w-4 transition-colors ${inMealPlan ? "text-green-600" : ""}`} />
       </PopoverTrigger>
       <PopoverContent className="w-72 p-4" align="end">
         {success ? (
@@ -175,9 +218,14 @@ export function AddToMealPlanPopover({ recipeId, categorySlugs = [] }: AddToMeal
               </div>
             </div>
 
-            <Button size="sm" className="w-full" onClick={handleAdd} disabled={saving}>
+            <Button size="sm" className="w-full" onClick={handleAdd} disabled={saving || removing}>
               {saving ? "Wird hinzugefügt…" : "Hinzufügen"}
             </Button>
+            {inMealPlan && (
+              <Button size="sm" variant="outline" className="w-full text-destructive hover:text-destructive" onClick={handleRemove} disabled={removing || saving}>
+                {removing ? "Wird entfernt…" : "Aus Wochenplan entfernen"}
+              </Button>
+            )}
           </div>
         )}
       </PopoverContent>

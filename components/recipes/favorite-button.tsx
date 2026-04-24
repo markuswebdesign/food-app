@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -14,7 +13,6 @@ export function FavoriteButton({
 }) {
   const [favorited, setFavorited] = useState(initialFavorited);
   const supabase = createClient();
-  const router = useRouter();
 
   async function toggle(e: React.MouseEvent) {
     e.preventDefault();
@@ -41,7 +39,6 @@ export function FavoriteButton({
         .insert({ recipe_id: recipeId, user_id: user.id });
       if (error) { console.error("Favorit konnte nicht gespeichert werden:", error); setFavorited(!next); return; }
     }
-    router.refresh();
   }
 
   return (

@@ -56,7 +56,7 @@ export default async function MealPlanPage() {
           <h1 className="text-3xl font-bold">Wochenplan</h1>
           <p className="text-muted-foreground mt-1">Plane deine Mahlzeiten für die Woche</p>
         </div>
-        <AutofillDialog onComplete={() => {}} />
+        <AutofillDialog />
       </div>
       <WeekPlan
         recipes={recipes}

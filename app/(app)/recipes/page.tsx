@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -74,15 +76,38 @@ export default async function RecipesPage({
   const { data: categories } = await supabase.from("categories").select("*").order("type");
 
   let favoriteIds = new Set<string>();
+  let mealPlanRecipeIds = new Set<string>();
   let currentUserId: string | null = null;
   try {
     if (authUser) {
       currentUserId = authUser.id;
-      const { data: favs } = await supabase
-        .from("favorites")
-        .select("recipe_id")
-        .eq("user_id", authUser.id);
+      const [{ data: favs }, mealPlanData] = await Promise.all([
+        supabase.from("favorites").select("recipe_id").eq("user_id", authUser.id),
+        (async () => {
+          const today = new Date();
+          const todayStr = today.toISOString().split("T")[0];
+          const sixDaysAgo = new Date(today);
+          sixDaysAgo.setDate(today.getDate() - 6);
+          const sixDaysAgoStr = sixDaysAgo.toISOString().split("T")[0];
+          const { data: plan } = await supabase
+            .from("meal_plans")
+            .select("id")
+            .eq("user_id", authUser.id)
+            .gte("week_start", sixDaysAgoStr)
+            .lte("week_start", todayStr)
+            .order("week_start", { ascending: false })
+            .limit(1)
+            .single();
+          if (!plan) return [];
+          const { data: entries } = await supabase
+            .from("meal_plan_entries")
+            .select("recipe_id")
+            .eq("meal_plan_id", plan.id);
+          return entries ?? [];
+        })(),
+      ]);
       favoriteIds = new Set((favs ?? []).map((f: any) => f.recipe_id));
+      mealPlanRecipeIds = new Set((mealPlanData as any[]).map((e) => e.recipe_id));
     }
   } catch {}
 
@@ -93,6 +118,7 @@ export default async function RecipesPage({
       ? r.recipe_nutrition[0] ?? null
       : r.recipe_nutrition ?? null,
     is_favorited: favoriteIds.has(r.id),
+    in_meal_plan: mealPlanRecipeIds.has(r.id),
   })) as Recipe[];
 
   if (searchParams.favorites === "1") {

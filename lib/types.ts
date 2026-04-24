@@ -49,4 +49,5 @@ export type Recipe = {
   recipe_nutrition?: RecipeNutrition | null;
   profiles?: { username: string; avatar_url: string | null } | null;
   is_favorited?: boolean;
+  in_meal_plan?: boolean;
 };
