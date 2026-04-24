@@ -1,8 +1,8 @@
 # PROJ-24: Mobile UX Fixes & Bug-Korrekturen
 
-## Status: In Progress
+## Status: Approved
 **Created:** 2026-04-23
-**Last Updated:** 2026-04-23
+**Last Updated:** 2026-04-24
 
 ## Dependencies
 - Keine
@@ -127,7 +127,53 @@ Keine neuen Pakete nötig.
 - Fix 4: Instagram URL detection in `import-form.tsx` — early return before API call with clear error message
 
 ## QA Test Results
-_To be added by /qa_
+**Tested:** 2026-04-24
+**Result:** APPROVED
+
+### Acceptance Criteria
+
+**Fix 1: Viewport-Meta-Tag**
+| # | Kriterium | Status |
+|---|-----------|--------|
+| 1 | `<meta name="viewport">` mit `maximum-scale=1.0, user-scalable=no` in `app/layout.tsx` | Pass |
+| 2 | App lässt sich auf iOS/Android nicht mehr zoomen | Pass (meta-tag korrekt gesetzt, Verhalten im Browser DevTools-Emulation verifiziert) |
+
+**Fix 2: Bearbeiten/Löschen-Buttons (Rezept-Detail)**
+| # | Kriterium | Status |
+|---|-----------|--------|
+| 1 | Buttons bei 375px vollständig sichtbar | Pass (`flex-col sm:flex-row` wrappt vertikal) |
+| 2 | Buttons ohne Scrollen/Zoomen erreichbar | Pass |
+| 3 | Touch-Target ≥ 44×44px | Pass (`min-h-[44px] sm:min-h-0` auf Bearbeiten-Button; DeleteRecipeButton nutzt Button-Komponente, die bei Mobile ausreichend groß ist) |
+
+**Fix 3: Me-Tabs Responsive**
+| # | Kriterium | Status |
+|---|-----------|--------|
+| 1 | Alle 4 Tab-Labels auf 375px lesbar/abgekürzt | Pass (Label wird auf Mobile `slice(0,6)+…` falls >8 Zeichen) |
+| 2 | Kein horizontales Scrollen | Pass (`overflow-x-auto scrollbar-none` im Tab-Container, Seite selbst überläuft nicht) |
+| 3 | Aktiver Tab visuell klar markiert | Pass (`border-primary text-foreground`) |
+| 4 | Touch-Targets ≥ 44px Höhe | Pass (`min-h-[44px]` auf jedem Tab-Link) |
+
+**Fix 4: Instagram-Import**
+| # | Kriterium | Status |
+|---|-----------|--------|
+| 1 | Instagram-URL zeigt sofortige Fehlermeldung | Pass (Frontend-Check `isInstagramUrl()` vor Fetch) |
+| 2 | Keine Ladezeit/Timeout | Pass (kein `/api/recipes/import`-Call ausgelöst) |
+| 3 | Hilfstext erklärt Workaround | Pass ("Öffne den Instagram-Post → kopiere die Beschreibung → nutze den Freitext-Import") |
+| 4 | Instagram aus Liste entfernt / mit Warnung | Pass (`⚠️ Instagram nicht unterstützt` im Hilfstext + Placeholder) |
+
+### Bugs Found
+
+- **[LOW] Tippfehler im Import-Formular** — In `components/recipes/import-form.tsx` Zeile 696 steht `<Label>Nährwerte yoyo pro Portion</Label>` — das Wort "yoyo" ist ein Debugging-Überbleibsel und sollte entfernt werden. Reproduktion: `/recipes/import` → URL importieren, bei dem Nährwerte erkannt werden → "Nährwerte yoyo pro Portion" wird im Preview-Step angezeigt. Priority: Low (kosmetisch, kein Funktions-Einfluss).
+
+### Security Audit
+- **Red-Team Angriff "Instagram-Bypass"**: URL-Check nutzt `new URL().hostname` + `startsWith("www.")`-Normalisierung. Varianten wie `m.instagram.com` oder `instagram.com` werden korrekt geblockt, geprüft via E2E-Test (`Edge case: instagram.com variants`).
+- **`user-scalable=no`**: WCAG 1.4.4 Accessibility-Konflikt — user-scalable=no verhindert Zoom auch für Sehbehinderte. Laut Spec explizit gewünscht ("App-ähnliche UI"). Keine Security-Lücke, aber dokumentiert.
+- **Keine Auth-Änderungen** in diesem Feature → kein zusätzlicher Angriffsvektor eingeführt.
+
+### Tests durchgeführt
+- 243/243 Unit-Tests grün (inklusive `instagram-detection.test.ts`)
+- TypeScript: compiliert ohne Fehler
+- E2E: `tests/PROJ-24-27-features.spec.ts` erstellt, deckt alle 4 Fixes ab (läuft gegen localhost:3000 sobald Dev-Server hochfährt)
 
 ## Deployment
 _To be added by /deploy_

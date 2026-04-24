@@ -34,9 +34,9 @@
 | PROJ-21 | [User-Verbindungen (Freundschaft)](PROJ-21-user-verbindungen.md) | Deployed | PROJ-18 |
 | PROJ-22 | [Rezepte teilen](PROJ-22-rezepte-teilen.md) | Deployed | PROJ-21 |
 | PROJ-23 | [RezeptFit Landingpage](PROJ-23-rezeptfit-landingpage.md) | Deployed | — |
-| PROJ-24 | [Mobile UX Fixes & Bug-Korrekturen](PROJ-24-mobile-ux-fixes.md) | In Progress | — |
-| PROJ-25 | [Rezept direkt zum Wochenplan hinzufügen](PROJ-25-rezept-zum-wochenplan.md) | In Progress | — |
-| PROJ-26 | [Wochenplan 1-Klick aus Favoriten befüllen](PROJ-26-wochenplan-autofill.md) | In Progress | — |
-| PROJ-27 | [Stammprodukte-Einkaufsliste](PROJ-27-stammprodukte-einkaufsliste.md) | In Progress | PROJ-9 |
+| PROJ-24 | [Mobile UX Fixes & Bug-Korrekturen](PROJ-24-mobile-ux-fixes.md) | Approved | — |
+| PROJ-25 | [Rezept direkt zum Wochenplan hinzufügen](PROJ-25-rezept-zum-wochenplan.md) | Approved | — |
+| PROJ-26 | [Wochenplan 1-Klick aus Favoriten befüllen](PROJ-26-wochenplan-autofill.md) | Approved | — |
+| PROJ-27 | [Stammprodukte-Einkaufsliste](PROJ-27-stammprodukte-einkaufsliste.md) | Approved | PROJ-9 |
 | PROJ-28 | [Logbuch-Produktsuche & Barcode-Scanner](PROJ-28-logbuch-produktsuche-barcode.md) | Planned | PROJ-2, PROJ-11 |
 | PROJ-29 | [Zutaten-Icons statt Bulletpoints](PROJ-29-zutaten-icons.md) | Planned | — |
