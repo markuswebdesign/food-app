@@ -11,6 +11,7 @@ import { Clock, Users, Globe } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ShareRecipeButton } from "@/components/recipes/share-recipe-button";
 import { CopyRecipeButton } from "@/components/recipes/copy-recipe-button";
+import { AddToMealPlanPopover } from "@/components/recipes/add-to-meal-plan-popover";
 
 export default async function RecipeDetailPage({
   params,
@@ -68,16 +69,22 @@ export default async function RecipeDetailPage({
           </div>
         )}
 
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <h1 className="text-3xl font-bold">{recipe.title}</h1>
-          <div className="flex gap-2 shrink-0 flex-wrap justify-end">
+          <div className="flex gap-2 flex-wrap">
+            {user && (
+              <AddToMealPlanPopover
+                recipeId={recipe.id}
+                categorySlugs={categories.map((c: any) => c.slug)}
+              />
+            )}
             {user && (
               <FavoriteButton recipeId={recipe.id} initialFavorited={isFavorited} />
             )}
             {isOwner && (
               <>
                 <ShareRecipeButton recipeId={recipe.id} currentUserId={user!.id} />
-                <Button variant="outline" size="sm" asChild>
+                <Button variant="outline" size="sm" asChild className="min-h-[44px] sm:min-h-0">
                   <Link href={`/recipes/${recipe.id}/edit`}>Bearbeiten</Link>
                 </Button>
                 <DeleteRecipeButton recipeId={recipe.id} />

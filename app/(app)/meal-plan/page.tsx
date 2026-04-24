@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { WeekPlan } from "@/components/meal-plan/week-plan";
+import { AutofillDialog } from "@/components/meal-plan/autofill-dialog";
 import { calcTdee, calcCalorieGoal } from "@/lib/utils/tdee";
 import type { ActivityLevel, GoalType } from "@/lib/utils/tdee";
 
@@ -50,9 +51,12 @@ export default async function MealPlanPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Wochenplan</h1>
-        <p className="text-muted-foreground mt-1">Plane deine Mahlzeiten für die Woche</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Wochenplan</h1>
+          <p className="text-muted-foreground mt-1">Plane deine Mahlzeiten für die Woche</p>
+        </div>
+        <AutofillDialog onComplete={() => {}} />
       </div>
       <WeekPlan
         recipes={recipes}

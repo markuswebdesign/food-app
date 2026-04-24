@@ -1,6 +1,6 @@
 # PROJ-26: Wochenplan 1-Klick aus Favoriten befüllen
 
-## Status: Planned
+## Status: In Progress
 **Created:** 2026-04-23
 **Last Updated:** 2026-04-23
 
@@ -35,7 +35,53 @@
 ---
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Komponenten-Übersicht
+
+```
+app/(app)/meal-plan/page.tsx
+└── Button "Aus Favoriten befüllen"
+    └── öffnet AutofillDialog
+
+components/meal-plan/autofill-dialog.tsx  ← NEU
+├── Mindest-Check: <10 Favoriten → Hinweis-State
+├── ≥10 Favoriten → Optionen-Dialog
+│   ├── "Aktuelle Woche überschreiben"
+│   └── "Nur leere Slots befüllen"
+└── Lade-State während Befüllung
+
+app/api/meal-plan/autofill/route.ts  ← NEU (Server-Logik)
+├── Liest Favoriten des Users (mit Kategorie)
+├── Zufällige Verteilung auf 7 × 4 Slots (mit Kategorie-Balancierung)
+├── Kein Rezept doppelt (Shuffle + Deduplizierung)
+└── Schreibt Ergebnis via bestehende Wochenplan-Tabelle
+```
+
+### Datenhaltung
+Kein neues Schema — liest aus `favorites`-Tabelle (mit Rezept-Kategorie-JOIN) und schreibt in bestehende Wochenplan-Tabelle.
+
+### Verteilungslogik (plain language)
+1. Favoriten nach Kategorie gruppieren (Frühstück / Mittag / Abend / Snack / unkategorisiert)
+2. Für jeden der 7 Wochentage: Zufälliges Rezept je Slot-Typ ziehen
+3. Wenn Kategorie-Vorrat erschöpft: Rezepte dieser Kategorie recyclen
+4. Unkategorisierte Rezepte als Mittagessen oder Abendessen einsetzen
+5. Bei "Nur leere Slots": existierende Einträge überspringen
+
+### Tech-Entscheidungen
+| Entscheidung | Warum |
+|---|---|
+| Neue API-Route statt Frontend-Logik | Shuffle + DB-Schreibvorgänge gehören serverseitig, sicherer |
+| Dialog mit zwei klaren Optionen | Verhindert versehentliches Überschreiben — explizite User-Entscheidung |
+
+### Abhängigkeiten
+Keine neuen Pakete.
+
+## Implementation Notes
+- `app/api/meal-plan/autofill/route.ts` — neu (POST, serverseitig Shuffle + Kategorie-Verteilung)
+- `components/meal-plan/autofill-dialog.tsx` — AlertDialog mit 2 Optionen + Mindest-Check
+- Button in `app/(app)/meal-plan/page.tsx` oben rechts neben dem Titel
+- Bei zu wenigen Favoriten (<10) wird Hinweis angezeigt statt Dialog-Optionen
+- `router.refresh()` nach erfolgreichem Befüllen
 
 ## QA Test Results
 _To be added by /qa_

@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Clock, Users, Globe } from "lucide-react";
 import type { Recipe } from "@/lib/types";
 import { FavoriteButton } from "./favorite-button";
+import { AddToMealPlanPopover } from "./add-to-meal-plan-popover";
 
 export function RecipeCard({ recipe }: { recipe: Recipe }) {
   const totalTime = (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);
@@ -82,7 +83,11 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
         </Card>
       </Link>
 
-      <div className="absolute top-2 right-2">
+      <div className="absolute top-2 right-2 flex gap-1">
+        <AddToMealPlanPopover
+          recipeId={recipe.id}
+          categorySlugs={recipe.categories?.map((c) => c.slug) ?? []}
+        />
         <FavoriteButton
           recipeId={recipe.id}
           initialFavorited={recipe.is_favorited ?? false}

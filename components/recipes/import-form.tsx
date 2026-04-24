@@ -118,9 +118,25 @@ export function ImportForm({ categories }: ImportFormProps) {
     );
   }
 
+  function isInstagramUrl(input: string): boolean {
+    try {
+      const host = new URL(input).hostname.replace(/^www\./, "");
+      return host === "instagram.com" || host.endsWith(".instagram.com");
+    } catch {
+      return false;
+    }
+  }
+
   async function handleImportClick() {
     if (!url.trim().startsWith("http")) {
       setError("Bitte eine gültige URL eingeben (beginnt mit http/https)");
+      return;
+    }
+    if (isInstagramUrl(url)) {
+      setError(
+        "Instagram-Links werden leider nicht unterstützt. " +
+        "Öffne den Instagram-Post → kopiere die Beschreibung → nutze den Freitext-Import."
+      );
       return;
     }
     setLoading(true);
@@ -398,7 +414,7 @@ export function ImportForm({ categories }: ImportFormProps) {
                 onChange={(e) => { if (!isImageMode) setUrl(e.target.value); }}
                 onKeyDown={(e) => { if (e.key === "Enter" && !isImageMode) handleImportClick(); }}
                 readOnly={isImageMode}
-                placeholder="https://www.chefkoch.de/rezepte/..."
+                placeholder="https://www.chefkoch.de/rezepte/... (Instagram nicht unterstützt)"
                 className={`text-base flex-1 ${isImageMode ? "text-muted-foreground" : ""}`}
               />
 
@@ -422,7 +438,7 @@ export function ImportForm({ categories }: ImportFormProps) {
             <p className="text-xs text-muted-foreground">
               {isImageMode
                 ? "Foto ausgewählt · Claude liest Zutaten und Anleitung aus dem Bild"
-                : "Rezept-Website, Instagram, TikTok · oder Foto aus Galerie / Kamera"}
+                : "Rezept-Website oder Foto aus Galerie / Kamera · ⚠️ Instagram nicht unterstützt"}
             </p>
           </div>
 

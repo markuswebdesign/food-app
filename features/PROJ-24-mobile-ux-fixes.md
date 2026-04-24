@@ -1,6 +1,6 @@
 # PROJ-24: Mobile UX Fixes & Bug-Korrekturen
 
-## Status: Planned
+## Status: In Progress
 **Created:** 2026-04-23
 **Last Updated:** 2026-04-23
 
@@ -84,7 +84,47 @@ Instagram hat 2020 ihre öffentliche API abgeschaltet. Posts sind JS-gerendert u
 ---
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Komponenten-Übersicht
+
+```
+app/layout.tsx
+└── Viewport-Meta-Tag (Fix 1)
+
+app/(app)/recipes/[id]/page.tsx
+└── Button-Leiste (Bearbeiten / Löschen)
+    └── Responsive Stack auf Mobile (Fix 2)
+
+components/me/me-tabs.tsx
+└── Tab-Navigation (Übersicht / Logbuch / Verbindungen / Profil)
+    └── Scrollbar entfernen, Icons + kurze Labels auf 375px (Fix 3)
+
+components/recipes/import-form.tsx
+└── Instagram-Erkennung (Fix 4)
+    └── Frühzeitige URL-Prüfung → sofortige Fehlermeldung
+
+app/api/recipes/import/route.ts
+└── Sekundäre Instagram-Blockade (Fix 4, Fallback)
+```
+
+### Datenhaltung
+Kein Datenbankzugriff nötig — alle vier Fixes sind reine Frontend- bzw. API-Route-Änderungen.
+
+### Tech-Entscheidungen
+| Entscheidung | Warum |
+|---|---|
+| Instagram-Erkennung im Frontend (vor API-Call) | Verhindert unnötige Wartezeit — kein Timeout abwarten |
+| `user-scalable=no` im Viewport-Meta-Tag | iOS/Android verhindert den Pinch-Zoom-Reflex in App-ähnlichen UIs |
+| Icons + kurze Labels als Fallback auf 320px | Touch-Targets bleiben nutzbar ohne Scrollen |
+
+### Abhängigkeiten
+Keine neuen Pakete nötig.
+
+## Implementation Notes
+- Fix 1: Viewport meta tag in `app/layout.tsx` — `maximum-scale=1.0, user-scalable=no`
+- Fix 2: Recipe detail page buttons now stack vertically on mobile (`flex-col sm:flex-row`), `min-h-[44px]` touch targets
+- Fix 3: `me-tabs.tsx` — `overflow-x-auto`, `whitespace-nowrap`, abbreviated labels on mobile (`sm:hidden` / `sm:inline`)
+- Fix 4: Instagram URL detection in `import-form.tsx` — early return before API call with clear error message
 
 ## QA Test Results
 _To be added by /qa_

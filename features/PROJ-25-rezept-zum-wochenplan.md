@@ -1,6 +1,6 @@
 # PROJ-25: Rezept direkt zum Wochenplan hinzufügen
 
-## Status: Planned
+## Status: In Progress
 **Created:** 2026-04-23
 **Last Updated:** 2026-04-23
 
@@ -35,7 +35,53 @@
 ---
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Komponenten-Übersicht
+
+```
+components/recipes/recipe-card.tsx
+└── Kalender-Icon neben Herz-Icon
+    └── öffnet AddToMealPlanPopover
+
+components/recipes/add-to-meal-plan-popover.tsx  ← NEU
+├── Wochentag-Auswahl (Mo – So, 7 Buttons)
+├── Mahlzeit-Auswahl (Frühstück / Mittagessen / Abendessen / Snack)
+│   └── Vorauswahl via Kategorie-Mapping
+├── "Hinzufügen"-Button
+└── Erfolgsmeldung (Toast)
+
+app/(app)/recipes/[id]/page.tsx
+└── Gleiches Kalender-Icon + Popover auf Detailseite
+```
+
+### Datenhaltung
+Kein neues Schema nötig — schreibt in die **bestehende Wochenplan-Tabelle** via vorhandene API.
+
+### Kategorie → Mahlzeit-Mapping
+```
+breakfast  → Frühstück
+lunch      → Mittagessen
+dinner     → Abendessen
+snack      → Snack
+(leer)     → keine Vorauswahl
+```
+
+### Tech-Entscheidungen
+| Entscheidung | Warum |
+|---|---|
+| Popover statt Modal | Leichtgewichtiger, kein Seitenwechsel, passt zur Karten-UX |
+| Bestehende Wochenplan-API | Keine neue Backend-Logik nötig, kein Duplikat-Risiko |
+| Mapping als Konstante im Frontend | Einfach änderbar, kein DB-Overhead |
+
+### Abhängigkeiten
+Keine neuen Pakete (shadcn Popover bereits verfügbar).
+
+## Implementation Notes
+- `components/recipes/add-to-meal-plan-popover.tsx` — neu erstellt (base-ui Popover)
+- Kalender-Icon in `recipe-card.tsx` neben dem Herz-Icon
+- Kalender-Icon auch in `app/(app)/recipes/[id]/page.tsx` für eingeloggte User
+- Kategorie→Mahlzeit-Mapping als Konstante im Frontend
+- Schreibt meal_plan_entry + food_log_entry via Supabase client (analog zum WeekPlan)
 
 ## QA Test Results
 _To be added by /qa_

@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { lookupCategory, CATEGORY_ORDER } from "@/lib/nutrition/local-ingredients";
 import type { IngredientCategory } from "@/lib/nutrition/local-ingredients";
+import { StapleItemsPanel } from "@/components/shopping-list/staple-items-panel";
 import {
   Trash2,
   Printer,
@@ -16,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  BookMarked,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -72,6 +74,7 @@ const CHECKED_KEY = "shopping-list-checked";
 export default function ShoppingListPage() {
   const supabase = createClient();
 
+  const [activeTab, setActiveTab] = useState<"list" | "staple">("list");
   const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
   const [recipeItems, setRecipeItems] = useState<AggregatedItem[]>([]);
   const [manualItems, setManualItems] = useState<ManualItem[]>([]);
@@ -339,13 +342,45 @@ export default function ShoppingListPage() {
             <ShoppingCart className="h-7 w-7" />
             Einkaufsliste
           </h1>
-          <p className="text-muted-foreground mt-1">{totalUnchecked} Artikel übrig</p>
+          {activeTab === "list" && (
+            <p className="text-muted-foreground mt-1">{totalUnchecked} Artikel übrig</p>
+          )}
         </div>
-        <Button variant="outline" onClick={() => window.print()} className="gap-2">
-          <Printer className="h-4 w-4" />
-          Drucken
-        </Button>
+        {activeTab === "list" && (
+          <Button variant="outline" onClick={() => window.print()} className="gap-2">
+            <Printer className="h-4 w-4" />
+            Drucken
+          </Button>
+        )}
       </div>
+
+      {/* Tabs */}
+      <div className="flex border-b gap-0 print:hidden">
+        <button
+          onClick={() => setActiveTab("list")}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            activeTab === "list"
+              ? "border-primary text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <ShoppingCart className="h-4 w-4" /> Einkaufsliste
+        </button>
+        <button
+          onClick={() => setActiveTab("staple")}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            activeTab === "staple"
+              ? "border-primary text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <BookMarked className="h-4 w-4" /> Stammprodukte
+        </button>
+      </div>
+
+      {activeTab === "staple" && <StapleItemsPanel />}
+
+      {activeTab === "list" && <>
 
       {/* Print title */}
       <div className="hidden print:block">
@@ -507,6 +542,8 @@ export default function ShoppingListPage() {
           }
         }
       `}</style>
+
+      </>}
     </div>
   );
 }
