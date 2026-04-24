@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import * as cheerio from "cheerio";
+import { createClient } from "@/lib/supabase/server";
 
 export const maxDuration = 60;
 
@@ -122,14 +123,75 @@ async function fetchTikTokText(url: string): Promise<{ text: string; imageUrl: s
   return { text: text.slice(0, 10000), imageUrl };
 }
 
-async function fetchInstagramText(url: string): Promise<{ text: string; imageUrl: string | null }> {
-  // Instagram's unauthenticated oEmbed API was deprecated in 2020.
-  // Scrape the page directly — og:description contains the post caption (recipe text),
-  // og:image contains the food photo.
-  const res = await fetch(url, {
+// ─── Instagram Helpers ────────────────────────────────────────────────────────
+
+function cleanInstagramUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    return `${u.origin}${u.pathname.replace(/\/$/, "")}`;
+  } catch {
+    return url.split("?")[0];
+  }
+}
+
+function extractInstagramShortcode(url: string): string | null {
+  const match = url.match(/instagram\.com\/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/);
+  return match?.[1] ?? null;
+}
+
+async function fetchInstagramGraphQL(shortcode: string): Promise<{ text: string; imageUrl: string | null } | null> {
+  const xIgAppId = process.env.INSTAGRAM_APP_ID ?? "936619743392459";
+  const docId = process.env.INSTAGRAM_DOC_ID ?? "10015901848480474";
+
+  const graphqlUrl = new URL("https://www.instagram.com/api/graphql");
+  graphqlUrl.searchParams.set("variables", JSON.stringify({ shortcode }));
+  graphqlUrl.searchParams.set("doc_id", docId);
+
+  const res = await fetch(graphqlUrl.toString(), {
+    method: "POST",
     headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "X-IG-App-ID": xIgAppId,
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Accept": "*/*",
+      "Origin": "https://www.instagram.com",
+      "Referer": "https://www.instagram.com/",
+    },
+    signal: AbortSignal.timeout(15000),
+  });
+
+  if (!res.ok) return null;
+
+  const data = await res.json();
+  const media = data?.data?.xdt_shortcode_media ?? data?.data?.shortcode_media;
+  if (!media) return null;
+
+  const caption = media.edge_media_to_caption?.edges?.[0]?.node?.text ?? media.caption ?? "";
+  const imageUrl = media.display_url ?? media.thumbnail_src ?? null;
+  const owner = media.owner?.username ?? "unbekannt";
+
+  if (!caption && !imageUrl) return null;
+
+  const text = `Instagram Rezept von @${owner}\n\nBeschreibung: ${caption}`;
+  return { text: text.slice(0, 10000), imageUrl };
+}
+
+async function fetchInstagramText(url: string): Promise<{ text: string; imageUrl: string | null }> {
+  const cleanUrl = cleanInstagramUrl(url);
+  const shortcode = extractInstagramShortcode(cleanUrl);
+
+  // 1. Try GraphQL (only needs X-IG-App-ID, no session cookie)
+  if (shortcode) {
+    try {
+      const result = await fetchInstagramGraphQL(shortcode);
+      if (result) return result;
+    } catch {}
+  }
+
+  // 2. HTML scraping fallback
+  const res = await fetch(cleanUrl, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
       "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     },
@@ -139,31 +201,18 @@ async function fetchInstagramText(url: string): Promise<{ text: string; imageUrl
   const html = await res.text();
   const $ = cheerio.load(html);
 
-  const imageUrl =
-    $('meta[property="og:image"]').attr("content") ??
-    $('meta[name="twitter:image"]').attr("content") ??
-    null;
+  const imageUrl = $('meta[property="og:image"]').attr("content") ??
+    $('meta[name="twitter:image"]').attr("content") ?? null;
+  const caption = $('meta[property="og:description"]').attr("content") ??
+    $('meta[name="description"]').attr("content") ?? "";
+  const title = $('meta[property="og:title"]').attr("content") ?? $("title").text() ?? "";
 
-  // og:description on Instagram contains the full post caption
-  const caption =
-    $('meta[property="og:description"]').attr("content") ??
-    $('meta[name="description"]').attr("content") ??
-    "";
-
-  const title =
-    $('meta[property="og:title"]').attr("content") ??
-    $("title").text() ??
-    "";
-
-  // If meta tags have content, use them (most reliable on Instagram)
-  if (caption.length > 20) {
-    const text = `Instagram Rezept\n\nTitel: ${title}\n\nBeschreibung: ${caption}`;
-    return { text: text.slice(0, 10000), imageUrl };
+  const lower = (caption + title).toLowerCase();
+  if (caption.length < 20 || lower.includes("log in") || lower.includes("anmelden") || lower.includes("sign in")) {
+    throw new Error("INSTAGRAM_BLOCKED");
   }
 
-  // Fallback: cleaned page text (less likely to work due to Instagram's JS-rendering)
-  $("script, style, nav, header, footer, aside").remove();
-  const text = $.text().replace(/\s+/g, " ").trim();
+  const text = `Instagram Rezept\n\nTitel: ${title}\n\nBeschreibung: ${caption}`;
   return { text: text.slice(0, 10000), imageUrl };
 }
 
@@ -207,6 +256,45 @@ function nullNutrition(): NutritionData {
     carbs_per_100g: null,
     fiber_per_100g: null,
   };
+}
+
+// ─── Thumbnail Download to Supabase Storage ──────────────────────────────────
+
+async function downloadImageToStorage(
+  imageUrl: string,
+  supabase: ReturnType<typeof createClient>
+): Promise<string> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  if (!imageUrl || imageUrl.includes(supabaseUrl)) return imageUrl;
+
+  try {
+    const res = await fetch(imageUrl, {
+      headers: { "User-Agent": "Mozilla/5.0" },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return imageUrl;
+
+    const contentType = res.headers.get("content-type") ?? "image/jpeg";
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowed.some((t) => contentType.includes(t))) return imageUrl;
+
+    const buffer = await res.arrayBuffer();
+    if (buffer.byteLength > 10 * 1024 * 1024) return imageUrl;
+
+    const ext = contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpg";
+    const path = `imported/${crypto.randomUUID()}.${ext}`;
+
+    const { error } = await supabase.storage
+      .from("recipe-images")
+      .upload(path, Buffer.from(buffer), { contentType, upsert: false });
+
+    if (error) return imageUrl;
+
+    const { data: { publicUrl } } = supabase.storage.from("recipe-images").getPublicUrl(path);
+    return publicUrl;
+  } catch {
+    return imageUrl;
+  }
 }
 
 // ─── Claude Haiku Extraction ──────────────────────────────────────────────────
@@ -380,13 +468,20 @@ export async function POST(request: NextRequest) {
   }
 
   // ── URL mode ───────────────────────────────────────────────────────────────
-  const { url } = await request.json();
+  const { url, manualText } = await request.json();
 
-  if (!url) {
+  if (!url && !manualText) {
     return NextResponse.json({ error: "URL fehlt" }, { status: 400 });
   }
 
   try {
+    // Manual caption mode (Instagram fallback: user pasted the caption)
+    if (manualText) {
+      const recipe = await extractRecipeWithClaude(manualText, url ?? "");
+      const ingredientsWithNutrition = await enrichIngredients(recipe);
+      return NextResponse.json({ ...recipe, source_url: url ?? null, ingredients: ingredientsWithNutrition });
+    }
+
     let fetched: { text: string; imageUrl: string | null };
 
     if (url.includes("tiktok.com")) {
@@ -397,14 +492,9 @@ export async function POST(request: NextRequest) {
       fetched = await fetchPageText(url);
     }
 
-    // Detect login walls / empty content before calling Claude
-    const textLower = fetched.text.toLowerCase();
-    if (
-      fetched.text.length < 100 ||
-      (url.includes("instagram.com") && (textLower.includes("log in") || textLower.includes("anmelden") || textLower.includes("sign in")))
-    ) {
+    if (fetched.text.length < 100) {
       return NextResponse.json(
-        { error: "Instagram-Seite konnte nicht geladen werden. Bitte stelle sicher, dass der Post öffentlich ist, oder kopiere die Rezeptbeschreibung manuell." },
+        { error: "Seite konnte nicht geladen werden. Bitte prüfe die URL und versuche es erneut." },
         { status: 422 }
       );
     }
@@ -414,10 +504,30 @@ export async function POST(request: NextRequest) {
       recipe.image_url = fetched.imageUrl;
     }
 
+    // Download thumbnail to Supabase Storage for social media imports
+    if (recipe.image_url && (url.includes("tiktok.com") || url.includes("instagram.com"))) {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          recipe.image_url = await downloadImageToStorage(recipe.image_url, supabase);
+        }
+      } catch {}
+    }
+
     const ingredientsWithNutrition = await enrichIngredients(recipe);
 
     return NextResponse.json({ ...recipe, source_url: url, ingredients: ingredientsWithNutrition });
   } catch (error) {
+    if (error instanceof Error && error.message === "INSTAGRAM_BLOCKED") {
+      return NextResponse.json(
+        {
+          error: "Instagram-Post konnte nicht automatisch geladen werden. Kopiere die Beschreibung aus dem Post und füge sie unten ein.",
+          instagram_fallback: true,
+        },
+        { status: 422 }
+      );
+    }
     console.error("Import error:", error);
     return NextResponse.json(
       { error: "Import fehlgeschlagen: " + (error instanceof Error ? error.message : "Unbekannter Fehler") },

@@ -53,6 +53,8 @@ export function ImportForm({ categories }: ImportFormProps) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [instagramFallback, setInstagramFallback] = useState(false);
+  const [manualCaption, setManualCaption] = useState("");
 
   // Vorschau-Felder
   const [title, setTitle] = useState("");
@@ -132,15 +134,9 @@ export function ImportForm({ categories }: ImportFormProps) {
       setError("Bitte eine gültige URL eingeben (beginnt mit http/https)");
       return;
     }
-    if (isInstagramUrl(url)) {
-      setError(
-        "Instagram-Links werden leider nicht unterstützt. " +
-        "Öffne den Instagram-Post → kopiere die Beschreibung → nutze den Freitext-Import."
-      );
-      return;
-    }
     setLoading(true);
     setError(null);
+    setInstagramFallback(false);
 
     try {
       const res = await fetch("/api/recipes/import", {
@@ -150,7 +146,15 @@ export function ImportForm({ categories }: ImportFormProps) {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Import fehlgeschlagen");
+      if (!res.ok) {
+        if (data.instagram_fallback) {
+          setInstagramFallback(true);
+          setError(data.error);
+          setLoading(false);
+          return;
+        }
+        throw new Error(data.error ?? "Import fehlgeschlagen");
+      }
 
       setTitle(data.title ?? "");
       setDescription(data.description ?? "");
@@ -177,6 +181,48 @@ export function ImportForm({ categories }: ImportFormProps) {
             )
           : [{ name: "", amount: "", unit: "" }]
       );
+      setStep("preview");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Import fehlgeschlagen");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleManualImportClick() {
+    if (!manualCaption.trim()) {
+      setError("Bitte füge die Beschreibung des Instagram-Posts ein.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/recipes/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, manualText: manualCaption }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Import fehlgeschlagen");
+      setTitle(data.title ?? "");
+      setDescription(data.description ?? "");
+      setInstructions(data.instructions ?? "");
+      setImageUrl(data.image_url ?? "");
+      const totalTime = (data.prep_time_minutes ?? 0) + (data.cook_time_minutes ?? 0);
+      setWorkTime(totalTime > 0 ? String(totalTime) : "");
+      setSelectedCategories(detectCategories(data.category));
+      setIngredients(
+        data.ingredients?.length
+          ? data.ingredients.map((i: any) =>
+              typeof i === "string" ? parseIngredient(i) : {
+                name: i.name ?? "", amount: i.amount != null ? String(i.amount) : "",
+                unit: i.unit ?? "", calories_per_100g: i.calories_per_100g ?? null,
+                protein_per_100g: i.protein_per_100g ?? null, fat_per_100g: i.fat_per_100g ?? null,
+                carbs_per_100g: i.carbs_per_100g ?? null, fiber_per_100g: i.fiber_per_100g ?? null,
+              })
+          : [{ name: "", amount: "", unit: "" }]
+      );
+      setInstagramFallback(false);
       setStep("preview");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Import fehlgeschlagen");
@@ -377,6 +423,29 @@ export function ImportForm({ categories }: ImportFormProps) {
       <div className="space-y-4">
         {error && (
           <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</p>
+        )}
+
+        {instagramFallback && (
+          <div className="space-y-3 p-4 border rounded-lg bg-muted/40">
+            <p className="text-sm font-medium">Instagram Caption manuell einfügen</p>
+            <p className="text-xs text-muted-foreground">
+              Öffne den Instagram-Post → tippe auf „… mehr" → kopiere den gesamten Text → füge ihn hier ein.
+            </p>
+            <textarea
+              className="w-full min-h-[120px] rounded-md border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder="Rezept-Beschreibung aus Instagram hier einfügen..."
+              value={manualCaption}
+              onChange={(e) => setManualCaption(e.target.value)}
+            />
+            <Button
+              size="sm"
+              className="w-full"
+              onClick={handleManualImportClick}
+              disabled={loading || !manualCaption.trim()}
+            >
+              {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Wird importiert…</> : "Rezept importieren"}
+            </Button>
+          </div>
         )}
 
         {/* Image preview — shown above the input when a file is selected */}
