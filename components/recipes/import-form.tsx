@@ -429,7 +429,7 @@ export function ImportForm({ categories }: ImportFormProps) {
           <div className="space-y-3 p-4 border rounded-lg bg-muted/40">
             <p className="text-sm font-medium">Instagram Caption manuell einfügen</p>
             <p className="text-xs text-muted-foreground">
-              Öffne den Instagram-Post → tippe auf „… mehr" → kopiere den gesamten Text → füge ihn hier ein.
+              Öffne den Instagram-Post → tippe auf &ldquo;… mehr&rdquo; → kopiere den gesamten Text → füge ihn hier ein.
             </p>
             <textarea
               className="w-full min-h-[120px] rounded-md border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
