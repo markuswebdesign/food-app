@@ -40,5 +40,5 @@
 | PROJ-27 | [Stammprodukte-Einkaufsliste](PROJ-27-stammprodukte-einkaufsliste.md) | Deployed | PROJ-9 |
 | PROJ-28 | [Logbuch-Produktsuche & Barcode-Scanner](PROJ-28-logbuch-produktsuche-barcode.md) | Planned | PROJ-2, PROJ-11 |
 | PROJ-29 | [Zutaten-Icons statt Bulletpoints](PROJ-29-zutaten-icons.md) | Planned | — |
-| PROJ-30 | [Instagram Import Fix](PROJ-30-instagram-import-fix.md) | Planned | — |
-| PROJ-31 | [Thumbnail-Download zu Supabase Storage](PROJ-31-thumbnail-download-supabase.md) | Planned | PROJ-30 |
+| PROJ-30 | [Instagram Import Fix](PROJ-30-instagram-import-fix.md) | Deployed | — |
+| PROJ-31 | [Thumbnail-Download zu Supabase Storage](PROJ-31-thumbnail-download-supabase.md) | Deployed | PROJ-30 |
