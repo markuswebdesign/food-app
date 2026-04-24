@@ -483,7 +483,7 @@ export function ImportForm({ categories }: ImportFormProps) {
                 onChange={(e) => { if (!isImageMode) setUrl(e.target.value); }}
                 onKeyDown={(e) => { if (e.key === "Enter" && !isImageMode) handleImportClick(); }}
                 readOnly={isImageMode}
-                placeholder="https://www.chefkoch.de/rezepte/... (Instagram nicht unterstützt)"
+                placeholder="https://www.chefkoch.de/rezepte/... oder Instagram/TikTok-Link"
                 className={`text-base flex-1 ${isImageMode ? "text-muted-foreground" : ""}`}
               />
 
@@ -507,7 +507,7 @@ export function ImportForm({ categories }: ImportFormProps) {
             <p className="text-xs text-muted-foreground">
               {isImageMode
                 ? "Foto ausgewählt · Claude liest Zutaten und Anleitung aus dem Bild"
-                : "Rezept-Website oder Foto aus Galerie / Kamera · ⚠️ Instagram nicht unterstützt"}
+                : "Rezept-Website, Instagram- oder TikTok-Link einfügen"}
             </p>
           </div>
 
